@@ -17,7 +17,7 @@ mavenPublishing {
 
     signAllPublications()
 
-    coordinates(group.toString(), "komposetable", version.toString())
+    coordinates(group.toString(), "datatable", version.toString())
 
     pom {
         name = "Data Table Componet For Compose UI"
