@@ -54,10 +54,7 @@ kotlin {
 
 dependencies {
     implementation(compose.desktop.common)
-
-    // Optional: UI toolkit
     implementation(compose.foundation)
-    implementation(compose.material3)
     implementation(compose.desktop.currentOs){
         exclude("org.jetbrains.compose.material")
     }
