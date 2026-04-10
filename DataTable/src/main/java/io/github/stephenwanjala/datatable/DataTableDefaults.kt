@@ -28,12 +28,15 @@ data class DataTableColors(
     val checkboxCheckmark: Color = Color.White,
     val iconTint: Color = Color(0xFF616161),
     val disabledContent: Color = Color(0xFFBDBDBD),
+    val rowAlternate: Color = Color.Transparent,
+    val hoveredRow: Color = Color(0x1A000000),
+    val focusedRowBorder: Color = Color(0xFF1976D2),
 )
 
 /**
  * Text styles used throughout the [DataTable].
  *
- * Defaults are plain styles at typical sizes — no Material typography required.
+ * Defaults are plain styles at typical sizes - no Material typography required.
  */
 @Immutable
 data class DataTableTextStyles(
@@ -73,10 +76,6 @@ data class DataTableTextStyles(
  * Factory functions for [DataTableColors] and [DataTableTextStyles].
  */
 object DataTableDefaults {
-    /**
-     * Returns a [DataTableColors] with all default values.
-     * Override individual colors as needed.
-     */
     @Composable
     fun colors(
         container: Color = Color(0xFFFAFAFA),
@@ -91,10 +90,14 @@ object DataTableDefaults {
         checkboxCheckmark: Color = Color.White,
         iconTint: Color = Color(0xFF616161),
         disabledContent: Color = Color(0xFFBDBDBD),
+        rowAlternate: Color = Color.Transparent,
+        hoveredRow: Color = Color(0x1A000000),
+        focusedRowBorder: Color = Color(0xFF1976D2),
     ): DataTableColors = remember(
         container, header, divider, selectedRow, expandedRow,
         onSurface, onSurfaceSecondary, checkboxChecked, checkboxUnchecked,
-        checkboxCheckmark, iconTint, disabledContent
+        checkboxCheckmark, iconTint, disabledContent, rowAlternate,
+        hoveredRow, focusedRowBorder
     ) {
         DataTableColors(
             container = container,
@@ -109,13 +112,12 @@ object DataTableDefaults {
             checkboxCheckmark = checkboxCheckmark,
             iconTint = iconTint,
             disabledContent = disabledContent,
+            rowAlternate = rowAlternate,
+            hoveredRow = hoveredRow,
+            focusedRowBorder = focusedRowBorder,
         )
     }
 
-    /**
-     * Returns a [DataTableTextStyles] with all default values.
-     * Override individual styles as needed.
-     */
     @Composable
     fun textStyles(
         headerCell: TextStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C1C1C)),
