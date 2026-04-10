@@ -8,14 +8,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import io.github.stephenwanjala.datatable.DataTable
-import io.github.stephenwanjala.datatable.DataTableDensity
-import io.github.stephenwanjala.datatable.DataTableHeader
+import io.github.stephenwanjala.datatable.*
 import java.util.*
 import kotlin.random.Random
 
@@ -58,39 +58,18 @@ data class LargeDataSetItem(
         private val firstNames =
             listOf("Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Heidi", "Ivan", "Judy")
         private val lastNames = listOf(
-            "Smith",
-            "Johnson",
-            "Williams",
-            "Brown",
-            "Jones",
-            "Garcia",
-            "Miller",
-            "Davis",
-            "Rodriguez",
-            "Martinez"
+            "Smith", "Johnson", "Williams", "Brown", "Jones",
+            "Garcia", "Miller", "Davis", "Rodriguez", "Martinez"
         )
         private val cities = listOf(
-            "New York",
-            "Los Angeles",
-            "Chicago",
-            "Houston",
-            "Phoenix",
-            "Philadelphia",
-            "San Antonio",
-            "San Diego"
+            "New York", "Los Angeles", "Chicago", "Houston",
+            "Phoenix", "Philadelphia", "San Antonio", "San Diego"
         )
         private val countries =
             listOf("USA", "Canada", "Mexico", "Brazil", "UK", "Germany", "France", "Spain", "Italy", "Japan")
         private val occupations = listOf(
-            "Engineer",
-            "Doctor",
-            "Teacher",
-            "Artist",
-            "Programmer",
-            "Analyst",
-            "Manager",
-            "Consultant",
-            "Designer"
+            "Engineer", "Doctor", "Teacher", "Artist",
+            "Programmer", "Analyst", "Manager", "Consultant", "Designer"
         )
         private val projectStatuses = listOf("Completed", "In Progress", "Pending", "On Hold", "Cancelled")
         private val departments =
@@ -106,10 +85,7 @@ data class LargeDataSetItem(
             val occupation = occupations.random(random)
             val salary = random.nextDouble(40000.0, 120000.0).round(2)
             val startDate = "20${random.nextInt(10, 24)}-${random.nextInt(1, 12).toString().padStart(2, '0')}-${
-                random.nextInt(
-                    1,
-                    28
-                ).toString().padStart(2, '0')
+                random.nextInt(1, 28).toString().padStart(2, '0')
             }"
             val projectStatus = projectStatuses.random(random)
             val hoursWorked = random.nextInt(100, 2000)
@@ -126,19 +102,13 @@ data class LargeDataSetItem(
                 random.nextInt(0, 23).toString().padStart(2, '0')
             }:${random.nextInt(0, 59).toString().padStart(2, '0')}"
             val ipAddress = "${random.nextInt(0, 255)}.${random.nextInt(0, 255)}.${random.nextInt(0, 255)}.${
-                random.nextInt(
-                    0,
-                    255
-                )
+                random.nextInt(0, 255)
             }"
             val macAddress = (1..6).joinToString(":") { String.format("%02X", random.nextInt(256)) }
             val phoneNumber = "+1-${random.nextInt(200, 999)}-${random.nextInt(100, 999)}-${random.nextInt(1000, 9999)}"
             val zipCode = "${random.nextInt(10000, 99999)}"
             val streetAddress = "${
-                random.nextInt(
-                    100,
-                    999
-                )
+                random.nextInt(100, 999)
             } ${firstNames.random(random)} ${if (random.nextBoolean()) "Street" else "Avenue"}"
             val buildingNumber = "${random.nextInt(1, 20)}"
             val floorNumber = random.nextInt(1, 30)
@@ -163,82 +133,98 @@ data class LargeDataSetItem(
     }
 }
 
+/**
+ * Showcases: frozen columns, multi-sort (Ctrl+click), resizable columns,
+ * alternating row colors, items-per-page selector, text overflow/ellipsis,
+ * custom sort comparator, row hover, right-click, keyboard navigation, column visibility.
+ */
 @Composable
 fun LargeDataSetExample() {
     val random = remember { Random(42) }
     val items = remember {
-        (1..500).map { id ->
-            LargeDataSetItem.generateRandom(id, random)
-        }
+        (1..500).map { id -> LargeDataSetItem.generateRandom(id, random) }
     }
 
     var selectedItems by remember { mutableStateOf<Set<LargeDataSetItem>>(emptySet()) }
     var currentPage by remember { mutableStateOf(0) }
+    var itemsPerPage by remember { mutableStateOf(20) }
+    var multiSort by remember { mutableStateOf<List<SortState>>(emptyList()) }
+    var showNotesColumn by remember { mutableStateOf(true) }
 
-    val headers = remember {
+    val tableState = rememberDataTableState()
+
+    val headers = remember(showNotesColumn) {
         listOf(
             DataTableHeader<LargeDataSetItem>(
                 key = "id",
                 title = "ID",
                 value = { it.id },
                 width = 60.dp,
-                align = TextAlign.Center
+                align = TextAlign.Center,
+                fixed = true, // Frozen column
             ),
             DataTableHeader(
                 key = "fullName",
                 title = "Full Name",
                 value = { it.fullName },
-                width = 150.dp
+                width = 150.dp,
+                fixed = true, // Frozen column
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             ),
             DataTableHeader(
                 key = "age",
                 title = "Age",
                 value = { it.age },
                 width = 60.dp,
-                align = TextAlign.End
+                align = TextAlign.End,
             ),
             DataTableHeader(
                 key = "email",
                 title = "Email",
                 value = { it.email },
-                width = 250.dp
+                width = 250.dp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             ),
             DataTableHeader(
                 key = "city",
                 title = "City",
                 value = { it.city },
-                width = 120.dp
+                width = 120.dp,
             ),
             DataTableHeader(
                 key = "country",
                 title = "Country",
                 value = { it.country },
-                width = 100.dp
+                width = 100.dp,
             ),
             DataTableHeader(
                 key = "occupation",
                 title = "Occupation",
                 value = { it.occupation },
-                width = 120.dp
+                width = 120.dp,
             ),
             DataTableHeader(
                 key = "salary",
                 title = "Salary",
                 value = { "$${String.format("%.2f", it.salary)}" },
                 width = 120.dp,
-                align = TextAlign.End
+                align = TextAlign.End,
+                // Custom comparator: sort by numeric salary, not string
+                comparator = compareBy { it.salary },
             ),
             DataTableHeader(
                 key = "department",
                 title = "Department",
                 value = { it.department },
-                width = 120.dp
+                width = 120.dp,
             ),
             DataTableHeader(
                 key = "startDate",
                 title = "Start Date",
                 value = { it.startDate },
-                width = 120.dp
+                width = 120.dp,
             ),
             DataTableHeader(
                 key = "projectStatus",
@@ -268,7 +254,7 @@ fun LargeDataSetExample() {
                 title = "Hours",
                 value = { it.hoursWorked },
                 width = 80.dp,
-                align = TextAlign.End
+                align = TextAlign.End,
             ),
             DataTableHeader(
                 key = "isActive",
@@ -289,100 +275,105 @@ fun LargeDataSetExample() {
                 title = "Rating",
                 value = { it.rating },
                 width = 80.dp,
-                align = TextAlign.End
+                align = TextAlign.End,
             ),
             DataTableHeader(
                 key = "version",
                 title = "Version",
                 value = { it.version },
-                width = 80.dp
+                width = 80.dp,
             ),
             DataTableHeader(
                 key = "licenseKey",
                 title = "License Key",
                 value = { it.licenseKey },
-                width = 150.dp
+                width = 150.dp,
             ),
             DataTableHeader(
                 key = "lastLogin",
                 title = "Last Login",
                 value = { it.lastLogin },
-                width = 150.dp
+                width = 150.dp,
             ),
             DataTableHeader(
                 key = "ipAddress",
                 title = "IP Address",
                 value = { it.ipAddress },
-                width = 130.dp
+                width = 130.dp,
             ),
             DataTableHeader(
                 key = "macAddress",
                 title = "MAC Address",
                 value = { it.macAddress },
-                width = 150.dp
+                width = 150.dp,
             ),
             DataTableHeader(
                 key = "phoneNumber",
                 title = "Phone",
                 value = { it.phoneNumber },
-                width = 150.dp
+                width = 150.dp,
             ),
             DataTableHeader(
                 key = "zipCode",
                 title = "ZIP",
                 value = { it.zipCode },
-                width = 80.dp
+                width = 80.dp,
             ),
             DataTableHeader(
                 key = "streetAddress",
                 title = "Address",
                 value = { it.streetAddress },
-                width = 200.dp
+                width = 200.dp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             ),
             DataTableHeader(
                 key = "buildingNumber",
                 title = "Building",
                 value = { it.buildingNumber },
-                width = 80.dp
+                width = 80.dp,
             ),
             DataTableHeader(
                 key = "floorNumber",
                 title = "Floor",
                 value = { it.floorNumber },
                 width = 60.dp,
-                align = TextAlign.End
+                align = TextAlign.End,
             ),
             DataTableHeader(
                 key = "officeNumber",
                 title = "Office",
                 value = { it.officeNumber },
                 width = 80.dp,
-                align = TextAlign.End
+                align = TextAlign.End,
             ),
             DataTableHeader(
                 key = "managerName",
                 title = "Manager",
                 value = { it.managerName },
-                width = 150.dp
+                width = 150.dp,
             ),
             DataTableHeader(
                 key = "teamLead",
                 title = "Team Lead",
                 value = { it.teamLead },
-                width = 150.dp
+                width = 150.dp,
             ),
             DataTableHeader(
                 key = "reviewScore",
                 title = "Review",
                 value = { it.reviewScore },
                 width = 80.dp,
-                align = TextAlign.End
+                align = TextAlign.End,
             ),
             DataTableHeader(
                 key = "notes",
                 title = "Notes",
                 value = { it.notes },
-                width = 300.dp
+                width = 300.dp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                visible = showNotesColumn, // Togglable visibility
             )
         )
     }
@@ -407,12 +398,17 @@ fun LargeDataSetExample() {
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        "${items.size} total items | ${selectedItems.size} selected",
+                        "${items.size} total | ${selectedItems.size} selected | Ctrl+click headers to multi-sort",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Toggle notes column visibility
+                    Button(onClick = { showNotesColumn = !showNotesColumn }) {
+                        Text(if (showNotesColumn) "Hide Notes" else "Show Notes")
+                    }
+
                     if (selectedItems.isNotEmpty()) {
                         Button(
                             onClick = { selectedItems = emptySet() },
@@ -432,28 +428,44 @@ fun LargeDataSetExample() {
         DataTable(
             items = items,
             headers = headers,
+            state = tableState,
             itemKey = { it.id },
             showSelect = true,
+            selectionMode = SelectionMode.MULTI,
             selectedItems = selectedItems,
             onSelectionChange = { selectedItems = it },
+            // Multi-sort
+            multiSortBy = multiSort,
+            onMultiSortChange = { multiSort = it },
+            // Resizable columns
+            resizableColumns = true,
+            minColumnWidth = 50.dp,
+            // Pagination with items-per-page selector
             showPagination = true,
-            itemsPerPage = 20,
+            itemsPerPage = itemsPerPage,
             currentPage = currentPage,
             onPageChange = { currentPage = it },
-            density = DataTableDensity.COMFORTABLE,
+            onItemsPerPageChange = {
+                itemsPerPage = it
+                currentPage = 0
+            },
+            // Alternating row colors
+            colors = DataTableDefaults.colors(
+                rowAlternate = Color(0xFFF5F5F5),
+            ),
+            density = DataTableDensity.DEFAULT,
             onRowClick = { item ->
                 println("Clicked: ${item.fullName}")
             },
             onRowDoubleClick = { item ->
                 println("Double-clicked: ${item.fullName}")
-                selectedItems = if (selectedItems.contains(item)) {
-                    selectedItems - item
-                } else {
-                    selectedItems + item
-                }
+            },
+            // Right-click context menu
+            onRowContextMenu = { item, offset ->
+                println("Right-clicked: ${item.fullName} at $offset")
             },
             modifier = Modifier.weight(1f),
-            showScrollbars = true
+            showScrollbars = true,
         )
     }
 }
@@ -641,4 +653,3 @@ fun main() = application {
         LargeDataSetExample()
     }
 }
-
