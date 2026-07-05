@@ -382,8 +382,8 @@ DataTable(
 ## Requirements
 
 - Kotlin 2.x+
-- Compose Multiplatform 1.6+
-- JVM 11+
+- Compose Multiplatform 1.9+
+- JVM 21+
 
 ## License
 

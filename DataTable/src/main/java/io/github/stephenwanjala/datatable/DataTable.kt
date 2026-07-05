@@ -275,11 +275,10 @@ fun <T> DataTable(
                     else {
                         Row(
                             modifier = Modifier
-                                .background(color = Color.Red)
+                                .background(colors.header)
+                                .fillMaxWidth()
                                 .horizontalScroll(horizontalScrollState)
                                 .enableTrackpadHorizontalScroll(scrollState = horizontalScrollState)
-                                .fillMaxWidth()
-                                .height(50.dp)
                         ) {
                             DataTableHeaderRow(
                                 headers = flatHeaders,
