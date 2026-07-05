@@ -20,11 +20,11 @@ mavenPublishing {
     coordinates(group.toString(), "datatable", version.toString())
 
     pom {
-        name = "Data Table Componet For Compose UI"
+        name = "Data Table Component For Compose UI"
         description =
             "A highly customizable, feature-rich DataTable component for Jetpack Compose Desktop  with smooth scrolling, advanced interactions, and extensive customization options."
         inceptionYear = "2025"
-        url = " https://github.com/stephenWanjala/DataTable/"
+        url = "https://github.com/stephenWanjala/DataTable/"
         licenses {
             license {
                 name = "The Apache License, Version 2.0"
@@ -34,9 +34,9 @@ mavenPublishing {
         }
         developers {
             developer {
-                id = "datatable"
+                id = "stephenWanjala"
                 name = "Wanjala Stephen"
-                url = "github.com/stephenWanjala/"
+                url = "https://github.com/stephenWanjala/"
             }
         }
         scm {
@@ -55,7 +55,4 @@ kotlin {
 dependencies {
     implementation(compose.desktop.common)
     implementation(compose.foundation)
-    implementation(compose.desktop.currentOs){
-        exclude("org.jetbrains.compose.material")
-    }
 }
