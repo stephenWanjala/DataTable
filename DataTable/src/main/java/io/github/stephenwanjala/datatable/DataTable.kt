@@ -15,6 +15,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.isShiftPressed
@@ -312,6 +313,23 @@ fun <T> DataTable(
             .background(colors.container)
             .focusRequester(focusRequester)
             .focusable()
+            // Take focus when the table is clicked, so the keyboard shortcuts below actually
+            // receive key events. Rows are driven by raw pointer input rather than `clickable`,
+            // which would have requested focus on its own — without this the table can never be
+            // focused at all and every shortcut is dead.
+            //
+            // Initial pass and no consumption: this must not interfere with row clicks,
+            // selection, or the resize handles.
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (event.type == PointerEventType.Press) {
+                            focusRequester.requestFocus()
+                        }
+                    }
+                }
+            }
             .dataTableKeyboardNavigation(
                 state = state,
                 rowKeys = rowKeys,
