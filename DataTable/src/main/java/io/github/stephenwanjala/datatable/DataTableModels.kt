@@ -1,6 +1,7 @@
 package io.github.stephenwanjala.datatable
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -16,7 +17,7 @@ import androidx.compose.ui.unit.dp
  * @param width Fixed width for the column. If `null`, the column is laid out with weight to fill space.
  * @param align Horizontal alignment for header text and default cell text.
  * @param fixed When true, the column is frozen (pinned) to the left and does not scroll horizontally.
- *              Frozen columns must have an explicit [width].
+ *              Frozen columns must have an explicit [width]; `DataTable` throws if one does not.
  * @param visible When false, the column is excluded from rendering. Defaults to true.
  * @param maxLines Maximum lines for default text rendering. Defaults to [Int.MAX_VALUE].
  * @param overflow Text overflow strategy for default text rendering.
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
  * @param headerContent Optional composable to fully customize the header cell for this column.
  * @param cellContent Optional composable to fully customize each body cell for this column.
  */
+@Immutable
 data class DataTableHeader<T>(
     val key: String,
     val title: String = "",
@@ -56,6 +58,7 @@ enum class SortOrder {
  * @param key The column `key` to which sorting is applied. Empty means no column selected.
  * @param order The direction of sorting.
  */
+@Immutable
 data class SortState(
     val key: String = "",
     val order: SortOrder = SortOrder.NONE
