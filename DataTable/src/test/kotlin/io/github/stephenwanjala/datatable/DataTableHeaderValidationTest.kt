@@ -126,10 +126,6 @@ class DataTableHeaderValidationTest {
     @Test
     fun `a group with all-weighted leaves is accepted`() = runComposeUiTest {
         // The rule is "all fixed OR all weighted", so this must not be rejected.
-        //
-        // Asserts existence rather than display: weighted columns currently measure zero-width,
-        // because the table wraps its content in horizontalScroll and Modifier.weight resolves
-        // to zero under unbounded width constraints. That is a separate, pre-existing bug.
         setContent {
             DataTable(
                 items = people,
@@ -138,7 +134,7 @@ class DataTableHeaderValidationTest {
             )
         }
 
-        onNodeWithText("Contact").assertExists()
+        onNodeWithText("Contact").assertIsDisplayed()
     }
 
     @Test

@@ -287,10 +287,27 @@ fun <T> DataTable(
         indices
     }
 
+    // Width taken by the select/expand controls, which sit ahead of the first column.
+    val leadingWidth =
+        (if (showCheckboxes) 20.dp + density.horizontalPadding * 2 else 0.dp) +
+            (if (showExpand) 48.dp else 0.dp)
+
+    // Total of the columns that declare a width, and how many are left to share what remains.
+    // Frozen columns always declare a width, so only the scrollable side can be weighted.
+    val scrollableFixedWidth = scrollableHeaders.fold(0.dp) { total, header ->
+        total + (state.resolvedColumnWidth(header.key, header.width) ?: 0.dp)
+    }
+    val frozenFixedWidth = frozenHeaders.fold(0.dp) { total, header ->
+        total + (state.resolvedColumnWidth(header.key, header.width) ?: 0.dp)
+    }
+    val weightedColumnCount = scrollableHeaders.count {
+        state.resolvedColumnWidth(it.key, it.width) == null
+    }
+
     // Focus for keyboard navigation
     val focusRequester = remember { FocusRequester() }
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .background(colors.container)
             .focusRequester(focusRequester)
@@ -317,6 +334,28 @@ fun <T> DataTable(
                 },
             )
     ) {
+        // Weighted columns need a bounded width to divide up. Everything scrollable sits inside
+        // `horizontalScroll`, which measures its content with an unbounded width, and
+        // `Modifier.weight` resolves to zero against that — so give the scrolled content a
+        // definite width instead of letting it run to infinity.
+        //
+        // It is the viewport minus whatever is pinned outside the scrolling area, floored so a
+        // weighted column keeps at least `minColumnWidth` when the fixed columns already overflow.
+        val scrollableContentWidth: Dp? = when {
+            weightedColumnCount == 0 -> null
+            !constraints.hasBoundedWidth -> null
+            else -> {
+                val pinned = if (hasFrozenColumns) leadingWidth + frozenFixedWidth + 1.dp else 0.dp
+                val viewport = maxWidth - pinned
+                val floor = scrollableFixedWidth +
+                    (if (hasFrozenColumns) 0.dp else leadingWidth) +
+                    minColumnWidth * weightedColumnCount
+                maxOf(viewport, floor)
+            }
+        }
+        val scrollableWidthModifier =
+            if (scrollableContentWidth != null) Modifier.width(scrollableContentWidth) else Modifier
+
         Column {
             // ---- Header ----
             if (!hideDefaultHeader && headerContent == null) {
@@ -355,6 +394,7 @@ fun <T> DataTable(
                             scrollableContent = {
                                 DataTableHeaderRow(
                                     headers = scrollableTree,
+                                    modifier = scrollableWidthModifier,
                                     showSelect = false,
                                     allSelected = false,
                                     onSelectAll = {},
@@ -385,6 +425,7 @@ fun <T> DataTable(
                         ) {
                             DataTableHeaderRow(
                                 headers = scrollableTree,
+                                modifier = scrollableWidthModifier,
                                 showSelect = showCheckboxes,
                                 allSelected = allSelected,
                                 onSelectAll = {
@@ -505,6 +546,7 @@ fun <T> DataTable(
                                                     scrollableContent = {
                                                         DataTableRow(
                                                             item = item,
+                                                            modifier = scrollableWidthModifier,
                                                             headers = scrollableHeaders,
                                                             showSelect = false,
                                                             selected = itemSelected,
@@ -537,6 +579,7 @@ fun <T> DataTable(
                                                     ) {
                                                         DataTableRow(
                                                             item = item,
+                                                            modifier = scrollableWidthModifier,
                                                             headers = flatHeaders,
                                                             showSelect = showCheckboxes,
                                                             selected = itemSelected,

@@ -32,6 +32,7 @@ import java.awt.Cursor
 @Composable
 internal fun <T> DataTableHeaderRow(
     headers: List<DataTableHeader<T>>,
+    modifier: Modifier = Modifier,
     showSelect: Boolean,
     allSelected: Boolean,
     onSelectAll: () -> Unit,
@@ -54,7 +55,7 @@ internal fun <T> DataTableHeaderRow(
     val hasGroups = headers.any { visibleChildren(it) != null }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .background(backgroundColor)
             .then(if (hasGroups) Modifier.height(IntrinsicSize.Min) else Modifier)
             .padding(vertical = density.verticalPadding),

@@ -30,6 +30,7 @@ import androidx.compose.ui.input.pointer.isSecondaryPressed
 internal fun <T> DataTableRow(
     item: T,
     headers: List<DataTableHeader<T>>,
+    modifier: Modifier = Modifier,
     showSelect: Boolean,
     selected: Boolean,
     onSelectChange: (Boolean) -> Unit,
@@ -68,7 +69,7 @@ internal fun <T> DataTableRow(
     val currentOnContextMenu by rememberUpdatedState(onContextMenu)
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .background(backgroundColor)
             .then(
                 if (isFocused) {
