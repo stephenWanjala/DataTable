@@ -33,7 +33,12 @@ A column is either **fixed** or **weighted**:
 | `width` | Behaviour |
 |---------|-----------|
 | `120.dp` | Exactly that wide. |
-| `null` (default) | Takes an equal share of the leftover space. |
+| `null` (default) | Takes an equal share of the space the fixed columns leave. |
+
+Weighted columns divide up the viewport minus the fixed columns, the selection and expand
+controls, and any frozen section. When the fixed columns already overflow the viewport there is
+nothing left to share, so each weighted column falls back to `minColumnWidth` and the table
+scrolls.
 
 Mixing both in one table is fine. Mixing them *under a single grouped header* is not — see
 [Nested headers](#nested-grouped-headers).
