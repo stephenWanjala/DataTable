@@ -87,4 +87,17 @@ dependencies {
 
     // Desktop-only internals (VerticalScrollbar, HorizontalScrollbar, AWT cursors).
     implementation(compose.desktop.common)
+
+    testImplementation(kotlin("test"))
+    testImplementation(compose.desktop.uiTestJUnit4)
+    testImplementation(compose.desktop.currentOs)
+}
+
+tasks.withType<Test>().configureEach {
+    // Compose desktop UI tests render offscreen; no display needed.
+    systemProperty("java.awt.headless", "true")
+    testLogging {
+        events("failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
 }
