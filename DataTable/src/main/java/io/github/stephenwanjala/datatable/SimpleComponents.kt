@@ -2,12 +2,20 @@ package io.github.stephenwanjala.datatable
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -15,6 +23,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
@@ -69,20 +80,34 @@ internal fun SimpleCheckbox(
 
 /**
  * A simple icon button: a clickable box with centered content.
+ *
+ * When [hoverColor] is set the button paints a rounded highlight under the cursor, which is
+ * what makes a row of icon buttons read as controls rather than as loose glyphs.
  */
 @Composable
 internal fun SimpleIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    size: Dp = 48.dp,
+    hoverColor: Color = Color.Transparent,
     content: @Composable () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val hovered by interactionSource.collectIsHoveredAsState()
+
     Box(
         modifier = modifier
-            .size(48.dp)
+            .size(size)
+            .clip(RoundedCornerShape(6.dp))
+            .background(if (enabled && hovered) hoverColor else Color.Transparent)
             .then(
-                if (enabled) Modifier.clickable(onClick = onClick)
-                else Modifier
+                if (enabled) {
+                    Modifier
+                        .hoverable(interactionSource)
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        .clickable(onClick = onClick)
+                } else Modifier
             ),
         contentAlignment = Alignment.Center
     ) {
