@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.vanniktech.mavenPublish)
+    alias(libs.plugins.dokka)
     id("java-library")
 
 }
@@ -49,6 +50,28 @@ mavenPublishing {
 kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+    }
+}
+
+dokka {
+    moduleName = "DataTable"
+    dokkaSourceSets.main {
+        // Internal helpers are an implementation detail; only document the public surface.
+        documentedVisibilities.set(
+            setOf(org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier.Public)
+        )
+        reportUndocumented = true
+        skipDeprecated = false
+
+        sourceLink {
+            localDirectory = file("src/main/java")
+            remoteUrl("https://github.com/stephenWanjala/DataTable/tree/master/DataTable/src/main/java")
+            remoteLineSuffix = "#L"
+        }
+    }
+    dokkaPublications.html {
+        // MkDocs mounts this under /api, so keep the output beside the built site.
+        outputDirectory = rootProject.layout.projectDirectory.dir("build/dokka")
     }
 }
 
