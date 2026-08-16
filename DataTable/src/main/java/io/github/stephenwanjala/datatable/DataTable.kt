@@ -1,7 +1,6 @@
 package io.github.stephenwanjala.datatable
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -123,9 +122,17 @@ fun <T> DataTable(
     val horizontalScrollState = state.horizontalScrollState
     val flatHeaders = remember(headers) { flattenHeaders(headers) }
 
-    // Partition into frozen and scrollable
+    // Partition into frozen and scrollable. A frozen column has to declare a width — the frozen
+    // section sits outside the horizontally scrolling area, so there is nothing for a weighted
+    // column to take its share of.
     val (frozenHeaders, scrollableHeaders) = remember(flatHeaders) {
-        flatHeaders.partition { it.fixed && it.width != null }
+        flatHeaders.forEach { header ->
+            require(!header.fixed || header.width != null) {
+                "Frozen column '${header.key}' must declare an explicit width. " +
+                    "Set `width = ...` on the header, or drop `fixed = true`."
+            }
+        }
+        flatHeaders.partition { it.fixed }
     }
     val hasFrozenColumns = frozenHeaders.isNotEmpty()
 
@@ -667,19 +674,17 @@ internal fun TableDivider(color: Color) {
 
 /**
  * Enables natural horizontal scrolling with trackpads and mice.
+ *
+ * Handles wheel and trackpad scroll events only: a horizontal wheel/two-finger swipe, or
+ * Shift + vertical wheel. It deliberately does not treat a press-and-drag as a scroll — that
+ * would make dragging anywhere on a row pan the table, and would fight the column resize
+ * handles, text selection, and any future drag-select.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun Modifier.enableTrackpadHorizontalScroll(scrollState: ScrollState): Modifier {
     val scope = rememberCoroutineScope()
     return this
-        .pointerInput(scrollState) {
-            detectHorizontalDragGestures { _, dragAmount ->
-                scope.launch {
-                    scrollState.scrollBy(-dragAmount)
-                }
-            }
-        }
         .pointerInput(scrollState) {
             awaitPointerEventScope {
                 while (true) {
