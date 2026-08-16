@@ -21,3 +21,4 @@ node_modules/
 # Docs build output
 site/
 docs/api/
+.venv/
