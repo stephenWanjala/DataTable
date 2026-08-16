@@ -1,0 +1,625 @@
+package io.github.stephenwanjala.composedatatable
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import io.github.stephenwanjala.datatable.*
+import kotlinx.coroutines.delay
+import kotlin.random.Random
+
+// ---------------------------------------------------------------------------
+// Shared bits
+// ---------------------------------------------------------------------------
+
+/** Strip of controls above a sample's table. */
+@Composable
+private fun SampleControls(content: @Composable RowScope.() -> Unit) {
+    Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            content = content,
+        )
+    }
+}
+
+private val employeeHeaders = listOf(
+    DataTableHeader<Employee>(key = "id", title = "ID", value = { it.id }, width = 60.dp, align = TextAlign.End),
+    DataTableHeader(key = "name", title = "Name", value = { it.name }, width = 180.dp),
+    DataTableHeader(key = "email", title = "Email", value = { it.email }, width = 240.dp, maxLines = 1, overflow = TextOverflow.Ellipsis),
+    DataTableHeader(key = "department", title = "Department", value = { it.department }, width = 140.dp),
+    DataTableHeader(key = "role", title = "Role", value = { it.role }, width = 140.dp),
+    DataTableHeader(
+        key = "salary", title = "Salary", width = 120.dp, align = TextAlign.End,
+        value = { it.salary }, comparator = compareBy { it.salary },
+        cellContent = { Text("$${"%,.0f".format(it.salary)}", style = MaterialTheme.typography.bodyMedium) },
+    ),
+)
+
+// ---------------------------------------------------------------------------
+// 1. Large dataset
+// ---------------------------------------------------------------------------
+
+@Composable
+fun LargeDataSetSample() {
+    val random = remember { Random(42) }
+    val items = remember { (1..500).map { LargeDataSetItem.generateRandom(it, random) } }
+
+    var selectedKeys by remember { mutableStateOf<Set<Any>>(emptySet()) }
+    var currentPage by remember { mutableStateOf(0) }
+    var itemsPerPage by remember { mutableStateOf(20) }
+    var multiSort by remember { mutableStateOf<List<SortState>>(emptyList()) }
+    var showNotesColumn by remember { mutableStateOf(true) }
+
+    val tableState = rememberDataTableState()
+
+    val headers = remember(showNotesColumn) {
+        listOf(
+            DataTableHeader<LargeDataSetItem>(
+                key = "id", title = "ID", value = { it.id },
+                width = 60.dp, align = TextAlign.Center, fixed = true,
+            ),
+            DataTableHeader(
+                key = "fullName", title = "Full Name", value = { it.fullName },
+                width = 150.dp, fixed = true, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            ),
+            // Nested headers, placed early so the bands are visible without scrolling right.
+            DataTableHeader(
+                key = "location",
+                title = "Location",
+                children = listOf(
+                    DataTableHeader(
+                        key = "street",
+                        title = "Street",
+                        children = listOf(
+                            DataTableHeader(key = "zipCode", title = "ZIP", value = { it.zipCode }, width = 80.dp),
+                            DataTableHeader(
+                                key = "streetAddress", title = "Address", value = { it.streetAddress },
+                                width = 200.dp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            ),
+                        ),
+                    ),
+                    DataTableHeader(
+                        key = "room",
+                        title = "Room",
+                        children = listOf(
+                            DataTableHeader(key = "buildingNumber", title = "Building", value = { it.buildingNumber }, width = 80.dp),
+                            DataTableHeader(key = "floorNumber", title = "Floor", value = { it.floorNumber }, width = 60.dp, align = TextAlign.End),
+                            DataTableHeader(key = "officeNumber", title = "Office", value = { it.officeNumber }, width = 80.dp, align = TextAlign.End),
+                        ),
+                    ),
+                ),
+            ),
+            DataTableHeader(key = "age", title = "Age", value = { it.age }, width = 60.dp, align = TextAlign.End),
+            DataTableHeader(key = "email", title = "Email", value = { it.email }, width = 250.dp, maxLines = 1, overflow = TextOverflow.Ellipsis),
+            DataTableHeader(key = "city", title = "City", value = { it.city }, width = 120.dp),
+            DataTableHeader(key = "country", title = "Country", value = { it.country }, width = 100.dp),
+            DataTableHeader(key = "occupation", title = "Occupation", value = { it.occupation }, width = 120.dp),
+            DataTableHeader(
+                key = "salary", title = "Salary", value = { "$${"%.2f".format(it.salary)}" },
+                width = 120.dp, align = TextAlign.End,
+                comparator = compareBy { it.salary },   // sort numerically, not as a string
+            ),
+            DataTableHeader(key = "department", title = "Department", value = { it.department }, width = 120.dp),
+            DataTableHeader(key = "startDate", title = "Start Date", value = { it.startDate }, width = 120.dp),
+            DataTableHeader(
+                key = "projectStatus", title = "Project Status", value = { it.projectStatus }, width = 150.dp,
+                cellContent = { item ->
+                    val color = when (item.projectStatus) {
+                        "Completed" -> MaterialTheme.colorScheme.primary
+                        "In Progress" -> MaterialTheme.colorScheme.tertiary
+                        "Pending" -> MaterialTheme.colorScheme.secondary
+                        "On Hold" -> MaterialTheme.colorScheme.error
+                        else -> MaterialTheme.colorScheme.outline
+                    }
+                    AssistChip(
+                        onClick = {},
+                        label = { Text(item.projectStatus, style = MaterialTheme.typography.bodySmall) },
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = color.copy(alpha = 0.2f),
+                            labelColor = color,
+                        ),
+                    )
+                },
+            ),
+            DataTableHeader(key = "hoursWorked", title = "Hours", value = { it.hoursWorked }, width = 80.dp, align = TextAlign.End),
+            DataTableHeader(
+                key = "isActive", title = "Active", value = { it.isActive }, width = 80.dp, align = TextAlign.Center,
+                cellContent = { item ->
+                    Icon(
+                        imageVector = if (item.isActive) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                        contentDescription = if (item.isActive) "Active" else "Inactive",
+                        tint = if (item.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                    )
+                },
+            ),
+            DataTableHeader(key = "rating", title = "Rating", value = { it.rating }, width = 80.dp, align = TextAlign.End),
+            DataTableHeader(key = "phoneNumber", title = "Phone", value = { it.phoneNumber }, width = 150.dp),
+            DataTableHeader(key = "managerName", title = "Manager", value = { it.managerName }, width = 150.dp),
+            DataTableHeader(key = "teamLead", title = "Team Lead", value = { it.teamLead }, width = 150.dp),
+            DataTableHeader(key = "reviewScore", title = "Review", value = { it.reviewScore }, width = 80.dp, align = TextAlign.End),
+            DataTableHeader(
+                key = "notes", title = "Notes", value = { it.notes }, width = 300.dp,
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                visible = showNotesColumn,
+            ),
+        )
+    }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text("${items.size} rows · ${selectedKeys.size} selected", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.weight(1f))
+            OutlinedButton(onClick = { showNotesColumn = !showNotesColumn }) {
+                Text(if (showNotesColumn) "Hide Notes" else "Show Notes")
+            }
+            OutlinedButton(onClick = { tableState.resetColumnWidths() }) { Text("Reset Widths") }
+            if (selectedKeys.isNotEmpty()) {
+                Button(onClick = { selectedKeys = emptySet() }) { Text("Clear Selection") }
+            }
+        }
+
+        DataTable(
+            items = items,
+            headers = headers,
+            itemKey = { it.id },
+            state = tableState,
+            showSelect = true,
+            selectionMode = SelectionMode.MULTI,
+            selectedKeys = selectedKeys,
+            onSelectionChange = { selectedKeys = it },
+            multiSortBy = multiSort,
+            onMultiSortChange = { multiSort = it },
+            resizableColumns = true,
+            minColumnWidth = 50.dp,
+            showPagination = true,
+            itemsPerPage = itemsPerPage,
+            currentPage = currentPage,
+            onPageChange = { currentPage = it },
+            onItemsPerPageChange = { itemsPerPage = it; currentPage = 0 },
+            colors = DataTableDefaults.colors(rowAlternate = Color(0xFFF5F5F5)),
+            onRowContextMenu = { item, offset -> println("Right-clicked ${item.fullName} at $offset") },
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 2. Nested headers, on their own
+// ---------------------------------------------------------------------------
+
+@Composable
+fun NestedHeadersSample() {
+    val headers = remember {
+        listOf(
+            DataTableHeader<Employee>(key = "id", title = "ID", value = { it.id }, width = 60.dp, align = TextAlign.End),
+            DataTableHeader(key = "name", title = "Name", value = { it.name }, width = 180.dp),
+            DataTableHeader(
+                key = "contact",
+                title = "Contact",
+                children = listOf(
+                    DataTableHeader(key = "email", title = "Email", value = { it.email }, width = 240.dp, maxLines = 1, overflow = TextOverflow.Ellipsis),
+                    DataTableHeader(key = "phone", title = "Phone", value = { it.phone }, width = 150.dp),
+                ),
+            ),
+            DataTableHeader(
+                key = "employment",
+                title = "Employment",
+                children = listOf(
+                    DataTableHeader(
+                        key = "placement",
+                        title = "Placement",
+                        children = listOf(
+                            DataTableHeader(key = "department", title = "Department", value = { it.department }, width = 140.dp),
+                            DataTableHeader(key = "role", title = "Role", value = { it.role }, width = 140.dp),
+                        ),
+                    ),
+                    DataTableHeader(key = "salary", title = "Salary", value = { "$${"%,.0f".format(it.salary)}" }, width = 120.dp, align = TextAlign.End),
+                ),
+            ),
+        )
+    }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text(
+                "Three levels deep. ID and Name are leaves at the top level, so they reserve " +
+                    "width in the bands and keep their titles in the leaf row.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        DataTable(
+            items = sampleEmployees,
+            headers = headers,
+            itemKey = { it.id },
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 3. Selection modes
+// ---------------------------------------------------------------------------
+
+@Composable
+fun SelectionSample() {
+    var mode by remember { mutableStateOf(SelectionMode.MULTI) }
+    var selectedKeys by remember { mutableStateOf<Set<Any>>(emptySet()) }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text("Mode:", style = MaterialTheme.typography.bodyMedium)
+            SelectionMode.entries.forEach { candidate ->
+                FilterChip(
+                    selected = mode == candidate,
+                    onClick = { mode = candidate; selectedKeys = emptySet() },
+                    label = { Text(candidate.name) },
+                )
+            }
+            Spacer(Modifier.weight(1f))
+            Text("Selected: ${selectedKeys.size}", style = MaterialTheme.typography.bodyMedium)
+        }
+        DataTable(
+            items = sampleEmployees,
+            headers = employeeHeaders,
+            itemKey = { it.id },
+            showSelect = mode != SelectionMode.NONE,
+            selectionMode = mode,
+            selectedKeys = selectedKeys,
+            onSelectionChange = { selectedKeys = it },
+            onRowClick = { println("Clicked ${it.name}") },
+            colors = DataTableDefaults.colors(rowAlternate = Color(0xFFF7F7F7)),
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 4. Row expansion
+// ---------------------------------------------------------------------------
+
+@Composable
+fun ExpansionSample() {
+    var expandedKeys by remember { mutableStateOf<Set<Any>>(emptySet()) }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text("Expanded: ${expandedKeys.size}", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.weight(1f))
+            OutlinedButton(onClick = { expandedKeys = sampleEmployees.map { it.id }.toSet() }) { Text("Expand All") }
+            OutlinedButton(onClick = { expandedKeys = emptySet() }) { Text("Collapse All") }
+        }
+        DataTable(
+            items = sampleEmployees,
+            headers = employeeHeaders,
+            itemKey = { it.id },
+            showExpand = true,
+            expandedKeys = expandedKeys,
+            onExpandChange = { expandedKeys = it },
+            expandContent = { employee ->
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(employee.name, style = MaterialTheme.typography.titleSmall)
+                    Text("Phone: ${employee.phone}", style = MaterialTheme.typography.bodySmall)
+                    Text("Status: ${if (employee.active) "Active" else "Inactive"}", style = MaterialTheme.typography.bodySmall)
+                }
+            },
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 5. Grouping
+// ---------------------------------------------------------------------------
+
+@Composable
+fun GroupingSample() {
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text("Grouped by department, with a per-group summary row.", style = MaterialTheme.typography.bodySmall)
+        }
+        DataTable(
+            items = sampleEmployees,
+            headers = employeeHeaders,
+            itemKey = { it.id },
+            groupBy = { it.department },
+            groupHeaderContent = { department, rows ->
+                Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Icon(Icons.Default.Folder, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Text("$department (${rows.size})", fontWeight = FontWeight.Bold)
+                    }
+                }
+            },
+            groupSummaryContent = { _, rows ->
+                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
+                    Text(
+                        "Total salary: $${"%,.0f".format(rows.sumOf { it.salary })}",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                    )
+                }
+            },
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 6. Server-side sorting and pagination
+// ---------------------------------------------------------------------------
+
+@Composable
+fun ServerSideSample() {
+    var page by remember { mutableStateOf(0) }
+    var pageSize by remember { mutableStateOf(25) }
+    var sort by remember { mutableStateOf(SortState("id", SortOrder.ASCENDING)) }
+    var rows by remember { mutableStateOf<List<Employee>?>(null) }
+    var queries by remember { mutableStateOf(0) }
+
+    // Stands in for hitting a database whenever the page or the sort changes.
+    LaunchedEffect(page, pageSize, sort) {
+        rows = null
+        delay(350)
+        rows = EmployeeRepository.page(
+            offset = page * pageSize,
+            limit = pageSize,
+            sortKey = sort.key,
+            ascending = sort.order != SortOrder.DESCENDING,
+        )
+        queries++
+    }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text(
+                "${EmployeeRepository.total} rows in the \"database\", ${rows?.size ?: 0} in memory · $queries queries",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Spacer(Modifier.weight(1f))
+            Text("ORDER BY ${sort.key} ${if (sort.order == SortOrder.DESCENDING) "DESC" else "ASC"}", style = MaterialTheme.typography.bodySmall)
+        }
+        DataTable(
+            items = rows.orEmpty(),
+            headers = employeeHeaders,
+            itemKey = { it.id },
+            loading = rows == null,
+
+            manualSorting = true,
+            sortBy = sort,
+            onSortChange = { sort = it; page = 0 },
+
+            showPagination = true,
+            manualPagination = true,
+            totalItems = EmployeeRepository.total,
+            itemsPerPage = pageSize,
+            currentPage = page,
+            onPageChange = { page = it },
+            onItemsPerPageChange = { pageSize = it; page = 0 },
+
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 7. Density and theming
+// ---------------------------------------------------------------------------
+
+@Composable
+fun ThemingSample() {
+    var density by remember { mutableStateOf(DataTableDensity.DEFAULT) }
+    var dark by remember { mutableStateOf(false) }
+
+    val colors = if (dark) {
+        DataTableDefaults.colors(
+            container = Color(0xFF1E1E1E),
+            header = Color(0xFF2A2A2A),
+            divider = Color(0xFF3A3A3A),
+            selectedRow = Color(0x664F8CC9),
+            hoveredRow = Color(0x14FFFFFF),
+            rowAlternate = Color(0xFF242424),
+            iconTint = Color(0xFFBBBBBB),
+            disabledContent = Color(0xFF5A5A5A),
+            checkboxChecked = Color(0xFF4F8CC9),
+            checkboxUnchecked = Color(0xFF888888),
+            focusedRowBorder = Color(0xFF4F8CC9),
+        )
+    } else {
+        DataTableDefaults.colors(rowAlternate = Color(0xFFF5F5F5))
+    }
+
+    val textStyles = if (dark) {
+        DataTableDefaults.textStyles(
+            headerCell = MaterialTheme.typography.titleSmall.copy(color = Color(0xFFEDEDED)),
+            bodyCell = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFFDDDDDD)),
+            footer = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFBBBBBB)),
+            pagination = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFDDDDDD)),
+            noData = MaterialTheme.typography.titleMedium.copy(color = Color(0xFF999999)),
+            loading = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFFDDDDDD)),
+        )
+    } else {
+        DataTableDefaults.textStyles()
+    }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text("Density:", style = MaterialTheme.typography.bodyMedium)
+            DataTableDensity.entries.forEach { candidate ->
+                FilterChip(
+                    selected = density == candidate,
+                    onClick = { density = candidate },
+                    label = { Text(candidate.name) },
+                )
+            }
+            Spacer(Modifier.weight(1f))
+            Text("Dark palette", style = MaterialTheme.typography.bodyMedium)
+            Switch(checked = dark, onCheckedChange = { dark = it })
+        }
+        DataTable(
+            items = sampleEmployees,
+            headers = employeeHeaders,
+            itemKey = { it.id },
+            density = density,
+            colors = colors,
+            textStyles = textStyles,
+            showSelect = true,
+            showPagination = true,
+            itemsPerPage = 10,
+            onItemsPerPageChange = {},
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 8. Loading state
+// ---------------------------------------------------------------------------
+
+@Composable
+fun LoadingSample() {
+    var isLoading by remember { mutableStateOf(true) }
+    var items by remember { mutableStateOf<List<Employee>>(emptyList()) }
+    var useCustomContent by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isLoading) {
+        if (isLoading) {
+            delay(2000)
+            items = sampleEmployees
+            isLoading = false
+        }
+    }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text("Custom loading content", style = MaterialTheme.typography.bodyMedium)
+            Switch(checked = useCustomContent, onCheckedChange = { useCustomContent = it })
+            Spacer(Modifier.weight(1f))
+            Button(onClick = { items = emptyList(); isLoading = true }) {
+                Icon(Icons.Default.Refresh, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Reload")
+            }
+        }
+        DataTable(
+            items = items,
+            headers = employeeHeaders,
+            itemKey = { it.id },
+            loading = isLoading,
+            loadingContent = if (useCustomContent) {
+                {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            CircularProgressIndicator()
+                            Text("Fetching employees…", style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            } else null,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 9. Empty state
+// ---------------------------------------------------------------------------
+
+@Composable
+fun EmptyStateSample() {
+    var useCustomContent by remember { mutableStateOf(true) }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text("Custom empty content", style = MaterialTheme.typography.bodyMedium)
+            Switch(checked = useCustomContent, onCheckedChange = { useCustomContent = it })
+        }
+        DataTable(
+            items = emptyList<Employee>(),
+            headers = employeeHeaders,
+            itemKey = { it.id },
+            noDataContent = if (useCustomContent) {
+                {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.List,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                            )
+                            Text("No data to display", style = MaterialTheme.typography.titleLarge)
+                            Text(
+                                "Add some items to get started",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            )
+                            Button(onClick = {}) {
+                                Icon(Icons.Default.Add, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text("Add Item")
+                            }
+                        }
+                    }
+                }
+            } else null,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 10. Keyboard navigation
+// ---------------------------------------------------------------------------
+
+@Composable
+fun KeyboardSample() {
+    val tableState = rememberDataTableState()
+    var selectedKeys by remember { mutableStateOf<Set<Any>>(emptySet()) }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text(
+                "Click the table, then use ↑ ↓ Home End, Enter, Space. Focus is tracked by key, " +
+                    "so it follows its row when you re-sort.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.weight(1f))
+            Text("Focused key: ${tableState.focusedKey ?: "none"}", style = MaterialTheme.typography.bodyMedium)
+            OutlinedButton(onClick = { tableState.focusRow(sampleEmployees.first().id) }) { Text("Focus First") }
+            OutlinedButton(onClick = { tableState.focusRow(null) }) { Text("Clear") }
+        }
+        DataTable(
+            items = sampleEmployees,
+            headers = employeeHeaders,
+            itemKey = { it.id },
+            state = tableState,
+            showSelect = true,
+            selectedKeys = selectedKeys,
+            onSelectionChange = { selectedKeys = it },
+            onRowClick = { println("Activated ${it.name}") },
+            colors = DataTableDefaults.colors(
+                rowAlternate = Color(0xFFF7F7F7),
+                focusedRowBorder = Color(0xFFD32F2F),
+            ),
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
