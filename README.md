@@ -87,10 +87,16 @@ all three densities, keyboard navigation, loading and empty states:
 ## Building the Docs
 
 ```bash
-./gradlew :DataTable:dokkaGeneratePublicationHtml   # API reference -> build/dokka
-pip install mkdocs-material                          # once
+# API reference -> build/dokka
+./gradlew :DataTable:dokkaGeneratePublicationHtml
+
+# Docs toolchain, in a venv (many distros ship an externally-managed Python)
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-docs.txt
+
+# Mount the API reference, then serve on http://127.0.0.1:8000
 cp -r build/dokka docs/api
-mkdocs serve                                         # http://127.0.0.1:8000
+.venv/bin/mkdocs serve
 ```
 
 ## Requirements
