@@ -226,6 +226,14 @@ private fun <T> DataTableHeaderLeaf(
     minColumnWidth: Dp = 40.dp,
     state: DataTableState? = null,
 ) {
+    // `pointerInput(Unit)` never restarts, so its lambda would otherwise keep reading the values
+    // captured on first composition — leaving the sort cycle stuck on ASCENDING because it always
+    // saw the initial, empty sort state. Same reason the body row does this for its tap handler.
+    val currentSortState by rememberUpdatedState(sortState)
+    val currentMultiSortBy by rememberUpdatedState(multiSortBy)
+    val currentOnSortChange by rememberUpdatedState(onSortChange)
+    val currentOnMultiSortChange by rememberUpdatedState(onMultiSortChange)
+
     // Determine sort indicator for this column
     val multiSortIndex = multiSortBy.indexOfFirst { it.key == header.key }
     val isMultiSorted = multiSortIndex >= 0
@@ -251,9 +259,10 @@ private fun <T> DataTableHeaderLeaf(
                                             change.consume()
                                             val isCtrl = event.keyboardModifiers.isCtrlPressed
 
-                                            if (isCtrl && onMultiSortChange != null) {
+                                            val multiSortHandler = currentOnMultiSortChange
+                                            if (isCtrl && multiSortHandler != null) {
                                                 // Multi-sort: Ctrl+click
-                                                val existing = multiSortBy.toMutableList()
+                                                val existing = currentMultiSortBy.toMutableList()
                                                 val idx = existing.indexOfFirst { it.key == header.key }
                                                 if (idx >= 0) {
                                                     val current = existing[idx]
@@ -265,17 +274,18 @@ private fun <T> DataTableHeaderLeaf(
                                                 } else {
                                                     existing.add(SortState(header.key, SortOrder.ASCENDING))
                                                 }
-                                                onMultiSortChange(existing)
+                                                multiSortHandler(existing)
                                             } else {
                                                 // Single sort
+                                                val active = currentSortState
                                                 val newOrder = when {
-                                                    sortState.key != header.key -> SortOrder.ASCENDING
-                                                    sortState.order == SortOrder.ASCENDING -> SortOrder.DESCENDING
+                                                    active.key != header.key -> SortOrder.ASCENDING
+                                                    active.order == SortOrder.ASCENDING -> SortOrder.DESCENDING
                                                     else -> SortOrder.NONE
                                                 }
-                                                onSortChange(SortState(header.key, newOrder))
+                                                currentOnSortChange(SortState(header.key, newOrder))
                                                 // Clear multi-sort when doing single sort
-                                                onMultiSortChange?.invoke(emptyList())
+                                                multiSortHandler?.invoke(emptyList())
                                             }
                                         }
                                     }
