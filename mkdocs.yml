@@ -1,0 +1,78 @@
+site_name: Compose DataTable
+site_description: A feature-rich DataTable component for Compose Desktop, built entirely on Foundation APIs.
+site_author: Wanjala Stephen
+site_url: https://stephenwanjala.github.io/DataTable/
+
+repo_url: https://github.com/stephenWanjala/DataTable
+repo_name: stephenWanjala/DataTable
+edit_uri: edit/master/docs/
+
+copyright: Copyright &copy; 2025 Wanjala Stephen — Apache License 2.0
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - content.action.edit
+    - search.highlight
+    - search.suggest
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+
+# The Dokka output is copied into docs/api/ before the build, so MkDocs picks it up as a
+# static asset and serves it at /api/.
+not_in_nav: |
+  api/**
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Guide:
+      - Columns: guide/columns.md
+      - Selection & Expansion: guide/selection.md
+      - Sorting & Paging: guide/sorting-and-paging.md
+      - Grouping: guide/grouping.md
+      - Interactions: guide/interactions.md
+      - Theming: guide/theming.md
+  - Migration: migration.md
+  - API Reference: api/index.html
