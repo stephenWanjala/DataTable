@@ -13,53 +13,57 @@ import kotlinx.coroutines.launch
  * - Space: toggle selection on focused row
  * - Home: focus first row
  * - End: focus last row
+ *
+ * Focus is stored on [DataTableState] as a row key, not a position, so it stays on the same
+ * row when the table is re-sorted. Navigation resolves that key back to a position against
+ * [rowKeys], which must be in display order.
+ *
+ * @param rowKeys Keys of the currently displayed rows, in display order.
+ * @param scrollIndices `LazyColumn` item index for each entry in [rowKeys]. These differ when
+ *                      grouping inserts header or summary items between rows.
+ * @param onRowClick Invoked with the focused row's position in [rowKeys].
+ * @param onToggleSelection Invoked with the focused row's position in [rowKeys].
  */
 internal fun Modifier.dataTableKeyboardNavigation(
     state: DataTableState,
-    itemCount: Int,
+    rowKeys: List<Any>,
+    scrollIndices: List<Int>,
     scope: CoroutineScope,
     onRowClick: ((Int) -> Unit)? = null,
     onToggleSelection: ((Int) -> Unit)? = null,
 ): Modifier = this.onPreviewKeyEvent { keyEvent ->
     if (keyEvent.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-    if (itemCount == 0) return@onPreviewKeyEvent false
+    if (rowKeys.isEmpty()) return@onPreviewKeyEvent false
+
+    // -1 when nothing is focused, or when the focused row is no longer displayed
+    // (filtered out, or on another page).
+    val current = rowKeys.indexOf(state.focusedKey)
+
+    fun moveFocusTo(position: Int): Boolean {
+        val target = position.coerceIn(0, rowKeys.lastIndex)
+        state.focusedKey = rowKeys[target]
+        scope.launch {
+            state.lazyListState.animateScrollToItem(scrollIndices.getOrElse(target) { target })
+        }
+        return true
+    }
 
     when (keyEvent.key) {
-        Key.DirectionDown -> {
-            state.focusedRowIndex = (state.focusedRowIndex + 1).coerceAtMost(itemCount - 1)
-            scope.launch { state.lazyListState.animateScrollToItem(state.focusedRowIndex) }
-            true
-        }
+        Key.DirectionDown -> moveFocusTo(if (current < 0) 0 else current + 1)
 
-        Key.DirectionUp -> {
-            state.focusedRowIndex = (state.focusedRowIndex - 1).coerceAtLeast(0)
-            scope.launch { state.lazyListState.animateScrollToItem(state.focusedRowIndex) }
-            true
-        }
+        Key.DirectionUp -> moveFocusTo(if (current < 0) 0 else current - 1)
+
+        Key.MoveHome -> moveFocusTo(0)
+
+        Key.MoveEnd -> moveFocusTo(rowKeys.lastIndex)
 
         Key.Enter -> {
-            if (state.focusedRowIndex in 0 until itemCount) {
-                onRowClick?.invoke(state.focusedRowIndex)
-            }
+            if (current >= 0) onRowClick?.invoke(current)
             true
         }
 
         Key.Spacebar -> {
-            if (state.focusedRowIndex in 0 until itemCount) {
-                onToggleSelection?.invoke(state.focusedRowIndex)
-            }
-            true
-        }
-
-        Key.MoveHome -> {
-            state.focusedRowIndex = 0
-            scope.launch { state.lazyListState.animateScrollToItem(0) }
-            true
-        }
-
-        Key.MoveEnd -> {
-            state.focusedRowIndex = itemCount - 1
-            scope.launch { state.lazyListState.animateScrollToItem(itemCount - 1) }
+            if (current >= 0) onToggleSelection?.invoke(current)
             true
         }
 
