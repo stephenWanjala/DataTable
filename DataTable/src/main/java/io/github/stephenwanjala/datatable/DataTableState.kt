@@ -24,9 +24,12 @@ class DataTableState(
     val firstVisibleItemIndex: Int get() = lazyListState.firstVisibleItemIndex
 
     /**
-     * The index of the row that currently has keyboard focus. -1 means no focus.
+     * Key of the row that currently has keyboard focus, or `null` when no row is focused.
+     *
+     * Keys are produced by `DataTable`'s `itemKey`, so focus follows its row across sorting,
+     * filtering, and paging rather than staying at a fixed position.
      */
-    var focusedRowIndex: Int by mutableIntStateOf(-1)
+    var focusedKey: Any? by mutableStateOf(null)
         internal set
 
     /**
@@ -46,6 +49,26 @@ class DataTableState(
      */
     suspend fun animateScrollToItem(index: Int, scrollOffset: Int = 0) {
         lazyListState.animateScrollToItem(index, scrollOffset)
+    }
+
+    /**
+     * Moves keyboard focus to the row with the given key, or clears focus when [key] is `null`.
+     *
+     * The key must be one produced by `DataTable`'s `itemKey`. Focusing a key that is not
+     * currently displayed — filtered out, or on another page — is harmless: no row draws the
+     * focus indicator, and the next arrow key starts again from the first row.
+     *
+     * This only moves focus; it does not scroll. To bring the row into view as well, pair it
+     * with [animateScrollToItem] using the row's position in the list you passed to `DataTable`:
+     *
+     * ```
+     * val position = people.indexOfFirst { it.id == personId }
+     * state.focusRow(personId)
+     * if (position >= 0) state.animateScrollToItem(position)
+     * ```
+     */
+    fun focusRow(key: Any?) {
+        focusedKey = key
     }
 
     /**

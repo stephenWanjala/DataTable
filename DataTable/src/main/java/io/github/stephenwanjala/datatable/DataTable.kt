@@ -46,25 +46,38 @@ import kotlinx.coroutines.launch
  * - Programmatic scroll-to-row via [DataTableState]
  * - Customizable colors and text styles without any theming framework
  *
+ * Selection and expansion are tracked by row key rather than by item. Callers hoist a
+ * `Set<Any>` of keys produced by [itemKey], so both survive item instances being replaced
+ * (a refresh from a repository, for example) and neither requires the item type to implement
+ * `equals`/`hashCode`.
+ *
  * @param T The item type for each row.
+ * @param itemKey Produces a stable, unique key per row — a database id or similar. Used for
+ *                `LazyColumn` item identity and as the identity of a row in [selectedKeys]
+ *                and [expandedKeys]. Keys must be unique across [items]: two rows sharing a
+ *                key select, expand, and recycle as one row.
+ * @param selectedKeys Keys of the currently selected rows.
+ * @param onSelectionChange Invoked with the new set of selected keys.
+ * @param expandedKeys Keys of the currently expanded rows.
+ * @param onExpandChange Invoked with the new set of expanded keys.
  */
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun <T> DataTable(
     items: List<T>,
     headers: List<DataTableHeader<T>>,
+    itemKey: (T) -> Any,
     modifier: Modifier = Modifier,
     state: DataTableState = rememberDataTableState(),
-    itemKey: (T) -> Any = { it.hashCode() },
     // Selection
     showSelect: Boolean = false,
     selectionMode: SelectionMode = if (showSelect) SelectionMode.MULTI else SelectionMode.NONE,
-    selectedItems: Set<T> = emptySet(),
-    onSelectionChange: ((Set<T>) -> Unit)? = null,
+    selectedKeys: Set<Any> = emptySet(),
+    onSelectionChange: ((Set<Any>) -> Unit)? = null,
     // Expansion
     showExpand: Boolean = false,
-    expandedItems: Set<T> = emptySet(),
-    onExpandChange: ((Set<T>) -> Unit)? = null,
+    expandedKeys: Set<Any> = emptySet(),
+    onExpandChange: ((Set<Any>) -> Unit)? = null,
     expandContent: (@Composable (T) -> Unit)? = null,
     // Layout
     density: DataTableDensity = DataTableDensity.DEFAULT,
@@ -122,6 +135,15 @@ fun <T> DataTable(
 
     val showCheckboxes = selectionMode != SelectionMode.NONE && showSelect
 
+    // Keys for every item, used by select-all and by the header's "all selected" state.
+    // Kept in a `remember` so the containsAll scan does not run on every recomposition.
+    val allKeys = remember(items, itemKey) {
+        items.mapTo(LinkedHashSet<Any>(items.size), itemKey)
+    }
+    val allSelected = remember(allKeys, selectedKeys) {
+        allKeys.isNotEmpty() && selectedKeys.containsAll(allKeys)
+    }
+
     val processedItems = remember(items, groupBy, currentSortState, currentMultiSort, currentPageState, showPagination, itemsPerPage) {
         var result = items
 
@@ -169,6 +191,36 @@ fun <T> DataTable(
         else mapOf("" to processedItems)
     }
 
+    // Table-wide row index at which each group starts. This must be computed up front:
+    // a counter mutated while the LazyColumn content is being built would already hold
+    // its final value by the time an item's content lambda actually composes.
+    val groupOffsets = remember(groupedItems) {
+        var offset = 0
+        groupedItems.mapValues { (_, groupItems) ->
+            offset.also { offset += groupItems.size }
+        }
+    }
+
+    // Rows in display order. Grouping reorders them relative to `processedItems`, so keyboard
+    // navigation walks this list rather than the pre-grouping one.
+    val orderedItems = remember(groupedItems) { groupedItems.values.flatten() }
+    val rowKeys = remember(orderedItems, itemKey) { orderedItems.map(itemKey) }
+
+    // LazyColumn item index for each display row. Group header and summary items sit between
+    // rows, so a row's position and its scroll index diverge once grouping is on.
+    val hasGroupHeaders = groupBy != null && groupHeaderContent != null
+    val hasGroupSummaries = groupBy != null && groupSummaryContent != null
+    val rowScrollIndices = remember(groupedItems, hasGroupHeaders, hasGroupSummaries) {
+        val indices = ArrayList<Int>(orderedItems.size)
+        var lazyIndex = 0
+        groupedItems.values.forEach { groupItems ->
+            if (hasGroupHeaders) lazyIndex++
+            repeat(groupItems.size) { indices.add(lazyIndex++) }
+            if (hasGroupSummaries) lazyIndex++
+        }
+        indices
+    }
+
     // Focus for keyboard navigation
     val focusRequester = remember { FocusRequester() }
 
@@ -179,25 +231,22 @@ fun <T> DataTable(
             .focusable()
             .dataTableKeyboardNavigation(
                 state = state,
-                itemCount = processedItems.size,
+                rowKeys = rowKeys,
+                scrollIndices = rowScrollIndices,
                 scope = scope,
-                onRowClick = { index ->
-                    if (index in processedItems.indices) {
-                        onRowClick?.invoke(processedItems[index])
-                    }
+                onRowClick = { position ->
+                    orderedItems.getOrNull(position)?.let { onRowClick?.invoke(it) }
                 },
-                onToggleSelection = { index ->
-                    if (index in processedItems.indices) {
-                        val item = processedItems[index]
-                        when (selectionMode) {
-                            SelectionMode.SINGLE -> onSelectionChange?.invoke(setOf(item))
-                            SelectionMode.MULTI -> {
-                                val newSelection = if (selectedItems.contains(item))
-                                    selectedItems - item else selectedItems + item
-                                onSelectionChange?.invoke(newSelection)
-                            }
-                            SelectionMode.NONE -> {}
-                        }
+                onToggleSelection = { position ->
+                    orderedItems.getOrNull(position)?.let { item ->
+                        val key = itemKey(item)
+                        handleSelection(
+                            mode = selectionMode,
+                            checked = !selectedKeys.contains(key),
+                            key = key,
+                            currentSelection = selectedKeys,
+                            onSelectionChange = onSelectionChange,
+                        )
                     }
                 },
             )
@@ -216,11 +265,9 @@ fun <T> DataTable(
                                 DataTableHeaderRow(
                                     headers = frozenHeaders,
                                     showSelect = showCheckboxes,
-                                    allSelected = items.isNotEmpty() && selectedItems.containsAll(items),
+                                    allSelected = allSelected,
                                     onSelectAll = {
-                                        onSelectionChange?.invoke(
-                                            if (selectedItems.containsAll(items)) emptySet() else items.toSet()
-                                        )
+                                        onSelectionChange?.invoke(if (allSelected) emptySet() else allKeys)
                                     },
                                     showExpand = showExpand,
                                     density = density,
@@ -283,11 +330,9 @@ fun <T> DataTable(
                             DataTableHeaderRow(
                                 headers = flatHeaders,
                                 showSelect = showCheckboxes,
-                                allSelected = items.isNotEmpty() && selectedItems.containsAll(items),
+                                allSelected = allSelected,
                                 onSelectAll = {
-                                    onSelectionChange?.invoke(
-                                        if (selectedItems.containsAll(items)) emptySet() else items.toSet()
-                                    )
+                                    onSelectionChange?.invoke(if (allSelected) emptySet() else allKeys)
                                 },
                                 showExpand = showExpand,
                                 density = density,
@@ -334,13 +379,12 @@ fun <T> DataTable(
 
                     else -> {
                         Box {
-                            var globalRowIndex = 0
-
                             LazyColumn(
                                 state = listState,
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 groupedItems.forEach { (group, groupItems) ->
+                                    val groupOffset = groupOffsets[group] ?: 0
                                     // Group header
                                     if (groupBy != null && groupHeaderContent != null) {
                                         item(key = "group-header-$group") {
@@ -370,7 +414,10 @@ fun <T> DataTable(
                                         items = groupItems,
                                         key = { _, item -> itemKey(item) }
                                     ) { localIndex, item ->
-                                        val rowIndex = globalRowIndex + localIndex
+                                        val rowIndex = groupOffset + localIndex
+                                        val key = itemKey(item)
+                                        val itemSelected = selectedKeys.contains(key)
+                                        val itemExpanded = expandedKeys.contains(key)
                                         Column {
                                             if (hasFrozenColumns) {
                                                 FrozenRowLayout(
@@ -383,15 +430,14 @@ fun <T> DataTable(
                                                             item = item,
                                                             headers = frozenHeaders,
                                                             showSelect = showCheckboxes,
-                                                            selected = selectedItems.contains(item),
+                                                            selected = itemSelected,
                                                             onSelectChange = { checked ->
-                                                                handleSelection(selectionMode, checked, item, selectedItems, onSelectionChange)
+                                                                handleSelection(selectionMode, checked, key, selectedKeys, onSelectionChange)
                                                             },
                                                             showExpand = showExpand,
-                                                            expanded = expandedItems.contains(item),
+                                                            expanded = itemExpanded,
                                                             onExpandChange = { exp ->
-                                                                val newExpanded = if (exp) expandedItems + item else expandedItems - item
-                                                                onExpandChange?.invoke(newExpanded)
+                                                                handleExpansion(exp, key, expandedKeys, onExpandChange)
                                                             },
                                                             density = density,
                                                             onClick = onRowClick?.let { { it(item) } },
@@ -402,7 +448,7 @@ fun <T> DataTable(
                                                             rowIndex = rowIndex,
                                                             selectionMode = selectionMode,
                                                             onContextMenu = onRowContextMenu?.let { cb -> { offset -> cb(item, offset) } },
-                                                            isFocused = state.focusedRowIndex == rowIndex,
+                                                            isFocused = state.focusedKey == key,
                                                             state = state,
                                                         )
                                                     },
@@ -411,9 +457,9 @@ fun <T> DataTable(
                                                             item = item,
                                                             headers = scrollableHeaders,
                                                             showSelect = false,
-                                                            selected = selectedItems.contains(item),
+                                                            selected = itemSelected,
                                                             onSelectChange = { checked ->
-                                                                handleSelection(selectionMode, checked, item, selectedItems, onSelectionChange)
+                                                                handleSelection(selectionMode, checked, key, selectedKeys, onSelectionChange)
                                                             },
                                                             showExpand = false,
                                                             expanded = false,
@@ -427,7 +473,7 @@ fun <T> DataTable(
                                                             rowIndex = rowIndex,
                                                             selectionMode = selectionMode,
                                                             onContextMenu = onRowContextMenu?.let { cb -> { offset -> cb(item, offset) } },
-                                                            isFocused = state.focusedRowIndex == rowIndex,
+                                                            isFocused = state.focusedKey == key,
                                                             state = state,
                                                         )
                                                     },
@@ -443,15 +489,14 @@ fun <T> DataTable(
                                                             item = item,
                                                             headers = flatHeaders,
                                                             showSelect = showCheckboxes,
-                                                            selected = selectedItems.contains(item),
+                                                            selected = itemSelected,
                                                             onSelectChange = { checked ->
-                                                                handleSelection(selectionMode, checked, item, selectedItems, onSelectionChange)
+                                                                handleSelection(selectionMode, checked, key, selectedKeys, onSelectionChange)
                                                             },
                                                             showExpand = showExpand,
-                                                            expanded = expandedItems.contains(item),
+                                                            expanded = itemExpanded,
                                                             onExpandChange = { exp ->
-                                                                val newExpanded = if (exp) expandedItems + item else expandedItems - item
-                                                                onExpandChange?.invoke(newExpanded)
+                                                                handleExpansion(exp, key, expandedKeys, onExpandChange)
                                                             },
                                                             density = density,
                                                             onClick = onRowClick?.let { { it(item) } },
@@ -462,7 +507,7 @@ fun <T> DataTable(
                                                             rowIndex = rowIndex,
                                                             selectionMode = selectionMode,
                                                             onContextMenu = onRowContextMenu?.let { cb -> { offset -> cb(item, offset) } },
-                                                            isFocused = state.focusedRowIndex == rowIndex,
+                                                            isFocused = state.focusedKey == key,
                                                             state = state,
                                                         )
                                                     }
@@ -470,7 +515,7 @@ fun <T> DataTable(
                                             }
 
                                             // Expanded content
-                                            if (showExpand && expandedItems.contains(item) && expandContent != null) {
+                                            if (showExpand && itemExpanded && expandContent != null) {
                                                 Box(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
@@ -509,8 +554,6 @@ fun <T> DataTable(
                                             TableDivider(colors.divider)
                                         }
                                     }
-
-                                    globalRowIndex += groupItems.size
                                 }
                             }
 
@@ -573,22 +616,40 @@ fun <T> DataTable(
 
 /**
  * Handles row selection based on the active [SelectionMode].
+ *
+ * Operates on the row's key (as produced by `DataTable`'s `itemKey`) rather than the item
+ * itself, so selection survives item instances being replaced and does not depend on the
+ * item type implementing `equals`/`hashCode`.
  */
-private fun <T> handleSelection(
+private fun handleSelection(
     mode: SelectionMode,
     checked: Boolean,
-    item: T,
-    currentSelection: Set<T>,
-    onSelectionChange: ((Set<T>) -> Unit)?,
+    key: Any,
+    currentSelection: Set<Any>,
+    onSelectionChange: ((Set<Any>) -> Unit)?,
 ) {
     when (mode) {
-        SelectionMode.SINGLE -> onSelectionChange?.invoke(if (checked) setOf(item) else emptySet())
+        SelectionMode.SINGLE -> onSelectionChange?.invoke(if (checked) setOf(key) else emptySet())
         SelectionMode.MULTI -> {
-            val newSelection = if (checked) currentSelection + item else currentSelection - item
+            val newSelection = if (checked) currentSelection + key else currentSelection - key
             onSelectionChange?.invoke(newSelection)
         }
         SelectionMode.NONE -> {}
     }
+}
+
+/**
+ * Adds or removes a row's key from the expanded set.
+ *
+ * Like [handleSelection], this is keyed on the row's `itemKey` rather than the item itself.
+ */
+private fun handleExpansion(
+    expanded: Boolean,
+    key: Any,
+    currentExpanded: Set<Any>,
+    onExpandChange: ((Set<Any>) -> Unit)?,
+) {
+    onExpandChange?.invoke(if (expanded) currentExpanded + key else currentExpanded - key)
 }
 
 /**
