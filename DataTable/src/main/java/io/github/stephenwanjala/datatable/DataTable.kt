@@ -153,6 +153,10 @@ fun <T> DataTable(
     }
     val hasFrozenColumns = frozenHeaders.isNotEmpty()
 
+    // The header renders from the tree so groups can span their children, while the body keeps
+    // using the flattened leaves.
+    val (frozenTree, scrollableTree) = remember(headers) { partitionHeaderTree(headers) }
+
     require(!manualPagination || totalItems != null) {
         "manualPagination = true requires totalItems: the table only holds the current page, " +
             "so it cannot work out how many pages there are."
@@ -323,9 +327,11 @@ fun <T> DataTable(
                             scrollableHeaders = scrollableHeaders,
                             horizontalScrollState = horizontalScrollState,
                             dividerColor = colors.divider,
+                            // Sized to content: a nested header is taller than a data row.
+                            height = null,
                             frozenContent = {
                                 DataTableHeaderRow(
-                                    headers = frozenHeaders,
+                                    headers = frozenTree,
                                     showSelect = showCheckboxes,
                                     allSelected = allSelected,
                                     onSelectAll = {
@@ -348,7 +354,7 @@ fun <T> DataTable(
                             },
                             scrollableContent = {
                                 DataTableHeaderRow(
-                                    headers = scrollableHeaders,
+                                    headers = scrollableTree,
                                     showSelect = false,
                                     allSelected = false,
                                     onSelectAll = {},
@@ -370,7 +376,7 @@ fun <T> DataTable(
                         )
                     }
                     else {
-                        Row(
+                        Column(
                             modifier = Modifier
                                 .background(colors.header)
                                 .fillMaxWidth()
@@ -378,7 +384,7 @@ fun <T> DataTable(
                                 .enableTrackpadHorizontalScroll(scrollState = horizontalScrollState)
                         ) {
                             DataTableHeaderRow(
-                                headers = flatHeaders,
+                                headers = scrollableTree,
                                 showSelect = showCheckboxes,
                                 allSelected = allSelected,
                                 onSelectAll = {

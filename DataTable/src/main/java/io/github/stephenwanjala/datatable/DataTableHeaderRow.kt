@@ -22,7 +22,12 @@ import androidx.compose.ui.unit.dp
 import java.awt.Cursor
 
 /**
- * Renders the default header row, including optional select-all checkbox and expand spacer.
+ * Renders the header, including optional select-all checkbox and expand spacer.
+ *
+ * [headers] is the header *tree*, not a flattened list. A header with children renders as a
+ * group: its title sits in a band above its children, spanning them. A header without children
+ * renders as a column and stretches over the full header height, so a leaf sitting beside a
+ * deeply nested group is vertically centred rather than leaving blank rows above it.
  */
 @Composable
 internal fun <T> DataTableHeaderRow(
@@ -44,9 +49,14 @@ internal fun <T> DataTableHeaderRow(
     minColumnWidth: Dp = 40.dp,
     state: DataTableState? = null,
 ) {
+    // Intrinsic height is only needed to let leaves stretch alongside groups. Flat headers skip
+    // it, so the common case measures exactly as it did before nesting existed.
+    val hasGroups = headers.any { visibleChildren(it) != null }
+
     Row(
         modifier = Modifier
             .background(backgroundColor)
+            .then(if (hasGroups) Modifier.height(IntrinsicSize.Min) else Modifier)
             .padding(vertical = density.verticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -68,30 +78,143 @@ internal fun <T> DataTableHeaderRow(
         }
 
         headers.forEach { header ->
-            DataTableHeaderCell(
-                header = header,
-                density = density,
-                sortState = sortState,
-                onSortChange = onSortChange,
-                colors = colors,
-                textStyles = textStyles,
-                multiSortBy = multiSortBy,
-                onMultiSortChange = onMultiSortChange,
-                resizableColumns = resizableColumns,
-                minColumnWidth = minColumnWidth,
-                state = state,
-            )
+            if (header.visible) {
+                HeaderNode(
+                    header = header,
+                    density = density,
+                    sortState = sortState,
+                    onSortChange = onSortChange,
+                    colors = colors,
+                    textStyles = textStyles,
+                    multiSortBy = multiSortBy,
+                    onMultiSortChange = onMultiSortChange,
+                    resizableColumns = resizableColumns,
+                    minColumnWidth = minColumnWidth,
+                    stretch = hasGroups,
+                    state = state,
+                )
+            }
         }
     }
 }
 
 /**
- * Header cell for a single column in the default header row.
+ * Renders one node of the header tree — a column, or a group spanning its children.
+ *
+ * @param stretch Whether to fill the header's full height. Set once groups are present, so that
+ *                leaves span every level instead of leaving the space above them empty.
+ */
+@Composable
+private fun <T> RowScope.HeaderNode(
+    header: DataTableHeader<T>,
+    density: DataTableDensity,
+    sortState: SortState,
+    onSortChange: (SortState) -> Unit,
+    colors: DataTableColors,
+    textStyles: DataTableTextStyles,
+    multiSortBy: List<SortState>,
+    onMultiSortChange: ((List<SortState>) -> Unit)?,
+    resizableColumns: Boolean,
+    minColumnWidth: Dp,
+    stretch: Boolean,
+    state: DataTableState?,
+) {
+    val children = visibleChildren(header)
+    val leaves = leavesOf(header)
+    val widths = leaves.map { leaf -> state?.resolvedColumnWidth(leaf.key, leaf.width) ?: leaf.width }
+    val allFixed = widths.all { it != null }
+
+    require(allFixed || widths.all { it == null }) {
+        "Header group '${header.key}' spans a mix of fixed-width and weighted columns, so its " +
+            "width cannot be resolved. Give every column under it an explicit width, or leave " +
+            "them all weighted."
+    }
+
+    // A group is exactly as wide as the columns beneath it, resize overrides included.
+    val sizeModifier = if (allFixed) {
+        Modifier.width(widths.fold(0.dp) { total, width -> total + width!! })
+    } else {
+        Modifier.weight(leaves.size.toFloat())
+    }
+    val cellModifier = if (stretch) sizeModifier.fillMaxHeight() else sizeModifier
+
+    if (children == null) {
+        DataTableHeaderLeaf(
+            header = header,
+            modifier = cellModifier,
+            density = density,
+            sortState = sortState,
+            onSortChange = onSortChange,
+            colors = colors,
+            textStyles = textStyles,
+            multiSortBy = multiSortBy,
+            onMultiSortChange = onMultiSortChange,
+            resizableColumns = resizableColumns,
+            minColumnWidth = minColumnWidth,
+            state = state,
+        )
+    } else {
+        Column(modifier = cellModifier) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (header.headerContent != null) {
+                    header.headerContent.invoke()
+                } else {
+                    BasicText(
+                        text = header.title,
+                        style = textStyles.headerCell.copy(fontWeight = FontWeight.Bold),
+                        maxLines = 1,
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(4.dp))
+
+            // Underline spanning the group — what reads as "these columns belong together".
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp)
+                    .height(1.dp)
+                    .background(colors.divider)
+            )
+
+            Spacer(Modifier.height(6.dp))
+
+            Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                children.forEach { child ->
+                    HeaderNode(
+                        header = child,
+                        density = density,
+                        sortState = sortState,
+                        onSortChange = onSortChange,
+                        colors = colors,
+                        textStyles = textStyles,
+                        multiSortBy = multiSortBy,
+                        onMultiSortChange = onMultiSortChange,
+                        resizableColumns = resizableColumns,
+                        minColumnWidth = minColumnWidth,
+                        stretch = true,
+                        state = state,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Header cell for a single leaf column: title, sort indicator, and resize handle.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-internal fun <T> RowScope.DataTableHeaderCell(
+private fun <T> DataTableHeaderLeaf(
     header: DataTableHeader<T>,
+    modifier: Modifier,
     density: DataTableDensity,
     sortState: SortState,
     onSortChange: (SortState) -> Unit,
@@ -103,14 +226,6 @@ internal fun <T> RowScope.DataTableHeaderCell(
     minColumnWidth: Dp = 40.dp,
     state: DataTableState? = null,
 ) {
-    val resolvedWidth = state?.resolvedColumnWidth(header.key, header.width) ?: header.width
-    val weight = if (resolvedWidth == null) 1f else 0f
-    val cellModifier = if (resolvedWidth != null) {
-        Modifier.width(resolvedWidth)
-    } else {
-        Modifier.weight(weight)
-    }
-
     // Determine sort indicator for this column
     val multiSortIndex = multiSortBy.indexOfFirst { it.key == header.key }
     val isMultiSorted = multiSortIndex >= 0
@@ -120,7 +235,7 @@ internal fun <T> RowScope.DataTableHeaderCell(
         else -> null
     }
 
-    Row(modifier = cellModifier) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
                 .weight(1f)
