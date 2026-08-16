@@ -48,11 +48,11 @@ Add the dependency to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("io.github.stephenwanjala:datatable:0.2.0")
+    implementation("io.github.stephenwanjala:datatable:0.3.0")
 }
 ```
 
-Upgrading from 0.1.x? See [Migrating to 0.2.0](#migrating-to-020).
+Upgrading? See [Migrating to 0.3.0](#migrating-to-030) and [Migrating to 0.2.0](#migrating-to-020).
 
 ## Quick Start
 
@@ -511,6 +511,60 @@ DataTable(
 | `manualPagination` | `Boolean` | `false` | `items` is already the current page; requires `totalItems` |
 | `totalItems` | `Int?` | `null` (= `items.size`) | Row count across all pages |
 | `showScrollbars` | `Boolean` | `true` | Show scrollbars |
+
+## Migrating to 0.3.0
+
+No signatures changed, so 0.3.0 compiles against 0.2.0 call sites untouched. Three behaviour
+changes are worth checking.
+
+### Sorting and pagination are properly controlled
+
+Supplying `onSortChange`, `onMultiSortChange`, or `onPageChange` now makes that piece of state
+**controlled**: the table renders the parameter and never changes it on its own.
+
+In 0.2.0 the table kept an internal copy that it updated on interaction regardless, so a caller
+who passed the callback but ignored the parameter still saw sorting work. That now does nothing
+visible — the click fires the callback, and the table waits for you to feed the value back:
+
+```kotlin
+// Broken in 0.3.0: the callback fires, but sortBy never changes
+DataTable(
+    sortBy = SortState(),                     // constant!
+    onSortChange = { analytics.track(it) },
+)
+
+// Correct: hoist it
+var sort by remember { mutableStateOf(SortState()) }
+DataTable(
+    sortBy = sort,
+    onSortChange = { sort = it; analytics.track(it) },
+)
+```
+
+Passing no callback is unchanged — the table owns the state, and click-to-sort works with no wiring.
+
+### Nested headers render
+
+`DataTableHeader.children` was accepted and silently ignored in every version up to 0.2.0. If you
+set it, expecting nothing, you now get a grouped header. See
+[Nested (Grouped) Headers](#nested-grouped-headers) for the two sizing rules — both throw rather
+than misrender.
+
+### Misconfigured frozen columns throw
+
+`fixed = true` without a `width` used to be quietly demoted to a normal scrolling column. It now
+throws with a message naming the column. If pinning appeared not to work for you before, this is
+why, and the fix is to give the column an explicit width.
+
+### Also in this release
+
+- `manualSorting`, `manualPagination`, and `totalItems` for [server-side data](#server-side-data).
+- Reworked pagination footer: grouped controls, a divider above it, hover states, and a
+  rows-per-page menu that opens upward instead of off the bottom of the window.
+- `DataTableHeader` and `SortState` are `@Immutable`, and Compose is exposed as `api` rather
+  than `implementation` so consumers get it transitively.
+- Press-and-drag no longer pans the table horizontally; wheel and trackpad scrolling are
+  unchanged. This also stops drags fighting the column resize handles.
 
 ## Migrating to 0.2.0
 
