@@ -1,0 +1,10 @@
+# Toolchain for the documentation site (mkdocs.yml + docs/).
+#
+# Pinned deliberately. MkDocs 2.0 is slated to remove the plugin system and rewrite theming with
+# no migration path, so an unpinned build would break without warning.
+#
+#   python3 -m venv .venv && .venv/bin/pip install -r requirements-docs.txt
+#   .venv/bin/mkdocs serve
+
+mkdocs==1.6.1
+mkdocs-material==9.7.7
