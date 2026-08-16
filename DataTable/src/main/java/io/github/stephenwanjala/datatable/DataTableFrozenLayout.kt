@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
@@ -22,6 +23,8 @@ import androidx.compose.ui.unit.dp
  * @param scrollableHeaders Headers not marked as fixed.
  * @param horizontalScrollState Shared scroll state for the scrollable section.
  * @param dividerColor Color for the freeze boundary divider.
+ * @param height Fixed row height, or `null` to size to content. The header sizes to content
+ *               so nested header groups are not clipped; data rows use a fixed height.
  * @param frozenContent Composable rendering frozen column cells.
  * @param scrollableContent Composable rendering scrollable column cells.
  */
@@ -31,20 +34,23 @@ internal fun <T> FrozenRowLayout(
     scrollableHeaders: List<DataTableHeader<T>>,
     horizontalScrollState: ScrollState,
     dividerColor: Color = Color(0x33000000),
+    height: Dp? = 50.dp,
     frozenContent: @Composable RowScope.() -> Unit,
     scrollableContent: @Composable RowScope.() -> Unit,
 ) {
+    val heightModifier = if (height != null) Modifier.height(height) else Modifier.height(IntrinsicSize.Min)
+
     if (frozenHeaders.isEmpty()) {
         // No frozen columns — standard scrollable row
         Row(
             modifier = Modifier
                 .horizontalScroll(horizontalScrollState)
-                .height(50.dp)
+                .then(heightModifier)
         ) {
             scrollableContent()
         }
     } else {
-        Row(modifier = Modifier.fillMaxWidth().height(50.dp)) {
+        Row(modifier = Modifier.fillMaxWidth().then(heightModifier)) {
             // Frozen section (not scrollable)
             Row {
                 frozenContent()
