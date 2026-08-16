@@ -145,7 +145,7 @@ fun LargeDataSetExample() {
         (1..500).map { id -> LargeDataSetItem.generateRandom(id, random) }
     }
 
-    var selectedItems by remember { mutableStateOf<Set<LargeDataSetItem>>(emptySet()) }
+    var selectedKeys by remember { mutableStateOf<Set<Any>>(emptySet()) }
     var currentPage by remember { mutableStateOf(0) }
     var itemsPerPage by remember { mutableStateOf(20) }
     var multiSort by remember { mutableStateOf<List<SortState>>(emptyList()) }
@@ -398,7 +398,7 @@ fun LargeDataSetExample() {
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        "${items.size} total | ${selectedItems.size} selected | Ctrl+click headers to multi-sort",
+                        "${items.size} total | ${selectedKeys.size} selected | Ctrl+click headers to multi-sort",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -409,9 +409,9 @@ fun LargeDataSetExample() {
                         Text(if (showNotesColumn) "Hide Notes" else "Show Notes")
                     }
 
-                    if (selectedItems.isNotEmpty()) {
+                    if (selectedKeys.isNotEmpty()) {
                         Button(
-                            onClick = { selectedItems = emptySet() },
+                            onClick = { selectedKeys = emptySet() },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.secondary
                             )
@@ -432,8 +432,8 @@ fun LargeDataSetExample() {
             itemKey = { it.id },
             showSelect = true,
             selectionMode = SelectionMode.MULTI,
-            selectedItems = selectedItems,
-            onSelectionChange = { selectedItems = it },
+            selectedKeys = selectedKeys,
+            onSelectionChange = { selectedKeys = it },
             // Multi-sort
             multiSortBy = multiSort,
             onMultiSortChange = { multiSort = it },
