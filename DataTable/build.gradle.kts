@@ -53,6 +53,12 @@ kotlin {
 }
 
 dependencies {
+    // `api`, not `implementation`: the public API exposes Compose types (@Composable lambdas,
+    // Modifier, TextStyle, Dp), so consumers need these on their compile classpath.
+    api(compose.runtime)
+    api(compose.foundation)
+    api(compose.ui)
+
+    // Desktop-only internals (VerticalScrollbar, HorizontalScrollbar, AWT cursors).
     implementation(compose.desktop.common)
-    implementation(compose.foundation)
 }
