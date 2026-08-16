@@ -28,6 +28,7 @@ A highly customizable, feature-rich `DataTable` component for Compose Desktop bu
 - **Frozen/pinned columns** -- pin columns to the left edge so they don't scroll horizontally
 - **Column resizing** -- drag column edges to resize
 - **Pagination** -- configurable page size with items-per-page selector
+- **Server-side data** -- `manualSorting` / `manualPagination` hand sorting and paging to your database
 - **Grouping** -- group rows by a key with custom group header and summary rows
 - **Keyboard navigation** -- Arrow keys, Enter, Space, Home, End
 - **Row hover & alternating colors** -- visual row highlighting
@@ -167,6 +168,13 @@ DataTable(
 )
 ```
 
+**Controlled vs uncontrolled.** Supplying `onSortChange` makes sorting *controlled*: the table
+renders whatever `sortBy` says and never changes it on its own, so you must feed the new value
+back — exactly like `TextField(value, onValueChange)`. Omit the callback and the table owns the
+sort state internally, which is why click-to-sort works in the Quick Start with no wiring at all.
+
+`onMultiSortChange` and `onPageChange` behave the same way for multi-sort and for the current page.
+
 ### Pagination
 
 ```kotlin
@@ -186,6 +194,53 @@ DataTable(
     },
 )
 ```
+
+### Server-Side Data
+
+By default the table sorts and pages `items` itself, which means every row has to be in memory.
+For an ERP-scale table backed by a database, hand it one page at a time and let SQL do the work:
+
+```kotlin
+var page by remember { mutableStateOf(0) }
+var pageSize by remember { mutableStateOf(25) }
+var sort by remember { mutableStateOf(SortState("name", SortOrder.ASCENDING)) }
+
+// Re-query whenever the page or the sort changes
+val result by produceState<PageResult?>(null, page, pageSize, sort) {
+    value = repository.findPeople(offset = page * pageSize, limit = pageSize, sort = sort)
+}
+
+DataTable(
+    items = result?.rows.orEmpty(),   // just this page
+    headers = headers,
+    itemKey = { it.id },
+    loading = result == null,
+
+    manualSorting = true,             // rows arrive already ordered
+    sortBy = sort,
+    onSortChange = { sort = it },
+
+    showPagination = true,
+    manualPagination = true,          // items IS the current page
+    totalItems = result?.total ?: 0,  // required: only you know the real total
+    itemsPerPage = pageSize,
+    currentPage = page,
+    onPageChange = { page = it },
+    onItemsPerPageChange = { pageSize = it },
+)
+```
+
+| Parameter | Effect |
+|-----------|--------|
+| `manualSorting = true` | The table never reorders `items`. Headers still show sort indicators and report clicks, so you translate them into `ORDER BY`. |
+| `manualPagination = true` | The table never slices `items` — it renders them as the current page. Requires `totalItems`. |
+| `totalItems` | Row count across every page, used for the page count and the footer's range. Defaults to `items.size`, which is only correct when the table holds all the rows. |
+
+`manualPagination = true` without `totalItems` throws, rather than quietly reporting one page.
+
+Note that with `manualPagination` the select-all checkbox covers the **loaded page**, not the
+whole result set — the table cannot select rows it has never seen. Handle "select all N matching
+rows" yourself if you need it.
 
 ### Frozen (Pinned) Columns
 
@@ -392,7 +447,8 @@ DataTable(
 | `sortBy` | `SortState` | `SortState()` | Current single-column sort |
 | `onSortChange` | `((SortState) -> Unit)?` | `null` | Sort change callback |
 | `multiSortBy` | `List<SortState>` | `emptyList()` | Multi-column sort states |
-| `onMultiSortChange` | `((List<SortState>) -> Unit)?` | `null` | Multi-sort change callback |
+| `onMultiSortChange` | `((List<SortState>) -> Unit)?` | `null` | Multi-sort change callback; supplying it makes multi-sort controlled |
+| `manualSorting` | `Boolean` | `false` | Table does not reorder `items`; caller sorts (e.g. in SQL) |
 | `resizableColumns` | `Boolean` | `false` | Enable column drag-to-resize |
 | `minColumnWidth` | `Dp` | `40.dp` | Minimum column width when resizing |
 | `hideDefaultHeader` | `Boolean` | `false` | Hide the built-in header row |
@@ -414,6 +470,8 @@ DataTable(
 | `onPageChange` | `((Int) -> Unit)?` | `null` | Page change callback |
 | `itemsPerPageOptions` | `List<Int>` | `[10, 25, 50, 100]` | Page size options |
 | `onItemsPerPageChange` | `((Int) -> Unit)?` | `null` | Page size change callback |
+| `manualPagination` | `Boolean` | `false` | `items` is already the current page; requires `totalItems` |
+| `totalItems` | `Int?` | `null` (= `items.size`) | Row count across all pages |
 | `showScrollbars` | `Boolean` | `true` | Show scrollbars |
 
 ## Migrating to 0.2.0
