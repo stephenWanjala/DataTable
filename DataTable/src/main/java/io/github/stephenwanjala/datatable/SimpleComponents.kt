@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -37,6 +38,7 @@ internal fun SimpleCheckbox(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     colors: DataTableColors = DataTableColors(),
+    focusable: Boolean = true,
 ) {
     val borderColor = if (checked) colors.checkboxChecked else colors.checkboxUnchecked
     val fillColor = if (checked) colors.checkboxChecked else Color.Transparent
@@ -45,6 +47,7 @@ internal fun SimpleCheckbox(
     Canvas(
         modifier = modifier
             .size(20.dp)
+            .then(if (focusable) Modifier else NotFocusable)
             .clickable { onCheckedChange(!checked) }
     ) {
         val cornerRadius = CornerRadius(3.dp.toPx(), 3.dp.toPx())
@@ -91,6 +94,7 @@ internal fun SimpleIconButton(
     enabled: Boolean = true,
     size: Dp = 48.dp,
     hoverColor: Color = Color.Transparent,
+    focusable: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -104,6 +108,7 @@ internal fun SimpleIconButton(
             .then(
                 if (enabled) {
                     Modifier
+                        .then(if (focusable) Modifier else NotFocusable)
                         .hoverable(interactionSource)
                         .pointerHoverIcon(PointerIcon.Hand)
                         .clickable(onClick = onClick)
@@ -133,3 +138,13 @@ internal fun VectorIcon(
         colorFilter = if (tint != Color.Unspecified) ColorFilter.tint(tint) else null,
     )
 }
+
+/**
+ * Removes a control from the Tab order while leaving it clickable.
+ *
+ * Per-row controls use this so the table stays a single tab stop. Without it, Tab walks every
+ * checkbox and expand button of every visible row — eight presses to escape a three-row table,
+ * and proportionally worse for real data. Arrow keys reach the rows instead, and the table's own
+ * Space shortcut toggles selection on the focused row.
+ */
+private val NotFocusable = Modifier.focusProperties { canFocus = false }

@@ -138,13 +138,16 @@ internal fun <T> DataTableRow(
                 },
                 modifier = Modifier.padding(horizontal = density.horizontalPadding),
                 colors = colors,
+                // One tab stop per row would make Tab unusable; arrow keys reach rows instead.
+                focusable = false,
             )
         }
 
         if (showExpand) {
             SimpleIconButton(
                 onClick = { onExpandChange(!expanded) },
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(48.dp),
+                focusable = false,
             ) {
                 VectorIcon(
                     imageVector = if (expanded) KeyboardArrowUp else ArrowDropDown,
