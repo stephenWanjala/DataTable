@@ -70,6 +70,9 @@ dokka {
         }
     }
     dokkaPublications.html {
+        // The public surface is fully documented; keep it that way rather than letting
+        // undocumented members and broken KDoc links pile up unnoticed.
+        failOnWarning = true
         // MkDocs mounts this under /api, so keep the output beside the built site.
         outputDirectory = rootProject.layout.projectDirectory.dir("build/dokka")
     }
