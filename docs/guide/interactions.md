@@ -33,7 +33,7 @@ menuTarget?.let { (person, offset) ->
 
 ## Keyboard navigation
 
-Click the table to focus it, then:
+Click anywhere in the table to give it focus, then:
 
 | Key | Action |
 |-----|--------|
@@ -49,6 +49,10 @@ position, focus stays on the same row when the table is re-sorted instead of sti
 If the focused row leaves the view — filtered out, or on another page — the next arrow key starts
 again from the first row, and ++enter++/++space++ do nothing rather than acting on whatever row
 has drifted into that position.
+
+The table takes focus on click rather than on appearing, so dropping one into a form does not
+steal focus from whatever the user was typing in. To start it focused, call
+[`focusRow`](#datatablestate) yourself.
 
 ## DataTableState
 
