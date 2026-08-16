@@ -53,7 +53,14 @@ data class DataTableHeader<T>(
  * Represents the sort order applied to a column.
  */
 enum class SortOrder {
-    ASCENDING, DESCENDING, NONE
+    /** Smallest first. The order a column takes on its first header click. */
+    ASCENDING,
+
+    /** Largest first. Reached by clicking an already-ascending column. */
+    DESCENDING,
+
+    /** Unsorted. Clicking a descending column returns it here, restoring the original order. */
+    NONE
 }
 
 /**
@@ -70,10 +77,21 @@ data class SortState(
 
 /**
  * Density presets that control vertical and horizontal padding for rows and headers.
+ *
+ * Density affects padding only. Row height still grows with cell content, so a column that wraps
+ * to two lines is tall at any density — cap it with `maxLines` if you want uniform rows.
+ *
+ * @property verticalPadding Padding above and below the content of every row and header cell.
+ * @property horizontalPadding Padding on each side of a cell's content.
  */
 public enum class DataTableDensity(val verticalPadding: Dp, val horizontalPadding: Dp) {
+    /** Roomiest preset, and the default. */
     DEFAULT(16.dp, 16.dp),
+
+    /** Slightly tighter vertically, for longer lists that should still read comfortably. */
     COMFORTABLE(12.dp, 16.dp),
+
+    /** Tightest preset, fitting the most rows on screen. Suits data-entry style tables. */
     COMPACT(8.dp, 12.dp)
 }
 
@@ -85,7 +103,14 @@ public enum class DataTableDensity(val verticalPadding: Dp, val horizontalPaddin
  * - [MULTI]: Multiple rows selectable with a select-all checkbox in the header.
  */
 enum class SelectionMode {
-    NONE, SINGLE, MULTI
+    /** No selection UI and no selection changes. Row taps still fire `onRowClick`. */
+    NONE,
+
+    /** At most one row selected. Tapping the selected row clears it. No select-all checkbox. */
+    SINGLE,
+
+    /** Any number of rows selected, with a select-all checkbox in the header. */
+    MULTI
 }
 
 /**

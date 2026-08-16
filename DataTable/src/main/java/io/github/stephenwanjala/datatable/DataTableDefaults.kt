@@ -13,6 +13,28 @@ import androidx.compose.ui.unit.sp
  *
  * All colors have sensible defaults that work without any theming framework.
  * Pass a custom instance to [DataTable] to match your application's palette.
+ *
+ * Text color is not here — it lives on the styles in [DataTableTextStyles] — so a dark palette
+ * means overriding both.
+ *
+ * @property container Background behind the whole table.
+ * @property header Background of the header row and of the footer.
+ * @property divider Row separators, the freeze boundary, and grouped-header underlines.
+ * @property selectedRow Background of a selected row. Usually translucent, so it reads on top of
+ *                       [rowAlternate].
+ * @property expandedRow Background behind the content of an expanded row.
+ * @property onSurface Primary content color, available for callers building custom cells.
+ * @property onSurfaceSecondary Muted content color, available for callers building custom cells.
+ * @property checkboxChecked Fill and border of a checked selection checkbox.
+ * @property checkboxUnchecked Border of an unchecked selection checkbox.
+ * @property checkboxCheckmark The checkmark drawn inside a checked checkbox.
+ * @property iconTint Sort arrows, expand chevrons, and pagination arrows.
+ * @property disabledContent Pagination arrows that cannot be used from the current page.
+ * @property rowAlternate Background of every other row. `Color.Transparent`, the default, turns
+ *                        striping off.
+ * @property hoveredRow Background of the row under the pointer, also used for icon-button hover
+ *                      highlights in the footer.
+ * @property focusedRowBorder Marker drawn down the leading edge of the keyboard-focused row.
  */
 @Immutable
 data class DataTableColors(
@@ -37,6 +59,18 @@ data class DataTableColors(
  * Text styles used throughout the [DataTable].
  *
  * Defaults are plain styles at typical sizes - no Material typography required.
+ *
+ * Each style carries its own color, which is what makes these the other half of a custom
+ * palette alongside [DataTableColors].
+ *
+ * @property headerCell Column titles, including grouped-header labels.
+ * @property bodyCell Cell text rendered from a column's `value`. Columns with a `cellContent`
+ *                    composable style themselves and ignore this.
+ * @property footer The row-count and range readouts in the footer.
+ * @property loading The built-in loading indicator, when no `loadingContent` is supplied.
+ * @property noData The built-in empty state, when no `noDataContent` is supplied.
+ * @property pagination Page controls: the page indicator, the rows-per-page label, and the
+ *                      options in its menu.
  */
 @Immutable
 data class DataTableTextStyles(
@@ -76,6 +110,18 @@ data class DataTableTextStyles(
  * Factory functions for [DataTableColors] and [DataTableTextStyles].
  */
 object DataTableDefaults {
+    /**
+     * Creates a [DataTableColors], remembered against its arguments.
+     *
+     * Every parameter defaults to the value the table uses when given no palette at all, so
+     * overriding one color leaves the rest alone:
+     *
+     * ```
+     * colors = DataTableDefaults.colors(rowAlternate = Color(0xFFF5F5F5))
+     * ```
+     *
+     * See [DataTableColors] for what each color applies to.
+     */
     @Composable
     fun colors(
         container: Color = Color(0xFFFAFAFA),
@@ -118,6 +164,19 @@ object DataTableDefaults {
         )
     }
 
+    /**
+     * Creates a [DataTableTextStyles], remembered against its arguments.
+     *
+     * Every parameter defaults to the plain style the table uses when given none, so overriding
+     * one leaves the rest alone. Text color lives on these styles rather than in
+     * [DataTableColors]:
+     *
+     * ```
+     * textStyles = DataTableDefaults.textStyles(
+     *     bodyCell = MaterialTheme.typography.bodyMedium,
+     * )
+     * ```
+     */
     @Composable
     fun textStyles(
         headerCell: TextStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C1C1C)),
