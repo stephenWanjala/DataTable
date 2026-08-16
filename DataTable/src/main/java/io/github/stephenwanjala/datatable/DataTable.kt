@@ -59,6 +59,20 @@ import kotlinx.coroutines.launch
  * @param onSelectionChange Invoked with the new set of selected keys.
  * @param expandedKeys Keys of the currently expanded rows.
  * @param onExpandChange Invoked with the new set of expanded keys.
+ * @param sortBy Active single-column sort. Read only when [onSortChange] is supplied.
+ * @param onSortChange Invoked when a header is clicked. Supplying it makes sorting *controlled*:
+ *                     the table renders [sortBy] and never changes it, so the caller must feed
+ *                     the new value back. Leave it `null` to let the table own sort state.
+ * @param multiSortBy Active multi-column sort. Controlled by [onMultiSortChange] the same way.
+ * @param manualSorting When true the table does not reorder [items] — the caller has already
+ *                      sorted them, typically in a database query. Headers still show sort
+ *                      indicators and report clicks.
+ * @param currentPage Active zero-based page. Read only when [onPageChange] is supplied, which
+ *                    makes pagination controlled in the same way as sorting.
+ * @param manualPagination When true [items] is already the current page and the table does not
+ *                         slice it. Requires [totalItems].
+ * @param totalItems Row count across every page. Defaults to `items.size`, which is correct
+ *                   unless [manualPagination] is on — then only the caller knows the true total.
  */
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -87,6 +101,7 @@ fun <T> DataTable(
     onSortChange: ((SortState) -> Unit)? = null,
     multiSortBy: List<SortState> = emptyList(),
     onMultiSortChange: ((List<SortState>) -> Unit)? = null,
+    manualSorting: Boolean = false,
     // Column resizing
     resizableColumns: Boolean = false,
     minColumnWidth: Dp = 40.dp,
@@ -113,6 +128,8 @@ fun <T> DataTable(
     onPageChange: ((Int) -> Unit)? = null,
     itemsPerPageOptions: List<Int> = listOf(10, 25, 50, 100),
     onItemsPerPageChange: ((Int) -> Unit)? = null,
+    manualPagination: Boolean = false,
+    totalItems: Int? = null,
     // Scrollbars
     showScrollbars: Boolean = true,
     scrollbarThickness: Dp = 8.dp,
@@ -136,9 +153,32 @@ fun <T> DataTable(
     }
     val hasFrozenColumns = frozenHeaders.isNotEmpty()
 
-    var currentSortState by remember(sortBy) { mutableStateOf(sortBy) }
-    var currentMultiSort by remember(multiSortBy) { mutableStateOf(multiSortBy) }
-    var currentPageState by remember(currentPage) { mutableStateOf(currentPage) }
+    require(!manualPagination || totalItems != null) {
+        "manualPagination = true requires totalItems: the table only holds the current page, " +
+            "so it cannot work out how many pages there are."
+    }
+
+    // Sort and page state are controlled when the caller supplies the matching callback, and
+    // managed internally when they do not. The internal values are seeded from the parameters
+    // once and then owned by the table — they are not kept in sync with later parameter changes,
+    // which is what makes the mode unambiguous either way.
+    var uncontrolledSort by remember { mutableStateOf(sortBy) }
+    var uncontrolledMultiSort by remember { mutableStateOf(multiSortBy) }
+    var uncontrolledPage by remember { mutableStateOf(currentPage) }
+
+    val activeSort = if (onSortChange != null) sortBy else uncontrolledSort
+    val activeMultiSort = if (onMultiSortChange != null) multiSortBy else uncontrolledMultiSort
+    val activePage = if (onPageChange != null) currentPage else uncontrolledPage
+
+    val selectSort: (SortState) -> Unit = { newSort ->
+        if (onSortChange != null) onSortChange(newSort) else uncontrolledSort = newSort
+    }
+    val selectMultiSort: (List<SortState>) -> Unit = { newMulti ->
+        if (onMultiSortChange != null) onMultiSortChange(newMulti) else uncontrolledMultiSort = newMulti
+    }
+    val selectPage: (Int) -> Unit = { newPage ->
+        if (onPageChange != null) onPageChange(newPage) else uncontrolledPage = newPage
+    }
 
     val showCheckboxes = selectionMode != SelectionMode.NONE && showSelect
 
@@ -151,37 +191,44 @@ fun <T> DataTable(
         allKeys.isNotEmpty() && selectedKeys.containsAll(allKeys)
     }
 
-    val processedItems = remember(items, groupBy, currentSortState, currentMultiSort, currentPageState, showPagination, itemsPerPage) {
+    val processedItems = remember(
+        items, flatHeaders, activeSort, activeMultiSort, activePage,
+        showPagination, itemsPerPage, manualSorting, manualPagination,
+    ) {
         var result = items
 
-        // Build active sort list: multi-sort takes precedence
-        val activeSorts = currentMultiSort.ifEmpty {
-            listOfNotNull(currentSortState.takeIf { it.order != SortOrder.NONE })
+        // Under manualSorting the caller has already ordered `items`; the header still shows
+        // indicators and reports clicks, but the table must not reorder anything itself.
+        if (!manualSorting) {
+            // Build active sort list: multi-sort takes precedence
+            val activeSorts = activeMultiSort.ifEmpty {
+                listOfNotNull(activeSort.takeIf { it.order != SortOrder.NONE })
+            }
+
+            if (activeSorts.isNotEmpty()) {
+                result = result.sortedWith(Comparator { a, b ->
+                    for (sort in activeSorts) {
+                        val header = flatHeaders.find { it.key == sort.key } ?: continue
+                        val comparison = if (header.comparator != null) {
+                            header.comparator.compare(a, b)
+                        } else {
+                            val valueA = header.value?.invoke(a) ?: ""
+                            val valueB = header.value?.invoke(b) ?: ""
+                            @Suppress("UNCHECKED_CAST")
+                            compareValues(valueA as? Comparable<Any>, valueB as? Comparable<Any>)
+                        }
+                        if (comparison != 0) {
+                            return@Comparator if (sort.order == SortOrder.ASCENDING) comparison else -comparison
+                        }
+                    }
+                    0
+                })
+            }
         }
 
-        if (activeSorts.isNotEmpty()) {
-            result = result.sortedWith(Comparator { a, b ->
-                for (sort in activeSorts) {
-                    val header = flatHeaders.find { it.key == sort.key } ?: continue
-                    val comparison = if (header.comparator != null) {
-                        header.comparator.compare(a, b)
-                    } else {
-                        val valueA = header.value?.invoke(a) ?: ""
-                        val valueB = header.value?.invoke(b) ?: ""
-                        @Suppress("UNCHECKED_CAST")
-                        compareValues(valueA as? Comparable<Any>, valueB as? Comparable<Any>)
-                    }
-                    if (comparison != 0) {
-                        return@Comparator if (sort.order == SortOrder.ASCENDING) comparison else -comparison
-                    }
-                }
-                0
-            })
-        }
-
-        // Apply pagination
-        if (showPagination) {
-            val start = currentPageState * itemsPerPage
+        // Under manualPagination `items` is already the current page.
+        if (showPagination && !manualPagination) {
+            val start = activePage * itemsPerPage
             val end = minOf(start + itemsPerPage, result.size)
             if (start < result.size) result.subList(start, end) else emptyList()
         } else {
@@ -189,8 +236,16 @@ fun <T> DataTable(
         }
     }
 
-    val totalPages = remember(items.size, itemsPerPage, showPagination) {
-        if (showPagination && itemsPerPage > 0) (items.size + itemsPerPage - 1) / itemsPerPage else 1
+    // Row count across every page. Equal to items.size unless the caller is paging manually,
+    // in which case only they know how many rows exist beyond the page they handed us.
+    val rowCount = totalItems ?: items.size
+
+    val totalPages = remember(rowCount, itemsPerPage, showPagination) {
+        if (showPagination && itemsPerPage > 0) {
+            ((rowCount + itemsPerPage - 1) / itemsPerPage).coerceAtLeast(1)
+        } else {
+            1
+        }
     }
 
     val groupedItems = remember(processedItems, groupBy) {
@@ -278,20 +333,14 @@ fun <T> DataTable(
                                     },
                                     showExpand = showExpand,
                                     density = density,
-                                    sortState = currentSortState,
-                                    onSortChange = { newSort ->
-                                        currentSortState = newSort
-                                        onSortChange?.invoke(newSort)
-                                    },
+                                    sortState = activeSort,
+                                    onSortChange = selectSort,
                                     backgroundColor = colors.header,
                                     colors = colors,
                                     textStyles = textStyles,
                                     selectionMode = selectionMode,
-                                    multiSortBy = currentMultiSort,
-                                    onMultiSortChange = { newMulti ->
-                                        currentMultiSort = newMulti
-                                        onMultiSortChange?.invoke(newMulti)
-                                    },
+                                    multiSortBy = activeMultiSort,
+                                    onMultiSortChange = selectMultiSort,
                                     resizableColumns = resizableColumns,
                                     minColumnWidth = minColumnWidth,
                                     state = state,
@@ -305,20 +354,14 @@ fun <T> DataTable(
                                     onSelectAll = {},
                                     showExpand = false,
                                     density = density,
-                                    sortState = currentSortState,
-                                    onSortChange = { newSort ->
-                                        currentSortState = newSort
-                                        onSortChange?.invoke(newSort)
-                                    },
+                                    sortState = activeSort,
+                                    onSortChange = selectSort,
                                     backgroundColor = colors.header,
                                     colors = colors,
                                     textStyles = textStyles,
                                     selectionMode = selectionMode,
-                                    multiSortBy = currentMultiSort,
-                                    onMultiSortChange = { newMulti ->
-                                        currentMultiSort = newMulti
-                                        onMultiSortChange?.invoke(newMulti)
-                                    },
+                                    multiSortBy = activeMultiSort,
+                                    onMultiSortChange = selectMultiSort,
                                     resizableColumns = resizableColumns,
                                     minColumnWidth = minColumnWidth,
                                     state = state,
@@ -343,20 +386,14 @@ fun <T> DataTable(
                                 },
                                 showExpand = showExpand,
                                 density = density,
-                                sortState = currentSortState,
-                                onSortChange = { newSort ->
-                                    currentSortState = newSort
-                                    onSortChange?.invoke(newSort)
-                                },
+                                sortState = activeSort,
+                                onSortChange = selectSort,
                                 backgroundColor = colors.header,
                                 colors = colors,
                                 textStyles = textStyles,
                                 selectionMode = selectionMode,
-                                multiSortBy = currentMultiSort,
-                                onMultiSortChange = { newMulti ->
-                                    currentMultiSort = newMulti
-                                    onMultiSortChange?.invoke(newMulti)
-                                },
+                                multiSortBy = activeMultiSort,
+                                onMultiSortChange = selectMultiSort,
                                 resizableColumns = resizableColumns,
                                 minColumnWidth = minColumnWidth,
                                 state = state,
@@ -590,26 +627,25 @@ fun <T> DataTable(
             if (!hideDefaultFooter && footerContent == null) {
                 if (showPagination) {
                     PaginationFooter(
-                        currentPage = currentPageState,
+                        currentPage = activePage,
                         totalPages = totalPages,
-                        totalItems = items.size,
+                        totalItems = rowCount,
                         itemsPerPage = itemsPerPage,
-                        onPageChange = { newPage ->
-                            currentPageState = newPage
-                            onPageChange?.invoke(newPage)
-                        },
+                        onPageChange = selectPage,
                         colors = colors,
                         textStyles = textStyles,
                         itemsPerPageOptions = itemsPerPageOptions,
                         onItemsPerPageChange = onItemsPerPageChange?.let { callback ->
                             { newSize ->
-                                currentPageState = 0
+                                // A larger page size can put the current page past the end,
+                                // so go back to the first page whenever it changes.
+                                selectPage(0)
                                 callback(newSize)
                             }
                         },
                     )
                 } else {
-                    DefaultFooter(itemCount = items.size, colors = colors, textStyles = textStyles)
+                    DefaultFooter(itemCount = rowCount, colors = colors, textStyles = textStyles)
                 }
             } else if (footerContent != null) {
                 TableDivider(colors.divider)
