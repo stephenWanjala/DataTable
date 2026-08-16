@@ -23,7 +23,11 @@ import androidx.compose.ui.unit.dp
  * @param overflow Text overflow strategy for default text rendering.
  * @param comparator Optional custom comparator for sorting. When provided, takes precedence over
  *                   the default [Comparable]-based sort.
- * @param children Optional nested headers. When provided, only the leaf headers are displayed as cells.
+ * @param children Optional nested headers. When provided, this header becomes a group: it is
+ *                 drawn as a band above its children, spanning them, and only the leaf headers
+ *                 render as actual columns. A group's own [value], [width], and sorting settings
+ *                 are ignored — it takes its width from the leaves beneath it, which must be
+ *                 either all fixed-width or all weighted.
  * @param headerContent Optional composable to fully customize the header cell for this column.
  * @param cellContent Optional composable to fully customize each body cell for this column.
  */
@@ -83,6 +87,39 @@ public enum class DataTableDensity(val verticalPadding: Dp, val horizontalPaddin
 enum class SelectionMode {
     NONE, SINGLE, MULTI
 }
+
+/**
+ * Visible child headers, or `null` when this header is a leaf.
+ */
+internal fun <T> visibleChildren(header: DataTableHeader<T>): List<DataTableHeader<T>>? =
+    header.children?.filter { it.visible }?.takeIf { it.isNotEmpty() }
+
+/**
+ * Visible leaf headers beneath [header], or the header itself when it is a leaf.
+ */
+internal fun <T> leavesOf(header: DataTableHeader<T>): List<DataTableHeader<T>> {
+    val children = visibleChildren(header) ?: return listOf(header)
+    return children.flatMap { leavesOf(it) }
+}
+
+/**
+ * Splits top-level headers into the frozen and scrollable sections.
+ *
+ * A group has to sit wholly on one side of the freeze boundary: half of it would scroll out
+ * from under the other half.
+ */
+internal fun <T> partitionHeaderTree(
+    headers: List<DataTableHeader<T>>,
+): Pair<List<DataTableHeader<T>>, List<DataTableHeader<T>>> =
+    headers.filter { it.visible }.partition { node ->
+        val leaves = leavesOf(node)
+        val frozen = leaves.count { it.fixed }
+        require(frozen == 0 || frozen == leaves.size) {
+            "Header group '${node.key}' spans both frozen and scrollable columns. Mark every " +
+                "column under it `fixed = true`, or none of them."
+        }
+        frozen == leaves.size
+    }
 
 /**
  * Flattens a potentially nested header tree into a list of visible leaf headers.

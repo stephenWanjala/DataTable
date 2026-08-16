@@ -25,6 +25,7 @@ A highly customizable, feature-rich `DataTable` component for Compose Desktop bu
 - **Column sorting** -- single-click header to sort, Ctrl+click for multi-column sort
 - **Row selection** -- none, single, or multi-select with checkboxes
 - **Row expansion** -- expand rows to show custom detail content
+- **Nested headers** -- group columns under a spanning header band, to any depth
 - **Frozen/pinned columns** -- pin columns to the left edge so they don't scroll horizontally
 - **Column resizing** -- drag column edges to resize
 - **Pagination** -- configurable page size with items-per-page selector
@@ -109,6 +110,43 @@ DataTableHeader<Person>(
     },
 )
 ```
+
+### Nested (Grouped) Headers
+
+Give a header `children` and it becomes a group: a band drawn above its children, spanning them.
+Only the leaves render as real columns — sorting, resizing, and cell content all belong to them.
+
+```kotlin
+val headers = listOf(
+    DataTableHeader<Person>(key = "id", title = "ID", value = { it.id }, width = 60.dp),
+    DataTableHeader(
+        key = "contact",
+        title = "Contact",
+        children = listOf(
+            DataTableHeader(key = "email", title = "Email", value = { it.email }, width = 200.dp),
+            DataTableHeader(key = "phone", title = "Phone", value = { it.phone }, width = 140.dp),
+        ),
+    ),
+)
+```
+
+```
+┌──────┬───────────────────────────────┐
+│      │            Contact            │
+│  ID  ├───────────────┬───────────────┤
+│      │     Email     │     Phone     │
+├──────┼───────────────┼───────────────┤
+```
+
+Groups nest to any depth. A leaf sitting beside a group — `ID` above — stretches over the full
+header height and centres its title, rather than leaving blank rows above it.
+
+Two rules, both enforced with a thrown error rather than a silent misrender:
+
+- Every leaf under one group must be **either all fixed-width or all weighted**. A group takes
+  its width from its leaves, and the two sizing models cannot be summed.
+- A group cannot **straddle the freeze boundary** — mark every column under it `fixed = true`, or
+  none of them. Half a group would scroll out from under the other half.
 
 ### Selection
 
