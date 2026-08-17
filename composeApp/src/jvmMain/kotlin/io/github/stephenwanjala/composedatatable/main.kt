@@ -8,13 +8,26 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import dev.nucleusframework.application.DecoratedDialog
+import dev.nucleusframework.application.DecoratedWindow
+import dev.nucleusframework.application.NucleusBackend
+import dev.nucleusframework.application.nucleusApplication
+import dev.nucleusframework.window.NucleusDecoratedWindowTheme
+import dev.nucleusframework.window.TitleBar
+import dev.nucleusframework.window.macOSLargeCornerRadius
+import dev.nucleusframework.window.styling.TitleBarColors
+import dev.nucleusframework.window.styling.TitleBarMetrics
+import dev.nucleusframework.window.styling.TitleBarStyle
 
 /**
  * One entry in the gallery.
@@ -146,12 +159,27 @@ fun DataTableGallery() {
     }
 }
 
-fun main() = application {
-    Window(
-        onCloseRequest = ::exitApplication,
-        title = "Compose DataTable — Gallery",
-        state = rememberWindowState(width = 1400.dp, height = 900.dp),
-    ) {
-        DataTableGallery()
+fun main() =  nucleusApplication(backend = NucleusBackend.Tao) {
+    val titleBarStyle = TitleBarStyle(
+        colors = TitleBarColors(
+            background = Color(0xFF5A5555),
+            inactiveBackground = Color(0xFF808388),
+            content = Color(0xFFF0EBEB),
+            border = Color.Transparent,
+        ),
+        metrics = TitleBarMetrics(height = 36.dp),
+    )
+
+    NucleusDecoratedWindowTheme(isDark = true, titleBarStyle = titleBarStyle) {
+        DecoratedWindow(
+            onCloseRequest = ::exitApplication,
+            state = rememberWindowState(size = DpSize(1024.dp, 720.dp)),
+            minimumSize = DpSize(640.dp, 480.dp),
+        ) {
+            TitleBar(modifier = Modifier.macOSLargeCornerRadius()) { state ->
+                Text("Compose DataTable — Gallery", Modifier.align(Alignment.CenterHorizontally))
+            }
+            DataTableGallery()
+        }
     }
 }
