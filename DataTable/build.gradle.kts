@@ -48,8 +48,11 @@ mavenPublishing {
     }
 }
 kotlin {
+    coreLibrariesVersion = "2.2.21"
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2
+        apiVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2
     }
 }
 
@@ -81,15 +84,15 @@ dokka {
 dependencies {
     // `api`, not `implementation`: the public API exposes Compose types (@Composable lambdas,
     // Modifier, TextStyle, Dp), so consumers need these on their compile classpath.
-    api(compose.runtime)
-    api(compose.foundation)
-    api(compose.ui)
+    api(libs.compose.runtime)
+    api(libs.compose.foundation)
+    api(libs.compose.ui)
 
     // Desktop-only internals (VerticalScrollbar, HorizontalScrollbar, AWT cursors).
-    implementation(compose.desktop.common)
+    implementation(libs.compose.desktop)
 
     testImplementation(kotlin("test"))
-    testImplementation(compose.desktop.uiTestJUnit4)
+    testImplementation(libs.compose.ui.testJunit4)
     testImplementation(compose.desktop.currentOs)
 }
 
