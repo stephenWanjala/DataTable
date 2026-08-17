@@ -1,0 +1,108 @@
+name: Demo Release
+
+# Builds the demo app's release distributables on each host OS and attaches them to the
+# GitHub Release. The library itself is published separately by publish.yml.
+on:
+  release:
+    types: [released, prereleased]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to stamp on the packages (defaults to 1.0.0 outside a release)'
+        required: false
+        default: ''
+
+concurrency:
+  group: demo-release-${{ github.event.release.tag_name || github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write # required to attach assets to the release
+
+jobs:
+  package:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # One OS failing shouldn't throw away the installers the others already built.
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: Linux (deb, tar.gz)
+            # Globbed on the format dir so this doesn't depend on the plugin's directory naming.
+            artifacts: |
+              composeApp/build/compose/binaries/main-release/*/*.deb
+              composeApp/build/compose/binaries/main-release/*/*.tar.gz
+          - os: windows-latest
+            name: Windows (msi)
+            artifacts: |
+              composeApp/build/compose/binaries/main-release/*/*.msi
+          - os: macos-latest
+            name: macOS (dmg)
+            artifacts: |
+              composeApp/build/compose/binaries/main-release/*/*.dmg
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # The nucleus plugin drives packaging through `npx electron-builder`, so the runner
+      # needs Node 18+ on PATH.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Resolve version
+        shell: bash
+        run: |
+          version="${{ inputs.version }}"
+          [ -n "$version" ] || version="${{ github.event.release.tag_name }}"
+          version="${version#v}"
+          [ -n "$version" ] || version="1.0.0"
+          echo "DEMO_VERSION=$version" >> "$GITHUB_ENV"
+          echo "Packaging demo version $version"
+
+      - name: Package release distributables
+        shell: bash
+        run: ./gradlew :composeApp:packageReleaseDistributionForCurrentOS -PdemoVersion="$DEMO_VERSION"
+
+      # Kept unconditionally so workflow_dispatch runs still hand back the installers.
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-${{ runner.os }}
+          path: ${{ matrix.artifacts }}
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_PATTERNS: ${{ matrix.artifacts }}
+        run: |
+          files=()
+          while IFS= read -r pattern; do
+            [ -n "$pattern" ] || continue
+            # Unquoted on purpose: the pattern is a glob that must expand here.
+            for f in $pattern; do
+              [ -f "$f" ] && files+=("$f")
+            done
+          done <<< "$ARTIFACT_PATTERNS"
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No packages matched $ARTIFACT_PATTERNS" >&2
+            exit 1
+          fi
+          printf 'Uploading %s\n' "${files[@]}"
+          gh release upload "${{ github.event.release.tag_name }}" "${files[@]}" --clobber

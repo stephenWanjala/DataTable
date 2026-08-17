@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import io.github.stephenwanjala.datatable.*
 import kotlinx.coroutines.delay
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 // ---------------------------------------------------------------------------
 // Shared bits
@@ -374,7 +375,7 @@ fun ServerSideSample() {
     // Stands in for hitting a database whenever the page or the sort changes.
     LaunchedEffect(page, pageSize, sort) {
         rows = null
-        delay(350)
+        delay(350.milliseconds)
         rows = EmployeeRepository.page(
             offset = page * pageSize,
             limit = pageSize,
