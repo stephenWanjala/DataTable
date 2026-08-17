@@ -1,10 +1,12 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import dev.nucleusframework.desktop.application.dsl.CompressionLevel
+import dev.nucleusframework.desktop.application.dsl.TargetFormat
+
 
 plugins {
+    alias(libs.plugins.nucleusframework)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.composeHotReload)
 }
 
 kotlin {
@@ -12,12 +14,12 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.ui.toolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
         }
@@ -28,23 +30,37 @@ kotlin {
             implementation(compose.desktop.currentOs){
                 exclude("org.jetbrains.compose.material")
             }
-
+            implementation(libs.nucleus.application)
+            implementation(libs.decorated.window.tao)
             implementation(libs.material.icons.extended)
             implementation(libs.kotlinx.coroutinesSwing)
             api(project(":DataTable"))
+
         }
     }
 }
 
+nucleus.application {
+    mainClass = "io.github.stephenwanjala.composedatatable.MainKt"
+    nativeDistributions {
+        packageName = "composedatatableDemo"
+        // CI stamps the release tag here (.github/workflows/demo-release.yml); local builds get 1.0.0.
+        packageVersion = providers.gradleProperty("demoVersion").getOrElse("1.0.0")
+        modules("java.instrument", "jdk.unsupported")
+        cleanupNativeLibs = true
+        compressionLevel = CompressionLevel.Maximum
+        targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Tar, TargetFormat.Deb)
 
-compose.desktop {
-    application {
-        mainClass = "io.github.stephenwanjala.composedatatable.MainKt"
+        // electron-builder refuses to build a .deb without homepage + maintainer.
+        description = "Demo application for the Compose DataTable component"
+        vendor = "Wanjala Stephen"
+        copyright = "© 2025 Wanjala Stephen. Licensed under the Apache License 2.0."
+        homepage = "https://github.com/stephenWanjala/DataTable"
 
-        nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "io.github.stephenwanjala.composedatatable"
-            packageVersion = "1.0.0"
+        linux {
+            debMaintainer = "Wanjala Stephen <stephenwanjala145@gmail.com>"
+            appCategory = "Development"
         }
     }
 }
+
