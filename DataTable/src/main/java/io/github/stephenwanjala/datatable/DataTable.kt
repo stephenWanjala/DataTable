@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
  * - Row expansion with custom content
  * - Row hover highlight and alternating row colors
  * - Frozen/pinned columns
+ * - Nested (grouped) headers, to any depth
  * - Column resizing via drag handles
  * - Grouping with custom group header and summary rows
  * - Pagination with configurable items-per-page

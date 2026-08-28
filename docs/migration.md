@@ -2,6 +2,69 @@
 
 Each release is listed newest first.
 
+## 0.4.0
+
+No signatures changed, so 0.4.0 compiles against 0.3.0 call sites untouched. It is a fix release:
+four things that were documented in 0.3.0 but did not actually work now do, which means the table
+may start behaving in ways your 0.3.0 workarounds were compensating for.
+
+### Sorting cycles past ascending
+
+Clicking a header in 0.3.0 always sorted **ascending**, however many times you clicked it. The
+header's click handler captured the sort state from its first composition and never saw an update,
+so the cycle logic always compared against an empty `SortState`.
+
+Clicking now cycles ascending → descending → none, as
+[Sorting](guide/sorting-and-paging.md#single-column) always described. Multi-sort with
+++ctrl++ +click was stuck the same way and is fixed with it.
+
+If you worked around this by inverting the order yourself in `onSortChange`, remove that — you will
+now get the inversion twice.
+
+### Keyboard navigation works at all
+
+The table never took focus in 0.3.0, so no key event ever reached it and every shortcut was dead.
+It now requests focus when clicked, and arrow keys, ++home++, ++end++, ++enter++, and ++space++
+behave as [Interactions](guide/interactions.md#keyboard-navigation) documents.
+
+Focus is taken on click, not on appearing, so a table dropped into a form still does not steal
+focus from whatever the user is typing in.
+
+### Tabbing past a table no longer costs a stop per row
+
+Per-row checkboxes and expand buttons are no longer in the Tab order. In 0.3.0 they were, so Tab
+walked two stops per visible row — a three-row table took eight presses to escape, and a realistic
+one was unusable by keyboard. The cost is now fixed regardless of row count; see
+[Tab order](guide/interactions.md#tab-order) for what stays reachable.
+
+Both controls are still clickable, and ++space++ on the focused row still toggles selection. If you
+relied on Tab reaching a row checkbox, use arrow keys and ++space++ instead.
+
+### Weighted columns have a real width
+
+A column with `width = null` collapsed to zero inside the horizontally scrolling area, because
+`Modifier.weight` had nothing bounded to take a share of. Weighted columns now divide up the
+viewport minus the fixed columns, the selection and expand controls, and any frozen section, with
+`minColumnWidth` as the floor when the fixed columns already overflow.
+
+Tables that declared a width on every column are unaffected. Tables that mixed the two will get
+wider — and visible — weighted columns where they previously got nothing. See
+[Width](guide/columns.md#width).
+
+### Also in this release
+
+- A test suite covering sorting, selection, pagination, keyboard navigation, tab order, column
+  widths, and header-tree validation. The sort-cycle bug above is the one it found first.
+- Built against Compose Multiplatform 1.11.1 (0.3.0 was built against 1.9.2), emitting Kotlin 2.2
+  metadata and Java 11 bytecode. Compose is an `api` dependency, so Gradle will resolve your
+  project's Compose artifacts up to 1.11.1 unless you constrain them — worth checking if you are
+  pinned to an older Compose.
+- The documented requirements were wrong before and are now correct: the artifact targets Java 11,
+  not the "JVM 21+" the docs claimed. Nothing about the published bytecode changed.
+- Dokka fails the build on an undocumented public member or a broken KDoc link, so the API
+  reference stays complete.
+- Releases now carry demo installers (`.deb`, `.tar.gz`, `.msi`, `.dmg`) built on each host OS.
+
 ## 0.3.0
 
 No signatures changed, so 0.3.0 compiles against 0.2.0 call sites untouched. Three behaviour

@@ -58,9 +58,14 @@ DataTable(
 
 | | |
 |---|---|
-| Kotlin | 2.x |
-| Compose Multiplatform | 1.9+ |
-| JVM | 21+ |
+| Kotlin | 2.2+ |
+| Compose Multiplatform | 1.11.1 |
+| JVM | 11+ |
+
+The artifact is compiled to Java 11 bytecode, so it runs on any JVM from 11 up. It is built and
+tested against Compose Multiplatform 1.11.1, which it exposes as an `api` dependency — Gradle will
+resolve your Compose version up to that if you are on an older one. Kotlin metadata is emitted at
+language level 2.2, so a 2.2 compiler can read it.
 
 !!! note "Desktop only, for now"
     The library targets Compose Desktop. It uses AWT cursors for the column-resize handle, so it
@@ -74,6 +79,35 @@ paging, all three densities, keyboard navigation, loading and empty states:
 ```bash
 ./gradlew :composeApp:run
 ```
+
+Each release also carries prebuilt demo packages — `.deb` and `.tar.gz` for Linux, `.msi` for
+Windows, `.dmg` for macOS — on the
+[Releases page](https://github.com/stephenWanjala/DataTable/releases).
+
+## What it does not do
+
+The honest boundary of the component as it stands, so you can rule it in or out before building on
+it:
+
+- **No cell editing.** There is no edit mode, commit/cancel lifecycle, or per-cell validation. A
+  `cellContent` composable can hold an editor, but you own all of its behaviour.
+- **No cell-level selection.** Selection and keyboard focus are per row. Arrow keys move rows;
+  there is no cell cursor, no ++shift++ +click range selection, and no ++shift++ +arrow extension.
+- **No clipboard integration.** Copying a block of rows or cells is not built in.
+- **No filtering UI.** Filter `items` yourself before handing them over; there is no filter row and
+  no `manualFiltering` counterpart to `manualSorting`.
+- **No export.** CSV, Excel, and PDF are the caller's job.
+- **No column reordering by dragging**, and no built-in column chooser — `visible` is a flag you
+  drive from your own UI.
+- **No layout persistence.** Column widths, sort, focus, and scroll live only as long as the
+  composition. See [Interactions](guide/interactions.md#column-widths).
+- **No per-column formatter.** `value` is rendered with `toString()`; formatting means a
+  `cellContent` composable, and sorting a formatted column means a `comparator`.
+- **No tree tables.** `groupBy` is one level deep, flat, and always expanded — see
+  [Grouping](guide/grouping.md#limitations).
+- **No accessibility semantics.** Rows and cells carry no roles or content descriptions, so screen
+  reader support is whatever Compose infers from the text.
+- **Frozen columns pin left only**, and rows cannot be frozen at all.
 
 ## License
 
