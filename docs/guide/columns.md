@@ -21,6 +21,11 @@ DataTableHeader<Person>(
     headerContent = {                        // custom header composable
         Text("Salary (USD)", fontWeight = FontWeight.Bold)
     },
+    editable = true,                         // edit this column in place
+    editValue = { it.salary.toString() },    // raw text to seed the editor with
+    validateEdit = { _, text ->              // null accepts, a message rejects
+        if (text.toDoubleOrNull() == null) "Enter a number" else null
+    },
 )
 ```
 
@@ -101,6 +106,15 @@ val headers = remember(showNotes) {
     )
 }
 ```
+
+## Editing
+
+`editable = true` lets a column be edited in place. `editValue` seeds the editor with the raw
+value behind a formatted display, `validateEdit` rejects values before they are reported, and
+`editorContent` replaces the built-in text field with a picker of your own.
+
+Declaring any editable column also turns on cell-level focus and grid keyboard navigation, since
+an editor you cannot reach is no use. See [Cell Editing](editing.md) for the whole feature.
 
 ## Frozen (pinned) columns
 

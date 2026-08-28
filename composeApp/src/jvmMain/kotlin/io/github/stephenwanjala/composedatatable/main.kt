@@ -85,6 +85,18 @@ private val samples = listOf(
         content = { KeyboardSample() },
     ),
     Sample(
+        title = "Cell Editing",
+        exercises = "Cell focus and grid navigation · editable columns, validation, editValue, and a dropdown editorContent",
+        icon = Icons.Default.EditNote,
+        content = { CellEditingSample() },
+    ),
+    Sample(
+        title = "Range & Copy",
+        exercises = "Shift+arrows and Shift+click extend a cell block · Ctrl+A, Ctrl+C, and the ClipboardSelection payload",
+        icon = Icons.Default.ContentCopy,
+        content = { RangeSelectionSample() },
+    ),
+    Sample(
         title = "Density & Theme",
         exercises = "All three densities and a fully custom dark palette, with no Material theming in the library",
         icon = Icons.Default.Palette,

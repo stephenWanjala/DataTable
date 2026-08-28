@@ -2,6 +2,78 @@
 
 Each release is listed newest first.
 
+## Unreleased
+
+Cell-level focus, grid keyboard navigation, in-place cell editing, cell range selection, and
+clipboard copy. Everything here is additive: no signature changed, and a table that does not opt
+in behaves as it did in 0.4.0 — with one exception, ++ctrl+c++, noted below.
+
+### Cell navigation is opt-in
+
+`cellNavigation = true` moves keyboard focus from the row down to the cell. Declaring any column
+`editable = true` turns it on by itself, because an editor you cannot reach with the keyboard is
+no use.
+
+Leave both alone and nothing changes: ++arrow-up++/++arrow-down++ still walk rows, ++home++ and
+++end++ still jump to the first and last row, ++enter++ still fires `onRowClick`, and no cell
+cursor is ever drawn.
+
+Once it *is* on, some keys mean something new. ++home++ and ++end++ move within the row and take
+++ctrl++ to reach the ends of the table; ++tab++ walks cells instead of leaving the table in one
+press, though it still falls through at the very first and very last cell so keyboard users are
+never trapped; and ++enter++ on an editable column opens an editor rather than firing
+`onRowClick`. ++space++ is unchanged and still toggles selection.
+
+### Double-click opens an editor, unless you claimed it
+
+In a table with editable columns, double-clicking a cell opens its editor. Supplying
+`onRowDoubleClick` takes the gesture back — yours is called and no editor opens, so a detail
+dialog and in-place editing can coexist. Tables with no editable columns are unaffected either
+way.
+
+### Ctrl+C is now bound, but only when there is something to copy
+
+++ctrl+c++ copies the selected block of cells, or the checked rows, or the focused cell or row —
+see [Clipboard copy](guide/selection.md#clipboard-copy). This is the one binding that applies
+whether or not you opt into cell navigation, because a table navigated by row still has checked
+rows worth copying.
+
+It is deliberately left **unconsumed** when none of those exist, so an application with its own
+++ctrl+c++ handler keeps it whenever the table has nothing to give. If you need it back
+unconditionally, handle the key above the table — a `Modifier.onPreviewKeyEvent` on an ancestor
+sees it first.
+
+By default the table writes tab-separated text to the system clipboard itself. Supplying `onCopy`
+*takes that over* — it replaces the clipboard write rather than running alongside it — and hands
+you the rows and columns as your own types instead. A handler that wants both calls
+`selection.copyToSystemClipboard()`.
+
+### Shift now extends a selection in grid mode
+
+With `cellNavigation` on, holding ++shift++ with a movement key extends a block of cells rather
+than moving the cursor alone, and ++ctrl+a++ selects every cell. Neither key did anything in
+0.4.0. ++tab++ is unaffected — ++shift++ still means "backwards" there.
+
+### New API
+
+`DataTable` gains `cellNavigation` and `onCellEdit`. `DataTableHeader` gains `editable`,
+`editValue`, `validateEdit`, and `editorContent` — all appended after `cellContent`, so any
+positional construction of a header still compiles. `DataTableState` gains `focusedColumnKey`,
+`focusedCell`, `isEditing`, `editingCell`, `editError`, `focusCell`, `startEditing`,
+`cancelEditing`, and `revealFocusedCell`.
+
+`DataTable` also gains `onCopy`, and `DataTableState` gains `selectionAnchor`, `selectedRange`,
+`isCellInRange`, `selectRange`, `extendRangeTo`, and `clearRange`. `CellRange` and
+`ClipboardSelection` are new types, alongside the top-level `copyToSystemClipboard(text)` and
+`ClipboardSelection.copyToSystemClipboard(includeHeader)`.
+
+`DataTableColors` gains `focusedCellBorder`, `editingCell`, `invalidCellBorder`, and
+`selectedCell`; `DataTableTextStyles` gains `cellEditor`. Both are `data class`es with defaulted
+parameters, so existing `copy` and factory calls are unaffected.
+
+See [Cell Editing](guide/editing.md) and
+[Range selection](guide/selection.md#cell-range-selection).
+
 ## 0.4.0
 
 No signatures changed, so 0.4.0 compiles against 0.3.0 call sites untouched. It is a fix release:

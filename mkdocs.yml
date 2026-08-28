@@ -75,6 +75,7 @@ nav:
       - Sorting & Paging: guide/sorting-and-paging.md
       - Grouping: guide/grouping.md
       - Interactions: guide/interactions.md
+      - Cell Editing: guide/editing.md
       - Theming: guide/theming.md
   - Migration: migration.md
   - API Reference: api/index.html

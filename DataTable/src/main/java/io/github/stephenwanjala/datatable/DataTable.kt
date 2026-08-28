@@ -11,7 +11,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -21,6 +20,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.isShiftPressed
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -44,6 +44,9 @@ import kotlinx.coroutines.launch
  * - Custom sort comparators
  * - Right-click context menu callback
  * - Keyboard navigation (arrow keys, Enter, Space, Home, End)
+ * - Cell-level focus and grid keyboard navigation
+ * - Cell range selection and clipboard copy
+ * - In-place cell editing, with validation and custom editors
  * - Programmatic scroll-to-row via [DataTableState]
  * - Customizable colors and text styles without any theming framework
  *
@@ -75,6 +78,17 @@ import kotlinx.coroutines.launch
  *                         slice it. Requires [totalItems].
  * @param totalItems Row count across every page. Defaults to `items.size`, which is correct
  *                   unless [manualPagination] is on — then only the caller knows the true total.
+ * @param cellNavigation Moves keyboard focus down to the cell: Left/Right walk columns, the
+ *                       focused cell draws a cursor, and clicking a cell focuses it. Declaring
+ *                       any editable column turns this on by itself, since an editor you cannot
+ *                       reach is no use. Off by default, which leaves row navigation exactly as
+ *                       it was.
+ * @param onCellEdit Invoked when a cell edit is committed, with the old and new text. The table
+ *                   never mutates [items] — apply the edit to your own model and pass the
+ *                   updated list back. Without this, editing is a no-op that still validates.
+ * @param onCopy Invoked on Ctrl+C with the rows, columns, and cell text under the selection.
+ *               Leave it `null` and the table writes tab-separated text to the system clipboard
+ *               itself; supply it to write a different format, or to copy somewhere else.
  */
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -132,6 +146,10 @@ fun <T> DataTable(
     onItemsPerPageChange: ((Int) -> Unit)? = null,
     manualPagination: Boolean = false,
     totalItems: Int? = null,
+    // Cell focus and editing
+    cellNavigation: Boolean = false,
+    onCellEdit: ((CellEdit<T>) -> Unit)? = null,
+    onCopy: ((ClipboardSelection<T>) -> Unit)? = null,
     // Scrollbars
     showScrollbars: Boolean = true,
     scrollbarThickness: Dp = 8.dp,
@@ -154,6 +172,16 @@ fun <T> DataTable(
         flatHeaders.partition { it.fixed }
     }
     val hasFrozenColumns = frozenHeaders.isNotEmpty()
+
+    // An editable column implies cell navigation: without it there is no way to reach the cell
+    // you want to edit, and Enter/F2 have nothing to open an editor on.
+    val hasEditableColumns = remember(flatHeaders) { flatHeaders.any { it.editable } }
+    val gridNavigation = cellNavigation || hasEditableColumns
+
+    // Visual order of the leaf columns, which is the order Left/Right and Tab walk.
+    val columnKeys = remember(frozenHeaders, scrollableHeaders) {
+        (frozenHeaders + scrollableHeaders).map { it.key }
+    }
 
     // The header renders from the tree so groups can span their children, while the body keeps
     // using the flattened leaves.
@@ -289,6 +317,69 @@ fun <T> DataTable(
         indices
     }
 
+    // What Ctrl+C puts on the clipboard, in the order the user is looking at. The cascade runs
+    // narrowest first: an extended block of cells, then the checked rows, then the one focused
+    // cell, then the focused row. Returns false when none of those exist, which leaves Ctrl+C
+    // unconsumed so an application with its own binding still gets it.
+    val copySelection: () -> Boolean = copy@{
+        val visibleColumns = frozenHeaders + scrollableHeaders
+        val rangeRows = state.rangeRowKeys
+        val rangeColumns = state.rangeColumnKeys
+        val focusedCell = state.focusedCell
+
+        val rows: List<T>
+        val columns: List<DataTableHeader<T>>
+        when {
+            rangeRows.isNotEmpty() && rangeColumns.isNotEmpty() -> {
+                rows = orderedItems.filter { itemKey(it) in rangeRows }
+                columns = visibleColumns.filter { it.key in rangeColumns }
+            }
+
+            selectedKeys.isNotEmpty() -> {
+                rows = orderedItems.filter { itemKey(it) in selectedKeys }
+                columns = visibleColumns
+            }
+
+            focusedCell != null -> {
+                rows = orderedItems.filter { itemKey(it) == focusedCell.rowKey }
+                columns = visibleColumns.filter { it.key == focusedCell.columnKey }
+            }
+
+            state.focusedKey != null -> {
+                rows = orderedItems.filter { itemKey(it) == state.focusedKey }
+                columns = visibleColumns
+            }
+
+            else -> return@copy false
+        }
+        if (rows.isEmpty() || columns.isEmpty()) return@copy false
+
+        val selection = ClipboardSelection(
+            rows = rows,
+            columns = columns,
+            cells = rows.map { item ->
+                columns.map { column -> column.value?.invoke(item)?.toString() ?: "" }
+            },
+        )
+        // A caller's handler *replaces* the clipboard write rather than running alongside it, so
+        // that a copy can be redirected or suppressed entirely. `ClipboardSelection`'s own
+        // `copyToSystemClipboard` is public for handlers that want to do both.
+        if (onCopy != null) {
+            onCopy(selection)
+            true
+        } else {
+            selection.copyToSystemClipboard()
+        }
+    }
+
+    // Navigation reads these back out of the state at key-event time — from the container's key
+    // handler, and from an editor closing several layers down inside a LazyColumn item.
+    SideEffect {
+        state.rowKeys = rowKeys
+        state.rowScrollIndices = rowScrollIndices
+        state.columnKeys = columnKeys
+    }
+
     // Width taken by the select/expand controls, which sit ahead of the first column.
     val leadingWidth =
         (if (showCheckboxes) 20.dp + density.horizontalPadding * 2 else 0.dp) +
@@ -306,8 +397,13 @@ fun <T> DataTable(
         state.resolvedColumnWidth(it.key, it.width) == null
     }
 
-    // Focus for keyboard navigation
-    val focusRequester = remember { FocusRequester() }
+    // Double-clicking an editable cell opens its editor — unless the caller claimed the gesture
+    // for themselves, in which case theirs wins and Enter, F2, and typing still reach the editor.
+    val editOnDoubleClick = onRowDoubleClick == null
+
+    // Focus for keyboard navigation. Lives on the state so a cell editor can hand focus back
+    // to the table when it closes.
+    val focusRequester = state.containerFocusRequester
 
     BoxWithConstraints(
         modifier = modifier
@@ -333,9 +429,12 @@ fun <T> DataTable(
             }
             .dataTableKeyboardNavigation(
                 state = state,
-                rowKeys = rowKeys,
-                scrollIndices = rowScrollIndices,
                 scope = scope,
+                gridNavigation = gridNavigation,
+                isColumnEditable = { key ->
+                    flatHeaders.firstOrNull { it.key == key }?.editable == true
+                },
+                onCopy = copySelection,
                 onRowClick = { position ->
                     orderedItems.getOrNull(position)?.let { onRowClick?.invoke(it) }
                 },
@@ -374,6 +473,32 @@ fun <T> DataTable(
         }
         val scrollableWidthModifier =
             if (scrollableContentWidth != null) Modifier.width(scrollableContentWidth) else Modifier
+
+        // Where each scrollable column sits inside the scrolled content, so moving cell focus
+        // sideways can bring an off-screen column into view. Weighted columns split whatever the
+        // fixed ones leave, which is exactly what `Modifier.weight` does a moment later — so the
+        // bounds can be computed rather than measured, and are right on the first frame.
+        if (gridNavigation) {
+            val pixelDensity = LocalDensity.current
+            val weightedWidth =
+                if (weightedColumnCount > 0 && scrollableContentWidth != null) {
+                    val leading = if (hasFrozenColumns) 0.dp else leadingWidth
+                    ((scrollableContentWidth - leading - scrollableFixedWidth) / weightedColumnCount)
+                        .coerceAtLeast(0.dp)
+                } else {
+                    0.dp
+                }
+            var left = if (hasFrozenColumns) 0.dp else leadingWidth
+            val bounds = LinkedHashMap<String, IntRange>(scrollableHeaders.size)
+            scrollableHeaders.forEach { header ->
+                val width = state.resolvedColumnWidth(header.key, header.width) ?: weightedWidth
+                with(pixelDensity) {
+                    bounds[header.key] = IntRange(left.roundToPx(), (left + width).roundToPx())
+                }
+                left += width
+            }
+            SideEffect { state.scrollableColumnBounds = bounds }
+        }
 
         Column {
             // ---- Header ----
@@ -538,6 +663,7 @@ fun <T> DataTable(
                                                     frozenContent = {
                                                         DataTableRow(
                                                             item = item,
+                                                            rowKey = key,
                                                             headers = frozenHeaders,
                                                             showSelect = showCheckboxes,
                                                             selected = itemSelected,
@@ -560,11 +686,15 @@ fun <T> DataTable(
                                                             onContextMenu = onRowContextMenu?.let { cb -> { offset -> cb(item, offset) } },
                                                             isFocused = state.focusedKey == key,
                                                             state = state,
+                                                            gridNavigation = gridNavigation,
+                                                            editOnDoubleClick = editOnDoubleClick,
+                                                            onCellEdit = onCellEdit,
                                                         )
                                                     },
                                                     scrollableContent = {
                                                         DataTableRow(
                                                             item = item,
+                                                            rowKey = key,
                                                             modifier = scrollableWidthModifier,
                                                             headers = scrollableHeaders,
                                                             showSelect = false,
@@ -586,6 +716,9 @@ fun <T> DataTable(
                                                             onContextMenu = onRowContextMenu?.let { cb -> { offset -> cb(item, offset) } },
                                                             isFocused = state.focusedKey == key,
                                                             state = state,
+                                                            gridNavigation = gridNavigation,
+                                                            editOnDoubleClick = editOnDoubleClick,
+                                                            onCellEdit = onCellEdit,
                                                         )
                                                     },
                                                 )
@@ -598,6 +731,7 @@ fun <T> DataTable(
                                                     ) {
                                                         DataTableRow(
                                                             item = item,
+                                                            rowKey = key,
                                                             modifier = scrollableWidthModifier,
                                                             headers = flatHeaders,
                                                             showSelect = showCheckboxes,
@@ -621,6 +755,9 @@ fun <T> DataTable(
                                                             onContextMenu = onRowContextMenu?.let { cb -> { offset -> cb(item, offset) } },
                                                             isFocused = state.focusedKey == key,
                                                             state = state,
+                                                            gridNavigation = gridNavigation,
+                                                            editOnDoubleClick = editOnDoubleClick,
+                                                            onCellEdit = onCellEdit,
                                                         )
                                                     }
                                                 }

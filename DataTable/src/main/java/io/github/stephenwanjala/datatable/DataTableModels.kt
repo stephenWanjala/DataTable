@@ -30,6 +30,20 @@ import androidx.compose.ui.unit.dp
  *                 either all fixed-width or all weighted.
  * @param headerContent Optional composable to fully customize the header cell for this column.
  * @param cellContent Optional composable to fully customize each body cell for this column.
+ * @param editable Whether cells in this column can be edited in place. Declaring any editable
+ *                 column turns on `DataTable`'s cell-level focus and grid keyboard navigation,
+ *                 and requires an `onCellEdit` callback for the edit to go anywhere — the table
+ *                 reports edits, it never mutates your items.
+ * @param editValue Text the editor opens with. Defaults to [value]'s result rendered with
+ *                  `toString()`, which is wrong for anything you format for display: give a
+ *                  currency or date column the raw, editable form here.
+ * @param validateEdit Checks a value the user is trying to commit, returning an error message to
+ *                     reject it or `null` to accept. A rejected commit keeps the editor open with
+ *                     the message on `DataTableState.editError`. This is the guard that stops
+ *                     unparseable text ever reaching `onCellEdit`.
+ * @param editorContent Optional composable replacing the built-in text field — a dropdown, a date
+ *                      picker, a lookup. It is handed the row and a [CellEditController] to
+ *                      commit or cancel with, and is expected to take keyboard focus itself.
  */
 @Immutable
 data class DataTableHeader<T>(
@@ -46,7 +60,11 @@ data class DataTableHeader<T>(
     val comparator: Comparator<T>? = null,
     val children: List<DataTableHeader<T>>? = null,
     val headerContent: (@Composable () -> Unit)? = null,
-    val cellContent: (@Composable (T) -> Unit)? = null
+    val cellContent: (@Composable (T) -> Unit)? = null,
+    val editable: Boolean = false,
+    val editValue: ((T) -> String)? = null,
+    val validateEdit: ((T, String) -> String?)? = null,
+    val editorContent: (@Composable (T, CellEditController) -> Unit)? = null,
 )
 
 /**
