@@ -35,6 +35,15 @@ import androidx.compose.ui.unit.sp
  * @property hoveredRow Background of the row under the pointer, also used for icon-button hover
  *                      highlights in the footer.
  * @property focusedRowBorder Marker drawn down the leading edge of the keyboard-focused row.
+ * @property focusedCellBorder Outline drawn around the keyboard-focused cell, once cell-level
+ *                             navigation is on. Drawn on top of the row's own focus marker.
+ * @property editingCell Background behind an open cell editor, so the field reads as a field
+ *                       rather than as text that happens to have a caret in it.
+ * @property invalidCellBorder Outline replacing [focusedCellBorder] while the value in an open
+ *                             editor has been rejected by the column's `validateEdit`.
+ * @property selectedCell Wash over cells inside a selected range. Translucent, so row striping
+ *                        and row selection still read through it. The cell the cursor is on is
+ *                        left unwashed, the way a spreadsheet leaves its active cell.
  */
 @Immutable
 data class DataTableColors(
@@ -53,6 +62,10 @@ data class DataTableColors(
     val rowAlternate: Color = Color.Transparent,
     val hoveredRow: Color = Color(0x1A000000),
     val focusedRowBorder: Color = Color(0xFF1976D2),
+    val focusedCellBorder: Color = Color(0xFF1976D2),
+    val editingCell: Color = Color(0xFFFFFFFF),
+    val invalidCellBorder: Color = Color(0xFFD32F2F),
+    val selectedCell: Color = Color(0x331976D2),
 )
 
 /**
@@ -71,6 +84,8 @@ data class DataTableColors(
  * @property noData The built-in empty state, when no `noDataContent` is supplied.
  * @property pagination Page controls: the page indicator, the rows-per-page label, and the
  *                      options in its menu.
+ * @property cellEditor Text inside an open cell editor. Matches [bodyCell] by default so a cell
+ *                      does not jump as it goes into edit mode.
  */
 @Immutable
 data class DataTableTextStyles(
@@ -100,6 +115,11 @@ data class DataTableTextStyles(
         color = Color(0x991C1C1C),
     ),
     val pagination: TextStyle = TextStyle(
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Normal,
+        color = Color(0xFF1C1C1C),
+    ),
+    val cellEditor: TextStyle = TextStyle(
         fontSize = 14.sp,
         fontWeight = FontWeight.Normal,
         color = Color(0xFF1C1C1C),
@@ -139,11 +159,16 @@ object DataTableDefaults {
         rowAlternate: Color = Color.Transparent,
         hoveredRow: Color = Color(0x1A000000),
         focusedRowBorder: Color = Color(0xFF1976D2),
+        focusedCellBorder: Color = Color(0xFF1976D2),
+        editingCell: Color = Color(0xFFFFFFFF),
+        invalidCellBorder: Color = Color(0xFFD32F2F),
+        selectedCell: Color = Color(0x331976D2),
     ): DataTableColors = remember(
         container, header, divider, selectedRow, expandedRow,
         onSurface, onSurfaceSecondary, checkboxChecked, checkboxUnchecked,
         checkboxCheckmark, iconTint, disabledContent, rowAlternate,
-        hoveredRow, focusedRowBorder
+        hoveredRow, focusedRowBorder, focusedCellBorder, editingCell,
+        invalidCellBorder, selectedCell
     ) {
         DataTableColors(
             container = container,
@@ -161,6 +186,10 @@ object DataTableDefaults {
             rowAlternate = rowAlternate,
             hoveredRow = hoveredRow,
             focusedRowBorder = focusedRowBorder,
+            focusedCellBorder = focusedCellBorder,
+            editingCell = editingCell,
+            invalidCellBorder = invalidCellBorder,
+            selectedCell = selectedCell,
         )
     }
 
@@ -185,7 +214,8 @@ object DataTableDefaults {
         loading: TextStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal, color = Color(0xFF1C1C1C)),
         noData: TextStyle = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Normal, color = Color(0x991C1C1C)),
         pagination: TextStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal, color = Color(0xFF1C1C1C)),
-    ): DataTableTextStyles = remember(headerCell, bodyCell, footer, loading, noData, pagination) {
+        cellEditor: TextStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal, color = Color(0xFF1C1C1C)),
+    ): DataTableTextStyles = remember(headerCell, bodyCell, footer, loading, noData, pagination, cellEditor) {
         DataTableTextStyles(
             headerCell = headerCell,
             bodyCell = bodyCell,
@@ -193,6 +223,7 @@ object DataTableDefaults {
             loading = loading,
             noData = noData,
             pagination = pagination,
+            cellEditor = cellEditor,
         )
     }
 }

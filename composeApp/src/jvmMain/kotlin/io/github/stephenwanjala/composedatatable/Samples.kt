@@ -624,3 +624,205 @@ fun KeyboardSample() {
         )
     }
 }
+
+// ---------------------------------------------------------------------------
+// 11. Cell editing
+// ---------------------------------------------------------------------------
+
+@Composable
+fun CellEditingSample() {
+    val tableState = rememberDataTableState()
+    // The table reports edits; this list is the source of truth that applies them.
+    var employees by remember { mutableStateOf(sampleEmployees.take(12)) }
+    var log by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    val departments = listOf("Finance", "IT", "Operations", "Sales")
+
+    val headers = remember {
+        listOf(
+            DataTableHeader<Employee>(
+                key = "name", title = "Name", value = { it.name }, width = 180.dp, fixed = true,
+            ),
+            DataTableHeader(
+                key = "role", title = "Role", value = { it.role }, width = 160.dp,
+                // Nothing but `editable`: the built-in text field handles the rest.
+                editable = true,
+            ),
+            DataTableHeader(
+                key = "department", title = "Department", value = { it.department }, width = 170.dp,
+                editable = true,
+                // A column whose values come from a fixed set deserves a picker, not free text.
+                editorContent = { employee, controller ->
+                    var expanded by remember { mutableStateOf(true) }
+                    Box {
+                        Text(employee.department, style = MaterialTheme.typography.bodyMedium)
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false; controller.cancel() },
+                        ) {
+                            departments.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option) },
+                                    onClick = { expanded = false; controller.commit(option) },
+                                )
+                            }
+                        }
+                    }
+                },
+            ),
+            DataTableHeader(
+                key = "salary", title = "Salary", width = 140.dp, align = TextAlign.End,
+                value = { "$${"%,.0f".format(it.salary)}" },
+                comparator = compareBy { it.salary },
+                editable = true,
+                // The displayed value carries a currency symbol and separators. Without this the
+                // user would open the editor onto "$92,000" and have to clean it up first.
+                editValue = { it.salary.toLong().toString() },
+                validateEdit = { _, text ->
+                    val amount = text.toLongOrNull()
+                    when {
+                        amount == null -> "Enter a whole number"
+                        amount < 0 -> "Salary cannot be negative"
+                        else -> null
+                    }
+                },
+            ),
+            DataTableHeader(
+                key = "email", title = "Email", value = { it.email }, width = 240.dp,
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+            ),
+        )
+    }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text(
+                "Click a cell, then ← → ↑ ↓ to move. Enter or F2 edits, or just start typing. " +
+                    "Enter commits and drops a row; Tab commits and moves right; Esc cancels.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.weight(1f))
+            Text(
+                "Focused: ${tableState.focusedCell?.columnKey ?: "none"}",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            OutlinedButton(onClick = { employees = sampleEmployees.take(12); log = emptyList() }) {
+                Text("Reset")
+            }
+        }
+
+        tableState.editError?.let { message ->
+            Surface(color = MaterialTheme.colorScheme.errorContainer) {
+                Text(
+                    message,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                )
+            }
+        }
+
+        DataTable(
+            items = employees,
+            headers = headers,
+            itemKey = { it.id },
+            state = tableState,
+            density = DataTableDensity.COMPACT,
+            resizableColumns = true,
+            onCellEdit = { edit ->
+                log = (listOf("${edit.columnKey}: ${edit.oldText} → ${edit.newText}") + log).take(6)
+                employees = employees.map { employee ->
+                    if (employee.id != edit.rowKey) employee
+                    else when (edit.columnKey) {
+                        "role" -> employee.copy(role = edit.newText)
+                        "department" -> employee.copy(department = edit.newText)
+                        "salary" -> employee.copy(salary = edit.newText.toDouble())
+                        else -> employee
+                    }
+                }
+            },
+            colors = DataTableDefaults.colors(rowAlternate = Color(0xFFF7F7F7)),
+            modifier = Modifier.weight(1f),
+        )
+
+        Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                Text("Reported edits", style = MaterialTheme.typography.labelMedium)
+                if (log.isEmpty()) {
+                    Text("None yet.", style = MaterialTheme.typography.bodySmall)
+                } else {
+                    log.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 12. Range selection and clipboard copy
+// ---------------------------------------------------------------------------
+
+@Composable
+fun RangeSelectionSample() {
+    val tableState = rememberDataTableState()
+    var selectedKeys by remember { mutableStateOf<Set<Any>>(emptySet()) }
+    var lastCopied by remember { mutableStateOf<String?>(null) }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text(
+                "Click a cell, then Shift + arrows (or Shift+click) to extend the block. " +
+                    "Ctrl+A selects everything, Ctrl+C copies. With no block, Ctrl+C falls back " +
+                    "to the checked rows.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.weight(1f))
+            OutlinedButton(onClick = { tableState.clearRange(); lastCopied = null }) {
+                Text("Clear")
+            }
+        }
+
+        DataTable(
+            items = sampleEmployees,
+            headers = employeeHeaders,
+            itemKey = { it.id },
+            state = tableState,
+            density = DataTableDensity.COMFORTABLE,
+            cellNavigation = true,
+            showSelect = true,
+            selectedKeys = selectedKeys,
+            onSelectionChange = { selectedKeys = it },
+            // `onCopy` replaces the table's own clipboard write, so a handler that only
+            // displays the payload would leave the clipboard empty. Do both: show it here, and
+            // put it on the real clipboard. Drop `onCopy` entirely and the table does the
+            // second half by itself.
+            onCopy = { selection ->
+                val text = selection.toTabSeparated(includeHeader = true)
+                lastCopied = if (selection.copyToSystemClipboard(includeHeader = true)) {
+                    text
+                } else {
+                    text + "\n\n(could not reach the system clipboard)"
+                }
+            },
+            colors = DataTableDefaults.colors(rowAlternate = Color(0xFFF7F7F7)),
+            modifier = Modifier.weight(1f),
+        )
+
+        Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                Text(
+                    "Clipboard payload" +
+                        (tableState.selectedRange?.let { " — block anchored at ${it.anchor.columnKey}" } ?: ""),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+                Text(
+                    lastCopied ?: "Nothing copied yet. Select some cells and press Ctrl+C — " +
+                        "this panel shows what went to your clipboard, so paste it anywhere to check.",
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 6,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}

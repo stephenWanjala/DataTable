@@ -31,6 +31,9 @@ menuTarget?.let { (person, offset) ->
     The table skips that wait entirely when no double-click handler is supplied, so leaving it
     `null` keeps single clicks instant.
 
+    Supplying it also claims the gesture from
+    [double-click-to-edit](editing.md#opening-and-closing-an-editor).
+
 ## Keyboard navigation
 
 Click anywhere in the table to give it focus, or ++tab++ to it, then:
@@ -42,6 +45,16 @@ Click anywhere in the table to give it focus, or ++tab++ to it, then:
 | ++space++ | Toggle selection on the focused row |
 | ++home++ | Focus the first row |
 | ++end++ | Focus the last row |
+
+++ctrl+c++ copies the checked rows, or the focused row when none are checked — see
+[Clipboard copy](selection.md#clipboard-copy). It is left unconsumed when there is nothing to
+copy, so it stays available to the surrounding application.
+
+That is row navigation, which is always on. Setting `cellNavigation = true` — or declaring any
+editable column — moves focus down to the cell and adds ++arrow-left++/++arrow-right++, ++tab++,
+++page-up++/++page-down++, ++shift++ +movement to select a block, ++ctrl+a++, and the editing
+shortcuts. See [Cell Editing](editing.md#cell-navigation) and
+[Range selection](selection.md#cell-range-selection).
 
 ### Tab order
 
@@ -98,6 +111,9 @@ tableState.focusRow(person.id)             // move focus
 tableState.focusRow(null)                  // clear it
 ```
 
+Under `cellNavigation` the same state also carries the focused column, as
+[`focusedCell`](editing.md#cell-navigation).
+
 `focusRow` only moves focus; it does not scroll. `DataTableState` never sees `items`, so it cannot
 resolve a key to a position on its own. Pair the two when you need both:
 
@@ -122,7 +138,7 @@ Button(onClick = { tableState.resetColumnWidths() }) {
 Clears every user resize, reverting to the widths declared on the headers.
 
 !!! note "State is not persisted"
-    Column widths, sort, focus, and scroll position live only as long as the composition. Saving
+    Column widths, sort, cell focus, and scroll position live only as long as the composition. Saving
     and restoring a user's grid layout across restarts is not built in — hoist the pieces you care
     about and persist them yourself.
 

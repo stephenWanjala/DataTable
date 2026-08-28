@@ -45,7 +45,20 @@ DataTable(
 -   **Keyboard driven**
 
     Arrow keys, ++home++/++end++, ++enter++, ++space++. Focus is tracked by key, so it follows its
-    row across a re-sort instead of sticking to a position.
+    row across a re-sort instead of sticking to a position. Turn on `cellNavigation` and the same
+    holds a cell cursor across two axes.
+
+-   **Editing in place**
+
+    Mark a column `editable` and cells edit on ++enter++, ++f2++, a double-click, or just by
+    typing. Per-column validation, a raw `editValue` behind a formatted display, and
+    `editorContent` for pickers. The table reports the edit; your model stays the only copy.
+
+-   **Select a block, copy it out**
+
+    ++shift++ +arrows or ++shift++ +click extend a rectangle of cells; ++ctrl+c++ puts it on the
+    clipboard as tab-separated text. Intercept it with `onCopy` and you get the rows and columns
+    back as your own types — the seam an exporter hangs off.
 
 -   **Themeable without a theme**
 
@@ -74,7 +87,8 @@ language level 2.2, so a 2.2 compiler can read it.
 ## Try it
 
 The repository ships a gallery app that exercises every feature — nested headers, server-side
-paging, all three densities, keyboard navigation, loading and empty states:
+paging, all three densities, keyboard navigation, cell editing, range selection and copy, loading
+and empty states:
 
 ```bash
 ./gradlew :composeApp:run
@@ -89,17 +103,19 @@ Windows, `.dmg` for macOS — on the
 The honest boundary of the component as it stands, so you can rule it in or out before building on
 it:
 
-- **No cell editing.** There is no edit mode, commit/cancel lifecycle, or per-cell validation. A
-  `cellContent` composable can hold an editor, but you own all of its behaviour.
-- **No cell-level selection.** Selection and keyboard focus are per row. Arrow keys move rows;
-  there is no cell cursor, no ++shift++ +click range selection, and no ++shift++ +arrow extension.
-- **No clipboard integration.** Copying a block of rows or cells is not built in.
+- **No paste.** A block of cells can be selected and copied, but not filled from the clipboard,
+  so a round-trip through a spreadsheet is one-way.
+- **One block at a time.** Cell selection is a single rectangle — there is no ++ctrl++ +click to
+  build up several disjoint blocks.
+- **No row-level commit.** Editing commits one cell at a time — there is no editing row that
+  validates across columns or rolls back as a unit, and no undo stack.
 - **No filtering UI.** Filter `items` yourself before handing them over; there is no filter row and
   no `manualFiltering` counterpart to `manualSorting`.
-- **No export.** CSV, Excel, and PDF are the caller's job.
+- **No export.** CSV, Excel, and PDF are the caller's job — though `onCopy` hands you the
+  selected rows and columns as a starting point.
 - **No column reordering by dragging**, and no built-in column chooser — `visible` is a flag you
   drive from your own UI.
-- **No layout persistence.** Column widths, sort, focus, and scroll live only as long as the
+- **No layout persistence.** Column widths, sort, cell focus, and scroll live only as long as the
   composition. See [Interactions](guide/interactions.md#column-widths).
 - **No per-column formatter.** `value` is rendered with `toString()`; formatting means a
   `cellContent` composable, and sorting a formatted column means a `comparator`.

@@ -35,7 +35,9 @@ A highly customizable, feature-rich `DataTable` component for Compose Desktop bu
 - **Pagination** -- configurable page size with items-per-page selector
 - **Server-side data** -- `manualSorting` / `manualPagination` hand sorting and paging to your database
 - **Grouping** -- group rows by a key with custom group header and summary rows
-- **Keyboard navigation** -- Arrow keys, Enter, Space, Home, End
+- **Keyboard navigation** -- Arrow keys, Enter, Space, Home, End; opt into `cellNavigation` for a cell cursor, Left/Right, Tab, and Page Up/Down
+- **Cell editing** -- editable columns with per-column validation, a raw `editValue` behind a formatted display, and custom `editorContent` editors
+- **Range selection & clipboard** -- Shift+arrows or Shift+click select a block of cells, Ctrl+C copies it as tab-separated text; `onCopy` takes the copy over and hands you the rows and columns as your own types
 - **Row hover & alternating colors** -- visual row highlighting
 - **Right-click context menu** -- callback with item and position
 - **Text overflow** -- per-column `maxLines` and `TextOverflow` control
@@ -45,9 +47,10 @@ A highly customizable, feature-rich `DataTable` component for Compose Desktop bu
 
 ## Not included
 
-So you can rule it in or out quickly: there is no cell editing, no cell-level selection or
-clipboard support, no filtering UI, no export, no drag-to-reorder columns, no layout persistence,
-no tree tables, and no accessibility semantics. Frozen columns pin left only. The
+So you can rule it in or out quickly: a block of cells can be copied but not pasted into or edited
+as a block, cell selection is a single rectangle, and editing has no row-level commit and no undo.
+There is also no filtering UI, no export, no drag-to-reorder columns, no layout persistence, no
+tree tables, and no accessibility semantics. Frozen columns pin left only. The
 [documentation](https://stephenwanjala.github.io/DataTable/#what-it-does-not-do) spells each of
 these out.
 
@@ -86,7 +89,8 @@ See the [documentation](https://stephenwanjala.github.io/DataTable/) for the ful
 ## Sample Gallery
 
 The repository ships a gallery app exercising every feature -- nested headers, server-side paging,
-all three densities, keyboard navigation, loading and empty states:
+all three densities, keyboard navigation, cell editing, range selection and copy, loading and
+empty states:
 
 ```bash
 ./gradlew :composeApp:run
