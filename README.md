@@ -43,11 +43,19 @@ A highly customizable, feature-rich `DataTable` component for Compose Desktop bu
 - **Fully themeable** -- customize all colors and text styles without any theming framework
 - **Zero Material dependency** -- built on Compose Foundation only
 
+## Not included
+
+So you can rule it in or out quickly: there is no cell editing, no cell-level selection or
+clipboard support, no filtering UI, no export, no drag-to-reorder columns, no layout persistence,
+no tree tables, and no accessibility semantics. Frozen columns pin left only. The
+[documentation](https://stephenwanjala.github.io/DataTable/#what-it-does-not-do) spells each of
+these out.
+
 ## Installation
 
 ```kotlin
 dependencies {
-    implementation("io.github.stephenwanjala:datatable:0.3.0")
+    implementation("io.github.stephenwanjala:datatable:0.4.0")
 }
 ```
 
@@ -84,6 +92,9 @@ all three densities, keyboard navigation, loading and empty states:
 ./gradlew :composeApp:run
 ```
 
+Releases also carry prebuilt demo packages -- `.deb` and `.tar.gz` for Linux, `.msi` for Windows,
+`.dmg` for macOS -- on the [Releases page](https://github.com/stephenWanjala/DataTable/releases).
+
 ## Building the Docs
 
 ```bash
@@ -101,9 +112,11 @@ cp -r build/dokka docs/api
 
 ## Requirements
 
-- Kotlin 2.x+
-- Compose Multiplatform 1.9+
-- JVM 21+
+- Kotlin 2.2+
+- Compose Multiplatform 1.11.1 (exposed as an `api` dependency)
+- JVM 11+ — the artifact is compiled to Java 11 bytecode
+
+Building this repository needs JDK 21.
 
 ## License
 

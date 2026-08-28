@@ -51,6 +51,8 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.superfences
   - pymdownx.inlinehilite
+  # The guides mark shortcuts as ++ctrl++ / ++enter++; without this they render literally.
+  - pymdownx.keys
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.tabbed:

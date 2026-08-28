@@ -8,7 +8,7 @@ plugins {
 
 }
 group = "io.github.stephenwanjala"
-version = "0.3.0"
+version = "0.4.0"
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11

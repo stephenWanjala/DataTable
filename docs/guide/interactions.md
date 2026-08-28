@@ -33,7 +33,7 @@ menuTarget?.let { (person, offset) ->
 
 ## Keyboard navigation
 
-Click anywhere in the table to give it focus, then:
+Click anywhere in the table to give it focus, or ++tab++ to it, then:
 
 | Key | Action |
 |-----|--------|
@@ -42,6 +42,17 @@ Click anywhere in the table to give it focus, then:
 | ++space++ | Toggle selection on the focused row |
 | ++home++ | Focus the first row |
 | ++end++ | Focus the last row |
+
+### Tab order
+
+Per-row checkboxes and expand buttons are deliberately **outside** the Tab order. One stop per
+control per row would mean two presses per visible row just to get past the table — unusable on
+real data. Both remain clickable, and ++space++ on the focused row toggles its selection without
+needing to reach the checkbox.
+
+What stays reachable by ++tab++: the table itself as a single stop, the header's select-all
+checkbox, and the footer's page buttons and rows-per-page selector. The cost of tabbing past a
+table is therefore fixed — a forty-row table takes the same presses as a three-row one.
 
 Focus is tracked **by key**, exposed as `state.focusedKey`. Because it is a key rather than a
 position, focus stays on the same row when the table is re-sorted instead of sticking to an offset.
