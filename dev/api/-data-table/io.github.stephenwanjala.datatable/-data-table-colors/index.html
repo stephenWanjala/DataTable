@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>DataTableColors</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+            <a class="library-name--link" href="../../../index.html">
+                    DataTable
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+0.4.0        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active=""
+                        data-filter=":DataTable/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":DataTable/main"
+                                       data-filter=":DataTable/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                        data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    DataTable
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="DataTable::io.github.stephenwanjala.datatable/DataTableColors///PointingToDeclaration//-1956488046">
+  <div class="breadcrumbs"><a href="../../../index.html">DataTable</a><span class="delimiter">/</span><a href="../index.html">io.github.stephenwanjala.datatable</a><span class="delimiter">/</span><span class="current">DataTableColors</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Data</span><wbr></wbr><span>Table</span><wbr></wbr><span><span>Colors</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="androidx.compose.runtime/Immutable///PointingToDeclaration/"><span class="token annotation builtin">Immutable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">DataTableColors</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>container<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFFFAFAFA)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>header<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFFF0F0F0)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>divider<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFFDDDDDD)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>selectedRow<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0x4D1976D2)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>expandedRow<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0x80F0F0F0)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>onSurface<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF1C1C1C)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>onSurfaceSecondary<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF757575)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>checkboxChecked<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF1976D2)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>checkboxUnchecked<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF757575)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>checkboxCheckmark<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color.White<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>iconTint<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF616161)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>disabledContent<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFFBDBDBD)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>rowAlternate<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color.Transparent<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>hoveredRow<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0x1A000000)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>focusedRowBorder<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF1976D2)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>focusedCellBorder<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF1976D2)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>editingCell<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFFFFFFFF)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>invalidCellBorder<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFFD32F2F)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>selectedCell<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0x331976D2)</span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/stephenWanjala/DataTable/tree/master/DataTable/src/main/java/io/github/stephenwanjala/datatable/DataTableDefaults.kt#L49">source</a>)</span></span></div><p class="paragraph">Colors used throughout the <a href="../-data-table.html">DataTable</a>.</p><p class="paragraph">All colors have sensible defaults that work without any theming framework. Pass a custom instance to <a href="../-data-table.html">DataTable</a> to match your application's palette.</p><p class="paragraph">Text color is not here — it lives on the styles in <a href="../-data-table-text-styles/index.html">DataTableTextStyles</a> — so a dark palette means overriding both.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-1361888714%2FConstructors%2F-1956488046" anchor-label="DataTableColors" id="-1361888714%2FConstructors%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-data-table-colors.html"><span>Data</span><wbr></wbr><span>Table</span><wbr></wbr><span><span>Colors</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1361888714%2FConstructors%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">container<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFFFAFAFA)<span class="token punctuation">, </span></span><span class="parameter ">header<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFFF0F0F0)<span class="token punctuation">, </span></span><span class="parameter ">divider<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFFDDDDDD)<span class="token punctuation">, </span></span><span class="parameter ">selectedRow<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0x4D1976D2)<span class="token punctuation">, </span></span><span class="parameter ">expandedRow<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0x80F0F0F0)<span class="token punctuation">, </span></span><span class="parameter ">onSurface<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF1C1C1C)<span class="token punctuation">, </span></span><span class="parameter ">onSurfaceSecondary<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF757575)<span class="token punctuation">, </span></span><span class="parameter ">checkboxChecked<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF1976D2)<span class="token punctuation">, </span></span><span class="parameter ">checkboxUnchecked<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF757575)<span class="token punctuation">, </span></span><span class="parameter ">checkboxCheckmark<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color.White<span class="token punctuation">, </span></span><span class="parameter ">iconTint<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF616161)<span class="token punctuation">, </span></span><span class="parameter ">disabledContent<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFFBDBDBD)<span class="token punctuation">, </span></span><span class="parameter ">rowAlternate<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color.Transparent<span class="token punctuation">, </span></span><span class="parameter ">hoveredRow<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0x1A000000)<span class="token punctuation">, </span></span><span class="parameter ">focusedRowBorder<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF1976D2)<span class="token punctuation">, </span></span><span class="parameter ">focusedCellBorder<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFF1976D2)<span class="token punctuation">, </span></span><span class="parameter ">editingCell<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFFFFFFFF)<span class="token punctuation">, </span></span><span class="parameter ">invalidCellBorder<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0xFFD32F2F)<span class="token punctuation">, </span></span><span class="parameter ">selectedCell<span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="token operator"> = </span>Color(0x331976D2)</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-1776717825%2FProperties%2F-1956488046" anchor-label="checkboxChecked" id="-1776717825%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="checkbox-checked.html"><span>checkbox</span><wbr></wbr><span><span>Checked</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1776717825%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="checkbox-checked.html">checkboxChecked</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Fill and border of a checked selection checkbox.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1355983185%2FProperties%2F-1956488046" anchor-label="checkboxCheckmark" id="1355983185%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="checkbox-checkmark.html"><span>checkbox</span><wbr></wbr><span><span>Checkmark</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1355983185%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="checkbox-checkmark.html">checkboxCheckmark</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">The checkmark drawn inside a checked checkbox.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1187480488%2FProperties%2F-1956488046" anchor-label="checkboxUnchecked" id="-1187480488%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="checkbox-unchecked.html"><span>checkbox</span><wbr></wbr><span><span>Unchecked</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1187480488%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="checkbox-unchecked.html">checkboxUnchecked</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Border of an unchecked selection checkbox.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1944126206%2FProperties%2F-1956488046" anchor-label="container" id="-1944126206%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="container.html"><span><span>container</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1944126206%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="container.html">container</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Background behind the whole table.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1792652838%2FProperties%2F-1956488046" anchor-label="disabledContent" id="1792652838%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="disabled-content.html"><span>disabled</span><wbr></wbr><span><span>Content</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1792652838%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="disabled-content.html">disabledContent</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Pagination arrows that cannot be used from the current page.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-389758230%2FProperties%2F-1956488046" anchor-label="divider" id="-389758230%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="divider.html"><span><span>divider</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-389758230%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="divider.html">divider</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Row separators, the freeze boundary, and grouped-header underlines.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1195032329%2FProperties%2F-1956488046" anchor-label="editingCell" id="1195032329%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="editing-cell.html"><span>editing</span><wbr></wbr><span><span>Cell</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1195032329%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="editing-cell.html">editingCell</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Background behind an open cell editor, so the field reads as a field     rather than as text that happens to have a caret in it.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1348999774%2FProperties%2F-1956488046" anchor-label="expandedRow" id="-1348999774%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="expanded-row.html"><span>expanded</span><wbr></wbr><span><span>Row</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1348999774%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="expanded-row.html">expandedRow</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Background behind the content of an expanded row.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1818375938%2FProperties%2F-1956488046" anchor-label="focusedCellBorder" id="-1818375938%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="focused-cell-border.html"><span>focused</span><wbr></wbr><span>Cell</span><wbr></wbr><span><span>Border</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1818375938%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="focused-cell-border.html">focusedCellBorder</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Outline drawn around the keyboard-focused cell, once cell-level     navigation is on. Drawn on top of the row's own focus marker.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2082046904%2FProperties%2F-1956488046" anchor-label="focusedRowBorder" id="-2082046904%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="focused-row-border.html"><span>focused</span><wbr></wbr><span>Row</span><wbr></wbr><span><span>Border</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2082046904%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="focused-row-border.html">focusedRowBorder</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Marker drawn down the leading edge of the keyboard-focused row.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-645334806%2FProperties%2F-1956488046" anchor-label="header" id="-645334806%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="header.html"><span><span>header</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-645334806%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="header.html">header</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Background of the header row and of the footer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1965823560%2FProperties%2F-1956488046" anchor-label="hoveredRow" id="-1965823560%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="hovered-row.html"><span>hovered</span><wbr></wbr><span><span>Row</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1965823560%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="hovered-row.html">hoveredRow</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Background of the row under the pointer, also used for icon-button hover     highlights in the footer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1927236669%2FProperties%2F-1956488046" anchor-label="iconTint" id="-1927236669%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="icon-tint.html"><span>icon</span><wbr></wbr><span><span>Tint</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1927236669%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="icon-tint.html">iconTint</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Sort arrows, expand chevrons, and pagination arrows.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2052074882%2FProperties%2F-1956488046" anchor-label="invalidCellBorder" id="-2052074882%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="invalid-cell-border.html"><span>invalid</span><wbr></wbr><span>Cell</span><wbr></wbr><span><span>Border</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2052074882%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="invalid-cell-border.html">invalidCellBorder</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Outline replacing <a href="focused-cell-border.html">focusedCellBorder</a> while the value in an open     editor has been rejected by the column's <code class="lang-kotlin">validateEdit</code>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1842707541%2FProperties%2F-1956488046" anchor-label="onSurface" id="1842707541%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-surface.html"><span>on</span><wbr></wbr><span><span>Surface</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1842707541%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="on-surface.html">onSurface</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Primary content color, available for callers building custom cells.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-889861295%2FProperties%2F-1956488046" anchor-label="onSurfaceSecondary" id="-889861295%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-surface-secondary.html"><span>on</span><wbr></wbr><span>Surface</span><wbr></wbr><span><span>Secondary</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-889861295%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="on-surface-secondary.html">onSurfaceSecondary</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Muted content color, available for callers building custom cells.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-633326697%2FProperties%2F-1956488046" anchor-label="rowAlternate" id="-633326697%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="row-alternate.html"><span>row</span><wbr></wbr><span><span>Alternate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-633326697%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="row-alternate.html">rowAlternate</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Background of every other row. <code class="lang-kotlin">Color.Transparent</code>, the default, turns     striping off.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="802269018%2FProperties%2F-1956488046" anchor-label="selectedCell" id="802269018%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="selected-cell.html"><span>selected</span><wbr></wbr><span><span>Cell</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="802269018%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="selected-cell.html">selectedCell</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Wash over cells inside a selected range. Translucent, so row striping     and row selection still read through it. The cell the cursor is on is     left unwashed, the way a spreadsheet leaves its active cell.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-531602300%2FProperties%2F-1956488046" anchor-label="selectedRow" id="-531602300%2FProperties%2F-1956488046" data-filterable-set=":DataTable/main"></a>
+          <div class="table-row" data-filterable-current=":DataTable/main" data-filterable-set=":DataTable/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="selected-row.html"><span>selected</span><wbr></wbr><span><span>Row</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-531602300%2FProperties%2F-1956488046"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="selected-row.html">selectedRow</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span></div><div class="brief "><p class="paragraph">Background of a selected row. Usually translucent, so it reads on top of     <a href="row-alternate.html">rowAlternate</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2026 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
