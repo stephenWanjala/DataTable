@@ -1,34 +1,126 @@
 name: Docs
 
+# Every build is published into its own directory on the gh-pages branch by mike, which also
+# maintains the versions.json behind the theme's version selector:
+#
+#   push to master   -> "dev", the in-progress docs; never becomes the default
+#   release          -> "<major>.<minor>", and moves the "latest" alias unless it is a prerelease
+#   workflow_dispatch -> whatever you ask for, including older tags (see the inputs below)
+#
+# Pages still serves an artifact rather than the branch itself, so the branch is only storage:
+# the last step exports it and hands it to actions/deploy-pages.
+
 on:
   push:
     branches: [master]
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
+      - 'overrides/**'
       - 'DataTable/src/**'
       - 'DataTable/build.gradle.kts'
       - 'requirements-docs.txt'
       - '.github/workflows/docs.yml'
+  release:
+    types: [released, prereleased]
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag or branch to build the docs from.'
+        default: 'master'
+      version:
+        description: 'Directory to publish into (e.g. 0.3). Blank derives it from the ref: a tag becomes major.minor, master becomes dev.'
+        default: ''
+      latest:
+        description: 'Move the "latest" alias — what visitors land on — to this build.'
+        type: boolean
+        default: false
 
-# Allow one deployment at a time; skip runs queued behind a newer one.
+# Serialised rather than cancelled: each run commits to gh-pages, so a cancelled run could
+# leave the branch without the version it was midway through writing.
 concurrency:
-  group: pages
+  group: docs
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write   # mike commits and pushes the built site to gh-pages
   pages: write
   id-token: write
 
 jobs:
-  build:
-    name: Build site
+  publish:
+    name: Publish version
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
     steps:
+      - name: Decide what to publish
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          TAG: ${{ github.event.release.tag_name }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+          IN_REF: ${{ inputs.ref }}
+          IN_VERSION: ${{ inputs.version }}
+          IN_LATEST: ${{ inputs.latest }}
+        run: |
+          set -euo pipefail
+
+          # 0.4.1 and v0.4.1 both publish to "0.4", so a patch release replaces the docs of the
+          # line it belongs to instead of adding another entry to the selector.
+          minor() { echo "$1" | sed -E 's/^v//; s/^([0-9]+\.[0-9]+).*/\1/'; }
+
+          alias=""
+          case "$EVENT" in
+            push)
+              ref=master; version=dev ;;
+            release)
+              ref="$TAG"; version="$(minor "$TAG")"
+              [ "$PRERELEASE" = "true" ] || alias=latest ;;
+            workflow_dispatch)
+              ref="${IN_REF:-master}"
+              version="$IN_VERSION"
+              if [ -z "$version" ]; then
+                case "$ref" in
+                  master|main) version=dev ;;
+                  *) version="$(minor "$ref")" ;;
+                esac
+              fi
+              [ "$IN_LATEST" = "true" ] && alias=latest || true ;;
+          esac
+
+          # Drives the banner wording in overrides/main.html.
+          [ "$version" = "dev" ] && channel=dev || channel=release
+
+          {
+            echo "ref=$ref"
+            echo "version=$version"
+            echo "alias=$alias"
+            echo "channel=$channel"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Publishing $ref as \"$version\"${alias:+ (alias: $alias)}."
+
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.plan.outputs.ref }}
+          # mike needs the gh-pages history, and an older ref needs origin/master to borrow the
+          # docs tooling from.
+          fetch-depth: 0
+
+      # Tags older than the version selector were built by a mkdocs.yml that knows nothing about
+      # it, and would render without a way to reach any other version. Their own docs/ and nav
+      # are left exactly as they were; only the theme wiring is brought forward.
+      # Tags older than the version selector were built by a mkdocs.yml that knows nothing
+      # about it. The script overlays the theme wiring only, and no-ops on anything current.
+      - name: Adopt the current docs tooling for an older ref
+        run: |
+          set -euo pipefail
+          if ! grep -q 'provider: mike' mkdocs.yml; then
+            git checkout origin/master -- .github/scripts overrides requirements-docs.txt
+          fi
+          python3 .github/scripts/adopt-docs-tooling.py
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -49,17 +141,54 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-docs.txt
 
-      - name: Install MkDocs
+      - name: Install MkDocs and mike
         run: pip install -r requirements-docs.txt
 
-      # Copied in before the build so MkDocs treats it as a static asset and serves it at /api/.
+      # Copied in before the build so MkDocs treats it as a static asset and serves it at /api/,
+      # which gives every published version the API reference that belongs to it.
       - name: Mount API reference
         run: |
           rm -rf docs/api
           cp -r build/dokka docs/api
 
-      - name: Build site
-        run: mkdocs build --strict
+      - name: Publish to gh-pages
+        env:
+          DOCS_CHANNEL: ${{ steps.plan.outputs.channel }}
+          DOCS_SITE_URL: https://stephenwanjala.github.io/DataTable/${{ steps.plan.outputs.version }}/
+          VERSION: ${{ steps.plan.outputs.version }}
+          ALIAS: ${{ steps.plan.outputs.alias }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          title="$VERSION"
+          [ "$VERSION" = "dev" ] && title='dev (unreleased)'
+
+          # alias-type=copy because GitHub Pages serves the artifact as plain files, where the
+          # symlink mike would otherwise use for "latest" does not resolve.
+          mike deploy \
+            --push \
+            --update-aliases \
+            --alias-type=copy \
+            --title "$title" \
+            "$VERSION" ${ALIAS:+$ALIAS}
+
+          # Points the site root at the latest release. Idempotent, and skipped until the first
+          # release has actually created the alias.
+          if mike list 2>/dev/null | grep -qw latest; then
+            mike set-default --push latest
+          fi
+
+          mike list
+
+      # gh-pages holds every version; Pages deploys an artifact, so hand it the whole branch.
+      - name: Export the versioned site
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages
+          rm -rf site && mkdir site
+          git archive origin/gh-pages | tar -x -C site
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -68,7 +197,7 @@ jobs:
 
   deploy:
     name: Deploy to Pages
-    needs: build
+    needs: publish
     runs-on: ubuntu-latest
     environment:
       name: github-pages

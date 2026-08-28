@@ -1,16 +1,26 @@
 site_name: Compose DataTable
 site_description: A feature-rich DataTable component for Compose Desktop, built entirely on Foundation APIs.
 site_author: Wanjala Stephen
-site_url: https://stephenwanjala.github.io/DataTable/
+# Every version lives under its own path, so the canonical URL and sitemap of a build have to
+# name the version they belong to. The Docs workflow sets this; the fallback is what a local
+# `mkdocs serve` gets.
+site_url: !ENV [DOCS_SITE_URL, "https://stephenwanjala.github.io/DataTable/latest/"]
 
 repo_url: https://github.com/stephenWanjala/DataTable
 repo_name: stephenWanjala/DataTable
 edit_uri: edit/master/docs/
 
+# mike drives the build, and unlike `mkdocs build --strict` it has no flag for this, so the
+# setting lives here: a broken link or a page missing from the nav fails the build.
+strict: true
+
 copyright: Copyright &copy; 2025 Wanjala Stephen — Apache License 2.0
 
 theme:
   name: material
+  # Holds main.html, which fills in Material's `outdated` banner block for any version that is
+  # not the current release.
+  custom_dir: overrides
   icon:
     repo: fontawesome/brands/github
   palette:
@@ -39,6 +49,17 @@ theme:
     - search.highlight
     - search.suggest
     - toc.follow
+
+extra:
+  # Renders the version selector next to the site title, reading the versions.json that mike
+  # writes at the root of the gh-pages branch. `default: latest` is the alias visitors land on.
+  version:
+    provider: mike
+    default: latest
+    alias: true
+  # "dev" for the in-progress build published off master, "release" otherwise. Set by the Docs
+  # workflow; picks which wording overrides/main.html shows in the banner.
+  channel: !ENV [DOCS_CHANNEL, "release"]
 
 markdown_extensions:
   - admonition

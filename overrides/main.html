@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+<!--
+  Material renders this block inside a banner that its own JavaScript unhides only when the page
+  being viewed is not the version marked default in versions.json. So the wording below never
+  appears on the current release, and the link always points at whatever `latest` resolves to.
+-->
+{% block outdated %}
+  {% if config.extra.channel == "dev" %}
+    These are the docs for unreleased work on <code>master</code>, not for any published release.
+  {% else %}
+    You are reading the docs for an older release.
+  {% endif %}
+  <a href="{{ '../' ~ base_url }}">
+    <strong>Go to the latest version.</strong>
+  </a>
+{% endblock %}
