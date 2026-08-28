@@ -4,7 +4,13 @@
 # no migration path, so an unpinned build would break without warning.
 #
 #   python3 -m venv .venv && .venv/bin/pip install -r requirements-docs.txt
-#   .venv/bin/mkdocs serve
+#   .venv/bin/mkdocs serve       # this checkout on its own
+#   .venv/bin/mike serve         # every published version, selector and all
+#
+# Publishing is the Docs workflow's job; running mike by hand pushes to gh-pages.
 
 mkdocs==1.6.1
 mkdocs-material==9.7.7
+# Publishes each build into its own directory on the gh-pages branch and maintains the
+# versions.json that drives the theme's version selector.
+mike==2.1.3

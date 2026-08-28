@@ -5,10 +5,10 @@ A highly customizable, feature-rich `DataTable` component for Compose Desktop bu
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.stephenwanjala/datatable)](https://central.sonatype.com/artifact/io.github.stephenwanjala/datatable)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-**[Documentation](https://stephenwanjala.github.io/DataTable/)** ·
-[Getting Started](https://stephenwanjala.github.io/DataTable/getting-started/) ·
-[API Reference](https://stephenwanjala.github.io/DataTable/api/) ·
-[Migration](https://stephenwanjala.github.io/DataTable/migration/)
+**[Documentation](https://stephenwanjala.github.io/DataTable/latest/)** ·
+[Getting Started](https://stephenwanjala.github.io/DataTable/latest/getting-started/) ·
+[API Reference](https://stephenwanjala.github.io/DataTable/latest/api/) ·
+[Migration](https://stephenwanjala.github.io/DataTable/latest/migration/)
 
 ## Demo
 
@@ -51,7 +51,7 @@ So you can rule it in or out quickly: a block of cells can be copied but not pas
 as a block, cell selection is a single rectangle, and editing has no row-level commit and no undo.
 There is also no filtering UI, no export, no drag-to-reorder columns, no layout persistence, no
 tree tables, and no accessibility semantics. Frozen columns pin left only. The
-[documentation](https://stephenwanjala.github.io/DataTable/#what-it-does-not-do) spells each of
+[documentation](https://stephenwanjala.github.io/DataTable/latest/#what-it-does-not-do) spells each of
 these out.
 
 ## Installation
@@ -84,7 +84,7 @@ DataTable(
 `itemKey` must be unique across `items` -- it backs row identity while scrolling as well as
 selection and expansion.
 
-See the [documentation](https://stephenwanjala.github.io/DataTable/) for the full guide.
+See the [documentation](https://stephenwanjala.github.io/DataTable/latest/) for the full guide.
 
 ## Sample Gallery
 
