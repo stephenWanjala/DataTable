@@ -27,6 +27,12 @@ DataTable(
     header composables, drag-to-resize, left-pinned frozen columns, and grouped headers nested to
     any depth.
 
+-   **A layout users can keep**
+
+    Widths, hidden columns, column order, sort, and filters come out of `captureLayout()` as one
+    snapshot — encode it to a string, store it per user, and `applyLayout` puts the grid back as
+    they left it, even after the columns have changed underneath.
+
 -   **A filter row that pairs with your query**
 
     Mark a column `filterable` and it gets a field under its header; give it a `filterPredicate`
@@ -125,10 +131,9 @@ it:
   validates across columns or rolls back as a unit, and no undo stack.
 - **No export.** CSV, Excel, and PDF are the caller's job — though `onCopy` hands you the
   selected rows and columns as a starting point.
-- **No column reordering by dragging**, and no built-in column chooser — `visible` is a flag you
-  drive from your own UI.
-- **No layout persistence.** Column widths, sort, cell focus, and scroll live only as long as the
-  composition. See [Interactions](guide/interactions.md#column-widths).
+- **No column reordering by dragging**, and no built-in column chooser. `moveColumn` and
+  `setColumnHidden` are there and are saved with a layout — the header has no drag handle and the
+  menu is yours to build. See [Column Layout](guide/layout.md).
 - **Filtering is one query per column, ANDed.** The filter row holds a string per column and
   every column has to match. There is no OR across columns, no filter that spans two of them, and
   no Excel-style checklist of the values that occur — a custom `filterContent` is where those get

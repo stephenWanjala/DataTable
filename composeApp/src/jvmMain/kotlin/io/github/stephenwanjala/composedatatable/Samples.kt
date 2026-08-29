@@ -496,6 +496,91 @@ fun FilteringSample() {
 }
 
 // ---------------------------------------------------------------------------
+// 5c. Saving a column layout
+// ---------------------------------------------------------------------------
+
+@Composable
+fun LayoutSample() {
+    val tableState = rememberDataTableState()
+
+    // Stands in for a preferences store: whatever this holds is all an application has to keep
+    // per user to bring their grid back exactly as they left it.
+    var saved by remember { mutableStateOf<String?>(null) }
+    var chooserOpen by remember { mutableStateOf(false) }
+
+    val headers = remember {
+        employeeHeaders.map { header ->
+            if (header.key == "name") header.copy(filterable = true, filterPlaceholder = "Contains…")
+            else header
+        }
+    }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text(
+                "Resize, sort, filter, hide and reorder — then save, wreck it, and restore.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.weight(1f))
+
+            Box {
+                OutlinedButton(onClick = { chooserOpen = true }) { Text("Columns") }
+                DropdownMenu(expanded = chooserOpen, onDismissRequest = { chooserOpen = false }) {
+                    headers.forEach { header ->
+                        val hidden = tableState.isColumnHidden(header.key)
+                        DropdownMenuItem(
+                            text = { Text((if (hidden) "☐ " else "☑ ") + header.title) },
+                            onClick = { tableState.setColumnHidden(header.key, !hidden) },
+                        )
+                    }
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = { Text("Move Salary first") },
+                        onClick = { tableState.moveColumn("salary", 0) },
+                    )
+                }
+            }
+
+            OutlinedButton(onClick = { saved = tableState.captureLayout().encodeToString() }) {
+                Text("Save")
+            }
+            OutlinedButton(
+                onClick = {
+                    saved?.let { text ->
+                        DataTableLayout.decodeFromString(text)?.let(tableState::applyLayout)
+                    }
+                },
+                enabled = saved != null,
+            ) {
+                Text("Restore")
+            }
+            OutlinedButton(onClick = { tableState.resetLayout() }) { Text("Reset") }
+        }
+
+        DataTable(
+            items = sampleEmployees,
+            headers = headers,
+            itemKey = { it.id },
+            state = tableState,
+            resizableColumns = true,
+            density = DataTableDensity.COMFORTABLE,
+            colors = DataTableDefaults.colors(rowAlternate = Color(0xFFF7F7F7)),
+            modifier = Modifier.weight(1f),
+        )
+
+        Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                Text("Saved layout", style = MaterialTheme.typography.labelMedium)
+                Text(
+                    saved?.replace("\n", " · ") ?: "Nothing saved yet.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // 6. Server-side sorting and pagination
 // ---------------------------------------------------------------------------
 

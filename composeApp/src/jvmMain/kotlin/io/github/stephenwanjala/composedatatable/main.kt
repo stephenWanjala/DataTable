@@ -79,6 +79,12 @@ private val samples = listOf(
         content = { FilteringSample() },
     ),
     Sample(
+        title = "Saved Layout",
+        exercises = "Hide, reorder and resize columns · captureLayout / applyLayout, and the encoded string an app would store per user",
+        icon = Icons.Default.ViewColumn,
+        content = { LayoutSample() },
+    ),
+    Sample(
         title = "Server-Side",
         exercises = "manualSorting + manualPagination + manualFiltering against a 5,000-row fake repository, holding one page in memory",
         icon = Icons.Default.CloudQueue,

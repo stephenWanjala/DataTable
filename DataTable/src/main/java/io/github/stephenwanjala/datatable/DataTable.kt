@@ -178,7 +178,12 @@ fun <T> DataTable(
     val scope = rememberCoroutineScope()
     val listState = state.lazyListState
     val horizontalScrollState = state.horizontalScrollState
-    val flatHeaders = remember(headers) { flattenHeaders(headers) }
+    // The user's own arrangement — what they hid, and the order they put columns in — folded
+    // into the tree once, so everything downstream reads `visible` and list order as declared.
+    val arrangedHeaders = remember(headers, state.hiddenColumns, state.columnOrder) {
+        applyColumnOverrides(headers, state.hiddenColumns, state.columnOrder)
+    }
+    val flatHeaders = remember(arrangedHeaders) { flattenHeaders(arrangedHeaders) }
 
     // Partition into frozen and scrollable. A frozen column has to declare a width — the frozen
     // section sits outside the horizontally scrolling area, so there is nothing for a weighted
@@ -206,7 +211,7 @@ fun <T> DataTable(
 
     // The header renders from the tree so groups can span their children, while the body keeps
     // using the flattened leaves.
-    val (frozenTree, scrollableTree) = remember(headers) { partitionHeaderTree(headers) }
+    val (frozenTree, scrollableTree) = remember(arrangedHeaders) { partitionHeaderTree(arrangedHeaders) }
 
     require(!manualPagination || totalItems != null) {
         "manualPagination = true requires totalItems: the table only holds the current page, " +
@@ -217,21 +222,21 @@ fun <T> DataTable(
     // managed internally when they do not. The internal values are seeded from the parameters
     // once and then owned by the table — they are not kept in sync with later parameter changes,
     // which is what makes the mode unambiguous either way.
-    var uncontrolledSort by remember { mutableStateOf(sortBy) }
-    var uncontrolledMultiSort by remember { mutableStateOf(multiSortBy) }
+    // Sorting and filtering live on the state rather than here, so a captured layout can put
+    // them back. Paging does not: which page you are on is not part of how a table is arranged.
+    remember(state) { state.seedInternalState(sortBy, multiSortBy, filters) }
     var uncontrolledPage by remember { mutableStateOf(currentPage) }
-    var uncontrolledFilters by remember { mutableStateOf(filters) }
 
-    val activeSort = if (onSortChange != null) sortBy else uncontrolledSort
-    val activeMultiSort = if (onMultiSortChange != null) multiSortBy else uncontrolledMultiSort
+    val activeSort = if (onSortChange != null) sortBy else state.internalSort
+    val activeMultiSort = if (onMultiSortChange != null) multiSortBy else state.internalMultiSort
     val activePage = if (onPageChange != null) currentPage else uncontrolledPage
-    val activeFilters = if (onFiltersChange != null) filters else uncontrolledFilters
+    val activeFilters = if (onFiltersChange != null) filters else state.internalFilters
 
     val selectSort: (SortState) -> Unit = { newSort ->
-        if (onSortChange != null) onSortChange(newSort) else uncontrolledSort = newSort
+        if (onSortChange != null) onSortChange(newSort) else state.internalSort = newSort
     }
     val selectMultiSort: (List<SortState>) -> Unit = { newMulti ->
-        if (onMultiSortChange != null) onMultiSortChange(newMulti) else uncontrolledMultiSort = newMulti
+        if (onMultiSortChange != null) onMultiSortChange(newMulti) else state.internalMultiSort = newMulti
     }
     val selectPage: (Int) -> Unit = { newPage ->
         if (onPageChange != null) onPageChange(newPage) else uncontrolledPage = newPage
@@ -242,7 +247,7 @@ fun <T> DataTable(
         // Filtering shrinks the table under whatever page the user was on, which would otherwise
         // leave them looking at a page that no longer exists.
         if (activePage != 0) selectPage(0)
-        if (onFiltersChange != null) onFiltersChange(updated) else uncontrolledFilters = updated
+        if (onFiltersChange != null) onFiltersChange(updated) else state.internalFilters = updated
     }
 
     // Filters resolved against the visible columns, and the rows that survive them. Under
@@ -423,6 +428,10 @@ fun <T> DataTable(
         state.rowKeys = rowKeys
         state.rowScrollIndices = rowScrollIndices
         state.columnKeys = columnKeys
+        // What a captured layout describes: the sort and filters on display, whoever owns them.
+        state.activeSort = activeSort
+        state.activeMultiSort = activeMultiSort
+        state.activeFilters = activeFilters
     }
 
     // Width taken by the select/expand controls, which sit ahead of the first column.

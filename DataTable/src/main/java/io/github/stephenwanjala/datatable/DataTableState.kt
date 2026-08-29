@@ -139,6 +139,71 @@ class DataTableState(
     internal val columnWidths = mutableStateMapOf<String, Dp>()
 
     /**
+     * Columns the user has hidden, by [DataTableHeader.key].
+     *
+     * This *adds* to `DataTableHeader.visible`: hiding here takes a column away, and showing it
+     * again cannot bring back one whose header declares `visible = false`. The two say different
+     * things — "the user does not want to see this" against "this column is not available" — and
+     * a restored layout has no business overruling the second.
+     */
+    var hiddenColumns: Set<String> by mutableStateOf(emptySet())
+
+    /**
+     * Column keys in the order the user put them, or empty while they are in declared order.
+     *
+     * Columns the list does not name follow the ones it does, in declaration order — which is
+     * where a column added since a layout was saved appears. Assigning an empty list puts every
+     * column back where its header declares it.
+     *
+     * With grouped headers the order applies to every level of the tree at once, and a group
+     * moves as a block — a column cannot be taken out of the group it was declared in.
+     */
+    var columnOrder: List<String> by mutableStateOf(emptyList())
+
+    /**
+     * Sorting and filtering the table owns, used whenever the caller has not taken control of
+     * them with `onSortChange`, `onMultiSortChange`, or `onFiltersChange`. `DataTable` seeds
+     * these from its parameters once and owns them from then on.
+     */
+    internal var internalSort: SortState by mutableStateOf(SortState())
+    internal var internalMultiSort: List<SortState> by mutableStateOf(emptyList())
+    internal var internalFilters: Map<String, String> by mutableStateOf(emptyMap())
+
+    /**
+     * Sorting and filtering as currently *displayed*, published by `DataTable` every composition.
+     *
+     * These are what [captureLayout] reads, which is why they are kept apart from the internal
+     * copies above: a snapshot has to describe what the user is looking at whether the table owns
+     * the sort or the caller does.
+     */
+    internal var activeSort: SortState by mutableStateOf(SortState())
+    internal var activeMultiSort: List<SortState> by mutableStateOf(emptyList())
+    internal var activeFilters: Map<String, String> by mutableStateOf(emptyMap())
+
+    /**
+     * Whether the table-owned view state has been set, either by seeding it from `DataTable`'s
+     * parameters or by restoring a layout into it.
+     *
+     * A restore usually happens *before* the table first composes — an application reading a
+     * preference on startup — so the seed has to stand down once something else has spoken, or it
+     * would wipe the sort and filters that were just put back.
+     */
+    private var internalStateSeeded = false
+
+    /** Seeds the table-owned view state from `DataTable`'s parameters, once. */
+    internal fun seedInternalState(
+        sortBy: SortState,
+        multiSortBy: List<SortState>,
+        filters: Map<String, String>,
+    ) {
+        if (internalStateSeeded) return
+        internalStateSeeded = true
+        internalSort = sortBy
+        internalMultiSort = multiSortBy
+        internalFilters = filters
+    }
+
+    /**
      * Focus target for the table container, so an editor can hand keyboard focus back when it
      * closes. Held here rather than in `DataTable` because the editor is composed several
      * layers down, inside a `LazyColumn` item.
@@ -275,6 +340,102 @@ class DataTableState(
      */
     fun resetColumnWidths() {
         columnWidths.clear()
+    }
+
+    /**
+     * Hides or shows one column, by [DataTableHeader.key].
+     *
+     * Showing a column whose header declares `visible = false` does nothing — see
+     * [hiddenColumns]. Hiding the column that has keyboard focus is safe: focus is held by key,
+     * so it simply stops drawing until the column comes back.
+     */
+    fun setColumnHidden(key: String, hidden: Boolean) {
+        hiddenColumns = if (hidden) hiddenColumns + key else hiddenColumns - key
+    }
+
+    /**
+     * Whether the user has hidden this column. Says nothing about `DataTableHeader.visible`, so a
+     * column can be shown by this and still not be rendered.
+     */
+    fun isColumnHidden(key: String): Boolean = key in hiddenColumns
+
+    /**
+     * Moves one column to a position among the others, the way dragging its header would.
+     *
+     * Positions are counted over the visible leaf columns in display order, frozen ones first.
+     * A key that is not on display, or an index outside the table, is clamped or ignored rather
+     * than throwing.
+     */
+    fun moveColumn(key: String, toIndex: Int) {
+        // Whatever order is in force now: the stored one, extended with any column it has not
+        // heard of, or the visual order when nothing has been reordered yet.
+        val base = if (columnOrder.isEmpty()) {
+            columnKeys
+        } else {
+            columnOrder + columnKeys.filter { it !in columnOrder }
+        }
+        val reordered = base.toMutableList()
+        val from = reordered.indexOf(key)
+        if (from < 0) return
+        reordered.removeAt(from)
+        reordered.add(toIndex.coerceIn(0, reordered.size), key)
+        columnOrder = reordered
+    }
+
+    /**
+     * Captures how the table is arranged right now: widths, hidden columns, order, sort, and
+     * filters.
+     *
+     * Reads what is *displayed*, so it captures a sort or a filter the caller controls just as
+     * well as one the table owns. Save the result with [DataTableLayout.encodeToString], or map
+     * it onto a type of your own.
+     */
+    fun captureLayout(): DataTableLayout = DataTableLayout(
+        columnWidths = columnWidths.toMap(),
+        hiddenColumns = hiddenColumns,
+        columnOrder = columnOrder,
+        sortBy = activeSort,
+        multiSortBy = activeMultiSort,
+        filters = activeFilters,
+    )
+
+    /**
+     * Puts a captured layout back.
+     *
+     * Widths, hidden columns, and order always apply — the table owns those. The sort and the
+     * filters apply only where the table owns them too: a table given `onSortChange` or
+     * `onFiltersChange` renders what its caller passes, so restore those from
+     * [DataTableLayout.sortBy], [DataTableLayout.multiSortBy], and [DataTableLayout.filters] into
+     * your own state instead.
+     *
+     * Safe to call with a layout saved against an older version of the table: entries naming
+     * columns that no longer exist are ignored.
+     */
+    fun applyLayout(layout: DataTableLayout) {
+        // Claims the table-owned sort and filters, so composing the table afterwards does not
+        // seed them back from its parameters.
+        internalStateSeeded = true
+        columnWidths.clear()
+        columnWidths.putAll(layout.columnWidths)
+        hiddenColumns = layout.hiddenColumns.toSet()
+        columnOrder = layout.columnOrder.toList()
+        internalSort = layout.sortBy
+        internalMultiSort = layout.multiSortBy
+        internalFilters = layout.filters
+    }
+
+    /**
+     * Drops every column override — widths, hidden columns, and order — leaving the table as its
+     * headers declare it.
+     *
+     * Sorting and filtering are left alone: they are what the table is *showing*, not how it is
+     * arranged, and a "reset the layout" button that silently cleared the user's filters would
+     * be a surprise.
+     */
+    fun resetLayout() {
+        columnWidths.clear()
+        hiddenColumns = emptySet()
+        columnOrder = emptyList()
     }
 
     /**

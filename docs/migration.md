@@ -5,7 +5,7 @@ Each release is listed newest first.
 ## Unreleased
 
 Cell-level focus, grid keyboard navigation, in-place cell editing, cell range selection,
-clipboard copy, per-column display formatting, and a filter row. Everything here is additive: no
+clipboard copy, per-column display formatting, a filter row, and a saveable column layout. Everything here is additive: no
 signature changed, and a table that does not opt in behaves as it did in 0.4.0 — with one
 exception, ++ctrl+c++, noted below.
 
@@ -111,6 +111,41 @@ Two knock-on changes for tables that already page or select:
 - Select-all covers the rows that survived the filters, not every row in `items`. With no
   filters active — every table before this release — both are the same list.
 
+### A user's arrangement can be saved and put back
+
+`DataTableState.captureLayout()` returns a `DataTableLayout` — column widths, hidden columns,
+column order, sort, and filters — and `applyLayout` puts one back. `encodeToString` and
+`DataTableLayout.decodeFromString` turn it into a string for a preferences store and back, so
+persisting a grid is two lines rather than a mapping layer:
+
+```kotlin
+settings.putString("employees.layout", tableState.captureLayout().encodeToString())
+
+// next session, before the first composition
+remember {
+    settings.getString("employees.layout")
+        ?.let { DataTableLayout.decodeFromString(it) }
+        ?.let(tableState::applyLayout)
+}
+```
+
+Hiding and ordering columns are new state on the table, alongside the widths it already held:
+`setColumnHidden`, `isColumnHidden`, `hiddenColumns`, `columnOrder`, `moveColumn`, and
+`resetLayout`. Hiding *adds* to `DataTableHeader.visible` rather than overriding it — a column a
+caller declared unavailable stays unavailable whatever a restored layout says — so nothing changes
+for a table that never calls them.
+
+`applyLayout` restores sort and filters only where the table owns them. A table given
+`onSortChange` or `onFiltersChange` renders what its caller passes, so read those off the snapshot
+into your own state; `captureLayout` reads what is *displayed* and so captures them either way.
+
+Internally, the table's own sort and filter state moved onto `DataTableState` — which is what lets
+a layout put them back. The contract is unchanged: both are still seeded from the parameters once
+and then owned by the table until a callback takes them over. One consequence worth knowing: that
+state now lives as long as the `DataTableState` rather than as long as the `DataTable` call, so a
+table that is removed and re-composed against the same remembered state keeps its sort instead of
+re-seeding from `sortBy`.
+
 ### New API
 
 `DataTable` gains `cellNavigation` and `onCellEdit`. `DataTableHeader` gains `editable`,
@@ -131,11 +166,16 @@ with the other query parameters rather than at the end of the list, so a call pa
 positionally that far in needs them named — every one of them has a default, and named arguments
 are how the other 30 are passed in practice.
 
+`DataTableState` also gains `captureLayout`, `applyLayout`, `resetLayout`, `setColumnHidden`,
+`isColumnHidden`, `hiddenColumns`, `columnOrder`, and `moveColumn`, with `DataTableLayout` as a new
+type.
+
 `DataTableColors` gains `focusedCellBorder`, `editingCell`, `invalidCellBorder`, `selectedCell`,
 `filterRow`, and `filterField`; `DataTableTextStyles` gains `cellEditor` and `filterField`. Both
 are `data class`es with defaulted parameters, so existing `copy` and factory calls are unaffected.
 
-See [Filtering](guide/filtering.md), [Cell Editing](guide/editing.md), and
+See [Filtering](guide/filtering.md), [Column Layout](guide/layout.md),
+[Cell Editing](guide/editing.md), and
 [Range selection](guide/selection.md#cell-range-selection).
 
 ## 0.4.0

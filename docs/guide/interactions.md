@@ -137,10 +137,13 @@ Button(onClick = { tableState.resetColumnWidths() }) {
 
 Clears every user resize, reverting to the widths declared on the headers.
 
-!!! note "State is not persisted"
-    Column widths, sort, cell focus, and scroll position live only as long as the composition. Saving
-    and restoring a user's grid layout across restarts is not built in — hoist the pieces you care
-    about and persist them yourself.
+Widths are part of a user's layout, along with the columns they hid, the order they put them in,
+the sort, and the filters — `tableState.captureLayout()` hands all of it over as one snapshot to
+store, and `applyLayout` puts it back. See [Column Layout](layout.md).
+
+!!! note "Cell focus and scroll are not part of it"
+    A layout describes how a table is *arranged*. Focus, selection, expansion, and scroll position
+    belong to a session and live only as long as the composition.
 
 ## Scrolling behaviour
 

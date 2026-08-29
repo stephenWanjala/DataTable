@@ -193,6 +193,47 @@ internal fun <T> partitionHeaderTree(
     }
 
 /**
+ * Applies a user's column overrides — what they hid, and the order they put columns in — to the
+ * header tree, before anything else looks at it.
+ *
+ * Doing it as one transformation up front is what keeps the rest of the table honest: rendering,
+ * flattening, freezing, and grouping all keep reading `visible` and list order exactly as
+ * declared, and none of them has to know that a state override exists.
+ *
+ * Hiding *adds* to [DataTableHeader.visible]: a column its caller declared unavailable stays
+ * unavailable whatever a restored layout says. Ordering sorts each level of the tree by where its
+ * columns appear in [order], so a group moves as a block and a column the order does not mention
+ * keeps its declared position after the ones it does.
+ */
+internal fun <T> applyColumnOverrides(
+    headers: List<DataTableHeader<T>>,
+    hidden: Set<String>,
+    order: List<String>,
+): List<DataTableHeader<T>> {
+    if (hidden.isEmpty() && order.isEmpty()) return headers
+
+    val ranks = order.withIndex().associate { (index, key) -> key to index }
+
+    fun rank(node: DataTableHeader<T>): Int =
+        leavesOf(node).mapNotNull { ranks[it.key] }.minOrNull()
+            ?: ranks[node.key]
+            ?: Int.MAX_VALUE
+
+    fun override(nodes: List<DataTableHeader<T>>): List<DataTableHeader<T>> = nodes
+        .map { node ->
+            val children = node.children?.let { override(it) }
+            node.copy(
+                visible = node.visible && node.key !in hidden,
+                children = children ?: node.children,
+            )
+        }
+        // Stable, so columns the order does not name keep their declared order among themselves.
+        .sortedBy { rank(it) }
+
+    return override(headers)
+}
+
+/**
  * Flattens a potentially nested header tree into a list of visible leaf headers.
  */
 internal fun <T> flattenHeaders(headers: List<DataTableHeader<T>>): List<DataTableHeader<T>> {

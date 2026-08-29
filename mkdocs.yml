@@ -101,6 +101,7 @@ nav:
       - Sorting & Paging: guide/sorting-and-paging.md
       - Grouping: guide/grouping.md
       - Interactions: guide/interactions.md
+      - Column Layout: guide/layout.md
       - Cell Editing: guide/editing.md
       - Theming: guide/theming.md
   - Migration: migration.md
