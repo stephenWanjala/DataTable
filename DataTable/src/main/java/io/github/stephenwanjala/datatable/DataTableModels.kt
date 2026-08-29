@@ -54,6 +54,19 @@ import androidx.compose.ui.unit.dp
  *               [editValue]. Ignored when [cellContent] draws the cell itself, though copy still
  *               uses it. [DataTableFormatters] has ready-made ones for money, numbers,
  *               percentages, dates, and booleans.
+ * @param filterable Whether this column gets a field in the filter row. Declaring any filterable
+ *                   column is what makes `DataTable` draw that row at all.
+ * @param filterPlaceholder Hint text shown in an empty filter field. Worth setting where the
+ *                          column title alone does not say what to type.
+ * @param filterPredicate Decides whether one item matches a query. The default is a
+ *                        case-insensitive "contains" against both the text the cell shows and the
+ *                        raw [value], so a salary reading `$92,000` is found by `92,0` and by
+ *                        `92000` alike. Supply one for anything else — a number range, a date
+ *                        window, a set of accepted codes.
+ * @param filterContent Optional composable replacing the built-in text field — a dropdown of the
+ *                      values that occur, a range picker, a tri-state flag. It is handed a
+ *                      [ColumnFilterController] to read the current query from and to set the new
+ *                      one with, and supplying it opts the column into the filter row on its own.
  */
 @Immutable
 data class DataTableHeader<T>(
@@ -76,6 +89,10 @@ data class DataTableHeader<T>(
     val validateEdit: ((T, String) -> String?)? = null,
     val editorContent: (@Composable (T, CellEditController) -> Unit)? = null,
     val format: ((Any?) -> String)? = null,
+    val filterable: Boolean = false,
+    val filterPlaceholder: String = "",
+    val filterPredicate: ((T, String) -> Boolean)? = null,
+    val filterContent: (@Composable (ColumnFilterController) -> Unit)? = null,
 )
 
 /**

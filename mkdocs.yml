@@ -96,6 +96,7 @@ nav:
   - Getting Started: getting-started.md
   - Guide:
       - Columns: guide/columns.md
+      - Filtering: guide/filtering.md
       - Selection & Expansion: guide/selection.md
       - Sorting & Paging: guide/sorting-and-paging.md
       - Grouping: guide/grouping.md

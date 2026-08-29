@@ -27,6 +27,13 @@ DataTable(
     header composables, drag-to-resize, left-pinned frozen columns, and grouped headers nested to
     any depth.
 
+-   **A filter row that pairs with your query**
+
+    Mark a column `filterable` and it gets a field under its header; give it a `filterPredicate`
+    for a range or an exact match, or a `filterContent` for a dropdown. Filtering is a
+    `Map<String, String>` you can hoist, save, or turn into a `WHERE` clause with
+    `manualFiltering`.
+
 -   **Formatted for reading, raw underneath**
 
     A `format` lambda per column — money, percentages, dates, booleans, or your own — decides
@@ -116,16 +123,16 @@ it:
   build up several disjoint blocks.
 - **No row-level commit.** Editing commits one cell at a time — there is no editing row that
   validates across columns or rolls back as a unit, and no undo stack.
-- **No filtering UI.** Filter `items` yourself before handing them over; there is no filter row and
-  no `manualFiltering` counterpart to `manualSorting`.
 - **No export.** CSV, Excel, and PDF are the caller's job — though `onCopy` hands you the
   selected rows and columns as a starting point.
 - **No column reordering by dragging**, and no built-in column chooser — `visible` is a flag you
   drive from your own UI.
 - **No layout persistence.** Column widths, sort, cell focus, and scroll live only as long as the
   composition. See [Interactions](guide/interactions.md#column-widths).
-- **No per-column formatter.** `value` is rendered with `toString()`; formatting means a
-  `cellContent` composable, and sorting a formatted column means a `comparator`.
+- **Filtering is one query per column, ANDed.** The filter row holds a string per column and
+  every column has to match. There is no OR across columns, no filter that spans two of them, and
+  no Excel-style checklist of the values that occur — a custom `filterContent` is where those get
+  built.
 - **No tree tables.** `groupBy` is one level deep, flat, and always expanded — see
   [Grouping](guide/grouping.md#limitations).
 - **No accessibility semantics.** Rows and cells carry no roles or content descriptions, so screen

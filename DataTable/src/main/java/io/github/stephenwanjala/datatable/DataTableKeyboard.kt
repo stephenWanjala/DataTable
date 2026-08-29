@@ -57,8 +57,9 @@ internal fun Modifier.dataTableKeyboardNavigation(
     if (keyEvent.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
 
     // An open editor owns every key. Without this the container would swallow the arrow keys
-    // before the text field ever saw them, and the caret could not move.
-    if (state.isEditing) return@onPreviewKeyEvent false
+    // before the text field ever saw them, and the caret could not move. A focused filter field
+    // owns the keyboard for the same reason.
+    if (state.isEditing || state.filterFocused) return@onPreviewKeyEvent false
 
     val rowKeys = state.rowKeys
     if (rowKeys.isEmpty()) return@onPreviewKeyEvent false

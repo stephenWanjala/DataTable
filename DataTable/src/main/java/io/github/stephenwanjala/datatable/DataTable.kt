@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -43,6 +44,7 @@ import kotlinx.coroutines.launch
  * - Text overflow / ellipsis per column
  * - Per-column display formatting, leaving values raw for sorting and editing
  * - Custom sort comparators
+ * - A filter row under the header, client-side or handed off with `manualFiltering`
  * - Right-click context menu callback
  * - Keyboard navigation (arrow keys, Enter, Space, Home, End)
  * - Cell-level focus and grid keyboard navigation
@@ -73,6 +75,19 @@ import kotlinx.coroutines.launch
  * @param manualSorting When true the table does not reorder [items] — the caller has already
  *                      sorted them, typically in a database query. Headers still show sort
  *                      indicators and report clicks.
+ * @param filters Active column filters, as column key to query text. Read only when
+ *                [onFiltersChange] is supplied, which makes filtering *controlled* the same way
+ *                sorting is: the table renders these and never changes them, so the caller must
+ *                feed the new value back. Leave it `null` to let the table own its filters.
+ *                Filtering applies to any visible column with a query, whether or not it draws a
+ *                field — which is what lets a filter UI of your own drive the table's matching.
+ * @param onFiltersChange Invoked with the whole new filter map when a filter changes, on every
+ *                        keystroke. Debounce it before turning it into a server query.
+ * @param manualFiltering When true the table does not filter [items] — the caller has already
+ *                        done it, typically in the same query that sorted and paged them. The
+ *                        filter row still renders and still reports what the user types.
+ * @param noResultsContent Shown in place of the rows when filters match nothing, telling that
+ *                         apart from a table that has no data at all.
  * @param currentPage Active zero-based page. Read only when [onPageChange] is supplied, which
  *                    makes pagination controlled in the same way as sorting.
  * @param manualPagination When true [items] is already the current page and the table does not
@@ -119,6 +134,10 @@ fun <T> DataTable(
     multiSortBy: List<SortState> = emptyList(),
     onMultiSortChange: ((List<SortState>) -> Unit)? = null,
     manualSorting: Boolean = false,
+    // Filtering
+    filters: Map<String, String> = emptyMap(),
+    onFiltersChange: ((Map<String, String>) -> Unit)? = null,
+    manualFiltering: Boolean = false,
     // Column resizing
     resizableColumns: Boolean = false,
     minColumnWidth: Dp = 40.dp,
@@ -130,6 +149,7 @@ fun <T> DataTable(
     headerContent: (@Composable () -> Unit)? = null,
     footerContent: (@Composable () -> Unit)? = null,
     noDataContent: (@Composable () -> Unit)? = null,
+    noResultsContent: (@Composable () -> Unit)? = null,
     // Grouping
     groupBy: ((T) -> String)? = null,
     groupHeaderContent: (@Composable (String, List<T>) -> Unit)? = null,
@@ -200,10 +220,12 @@ fun <T> DataTable(
     var uncontrolledSort by remember { mutableStateOf(sortBy) }
     var uncontrolledMultiSort by remember { mutableStateOf(multiSortBy) }
     var uncontrolledPage by remember { mutableStateOf(currentPage) }
+    var uncontrolledFilters by remember { mutableStateOf(filters) }
 
     val activeSort = if (onSortChange != null) sortBy else uncontrolledSort
     val activeMultiSort = if (onMultiSortChange != null) multiSortBy else uncontrolledMultiSort
     val activePage = if (onPageChange != null) currentPage else uncontrolledPage
+    val activeFilters = if (onFiltersChange != null) filters else uncontrolledFilters
 
     val selectSort: (SortState) -> Unit = { newSort ->
         if (onSortChange != null) onSortChange(newSort) else uncontrolledSort = newSort
@@ -214,23 +236,43 @@ fun <T> DataTable(
     val selectPage: (Int) -> Unit = { newPage ->
         if (onPageChange != null) onPageChange(newPage) else uncontrolledPage = newPage
     }
+    val selectFilter: (String, String) -> Unit = { key, query ->
+        val updated =
+            if (query.isEmpty()) activeFilters - key else activeFilters + (key to query)
+        // Filtering shrinks the table under whatever page the user was on, which would otherwise
+        // leave them looking at a page that no longer exists.
+        if (activePage != 0) selectPage(0)
+        if (onFiltersChange != null) onFiltersChange(updated) else uncontrolledFilters = updated
+    }
+
+    // Filters resolved against the visible columns, and the rows that survive them. Under
+    // `manualFiltering` the caller has filtered already, but the resolved list is still what
+    // tells an empty table apart from a filter that matched nothing.
+    val resolvedFilters = remember(flatHeaders, activeFilters) {
+        resolveFilters(flatHeaders, activeFilters)
+    }
+    val hasFilterRow = remember(flatHeaders) { flatHeaders.any { it.hasFilterField() } }
+    val filteredItems = remember(items, resolvedFilters, manualFiltering) {
+        if (manualFiltering) items else applyFilters(items, resolvedFilters)
+    }
 
     val showCheckboxes = selectionMode != SelectionMode.NONE && showSelect
 
     // Keys for every item, used by select-all and by the header's "all selected" state.
     // Kept in a `remember` so the containsAll scan does not run on every recomposition.
-    val allKeys = remember(items, itemKey) {
-        items.mapTo(LinkedHashSet<Any>(items.size), itemKey)
+    // Filtered rows are deliberately absent: select-all selects what the user can see.
+    val allKeys = remember(filteredItems, itemKey) {
+        filteredItems.mapTo(LinkedHashSet<Any>(filteredItems.size), itemKey)
     }
     val allSelected = remember(allKeys, selectedKeys) {
         allKeys.isNotEmpty() && selectedKeys.containsAll(allKeys)
     }
 
     val processedItems = remember(
-        items, flatHeaders, activeSort, activeMultiSort, activePage,
+        filteredItems, flatHeaders, activeSort, activeMultiSort, activePage,
         showPagination, itemsPerPage, manualSorting, manualPagination,
     ) {
-        var result = items
+        var result = filteredItems
 
         // Under manualSorting the caller has already ordered `items`; the header still shows
         // indicators and reports clicks, but the table must not reorder anything itself.
@@ -271,9 +313,10 @@ fun <T> DataTable(
         }
     }
 
-    // Row count across every page. Equal to items.size unless the caller is paging manually,
-    // in which case only they know how many rows exist beyond the page they handed us.
-    val rowCount = totalItems ?: items.size
+    // Row count across every page — after filtering, which is what the footer and the page
+    // count have to be about. Equal to items.size unless the caller is paging manually, in which
+    // case only they know how many rows exist beyond the page they handed us.
+    val rowCount = totalItems ?: filteredItems.size
 
     val totalPages = remember(rowCount, itemsPerPage, showPagination) {
         if (showPagination && itemsPerPage > 0) {
@@ -605,6 +648,81 @@ fun <T> DataTable(
                 headerContent()
             }
 
+            // ---- Filter row ----
+            // Its own block rather than part of the header, so it survives `hideDefaultHeader`
+            // and a custom `headerContent` — the fields line up with the columns, not with
+            // whatever is drawn above them.
+            if (hasFilterRow) {
+                Box(
+                    // One focus observer over the whole row, rather than one per field: focus
+                    // moving between two fields would otherwise race, and whichever of the two
+                    // reported last would decide whether the table swallows the next keystroke.
+                    modifier = Modifier.onFocusChanged { state.filterFocused = it.hasFocus }
+                ) {
+                    if (hasFrozenColumns) {
+                        FrozenRowLayout(
+                            frozenHeaders = frozenHeaders,
+                            scrollableHeaders = scrollableHeaders,
+                            horizontalScrollState = horizontalScrollState,
+                            dividerColor = colors.divider,
+                            // Sized to content: a filter field is shorter than a data row.
+                            height = null,
+                            frozenContent = {
+                                DataTableFilterRow(
+                                    headers = frozenHeaders,
+                                    showSelect = showCheckboxes,
+                                    showExpand = showExpand,
+                                    selectionMode = selectionMode,
+                                    density = density,
+                                    filters = activeFilters,
+                                    onFilterChange = selectFilter,
+                                    colors = colors,
+                                    textStyles = textStyles,
+                                    state = state,
+                                )
+                            },
+                            scrollableContent = {
+                                DataTableFilterRow(
+                                    headers = scrollableHeaders,
+                                    modifier = scrollableWidthModifier,
+                                    showSelect = false,
+                                    showExpand = false,
+                                    selectionMode = selectionMode,
+                                    density = density,
+                                    filters = activeFilters,
+                                    onFilterChange = selectFilter,
+                                    colors = colors,
+                                    textStyles = textStyles,
+                                    state = state,
+                                )
+                            },
+                        )
+                    } else {
+                        Row(
+                            modifier = Modifier
+                                .background(colors.filterRow)
+                                .fillMaxWidth()
+                                .horizontalScroll(horizontalScrollState)
+                                .enableTrackpadHorizontalScroll(scrollState = horizontalScrollState)
+                        ) {
+                            DataTableFilterRow(
+                                headers = scrollableHeaders,
+                                modifier = scrollableWidthModifier,
+                                showSelect = showCheckboxes,
+                                showExpand = showExpand,
+                                selectionMode = selectionMode,
+                                density = density,
+                                filters = activeFilters,
+                                onFilterChange = selectFilter,
+                                colors = colors,
+                                textStyles = textStyles,
+                                state = state,
+                            )
+                        }
+                    }
+                }
+            }
+
             TableDivider(colors.divider)
 
             // ---- Body ----
@@ -612,7 +730,11 @@ fun <T> DataTable(
                 when {
                     loading -> loadingContent?.invoke() ?: DefaultLoadingContent(textStyles)
 
-                    processedItems.isEmpty() -> noDataContent?.invoke() ?: DefaultNoDataContent(textStyles)
+                    processedItems.isEmpty() -> if (resolvedFilters.isNotEmpty()) {
+                        noResultsContent?.invoke() ?: DefaultNoResultsContent(textStyles)
+                    } else {
+                        noDataContent?.invoke() ?: DefaultNoDataContent(textStyles)
+                    }
 
                     else -> {
                         Box {
