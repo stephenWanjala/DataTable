@@ -568,6 +568,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#row-height-and-horizontal-virtualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Row height and horizontal virtualization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Row height and horizontal virtualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rows-that-size-to-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rows that size to content
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-culling-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What culling costs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#nested-grouped-headers" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1015,6 +1054,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#row-height-and-horizontal-virtualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Row height and horizontal virtualization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Row height and horizontal virtualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rows-that-size-to-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rows that size to content
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-culling-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What culling costs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#nested-grouped-headers" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1112,8 +1190,10 @@ scrolls.</p>
 <p>Mixing both in one table is fine. Mixing them <em>under a single grouped header</em> is not — see
 <a href="#nested-grouped-headers">Nested headers</a>.</p>
 <h2 id="text-overflow">Text overflow<a class="headerlink" href="#text-overflow" title="Permanent link">&para;</a></h2>
-<p>The defaults (<code>maxLines = Int.MAX_VALUE</code>, <code>overflow = TextOverflow.Clip</code>) let text wrap, which
-gives rows of differing heights. Most tables want the opposite:</p>
+<p>The defaults are <code>maxLines = Int.MAX_VALUE</code> and <code>overflow = TextOverflow.Clip</code>, so text wraps —
+but a row is a fixed height (see <a href="#row-height-and-horizontal-virtualization">Row height</a>), so the
+wrapped lines past the first are cut off. Say what you want to happen for any column of long
+values:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">DataTableHeader</span><span class="p">(</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"notes"</span><span class="p">,</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Notes"</span><span class="p">,</span>
@@ -1123,6 +1203,9 @@ gives rows of differing heights. Most tables want the opposite:</p>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="n">overflow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TextOverflow</span><span class="p">.</span><span class="na">Ellipsis</span><span class="p">,</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">)</span>
 </code></pre></div>
+<p>One line ending in an ellipsis is what most tables want — the user can see there is more without
+the row growing. To let a column genuinely occupy several lines, give the table a taller
+<code>rowHeight</code>, or <code>rowHeight = null</code> when the number of lines varies from row to row.</p>
 <h2 id="formatting">Formatting<a class="headerlink" href="#formatting" title="Permanent link">&para;</a></h2>
 <p><code>format</code> turns the extracted value into the text the cell shows. It is the whole of the
 difference between a column that displays money and a column that <em>holds</em> money:</p>
@@ -1263,21 +1346,60 @@ has nothing to take a share of. <code>fixed = true</code> without a <code>width<
 <code>state.resetColumnWidths()</code> to clear them.</p>
 <p>Grouped headers resize with their children — a group's width is recomputed from its leaves, so
 the band stays aligned.</p>
+<h2 id="row-height-and-horizontal-virtualization">Row height and horizontal virtualization<a class="headerlink" href="#row-height-and-horizontal-virtualization" title="Permanent link">&para;</a></h2>
+<p>These are one setting, not two. <code>rowHeight</code> defaults to a single line of body text at the table's
+density — 52dp at <code>DEFAULT</code>, 44dp at <code>COMFORTABLE</code>, 36dp at <code>COMPACT</code> — and every data row is
+exactly that tall:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">DataTable</span><span class="p">(</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">orderLines</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="n">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">headers</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="n">itemKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="n">rowHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">56.</span><span class="n">dp</span><span class="p">,</span><span class="w">      </span><span class="c1">// taller: these cells hold a status chip</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p">)</span>
+</code></pre></div>
+<p>Because a row's height is known without measuring its cells, the table composes only the columns
+near the viewport and replaces each run that scrolled out of sight with a single spacer of the
+same width. Rows stay aligned with the header, and a forty-column grid stops composing forty
+cells for every visible row. A couple of columns either side are composed ahead of the eye.</p>
+<h3 id="rows-that-size-to-content">Rows that size to content<a class="headerlink" href="#rows-that-size-to-content" title="Permanent link">&para;</a></h3>
+<p><code>rowHeight = null</code> brings back rows that grow to fit their tallest cell:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">DataTable</span><span class="p">(</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">notes</span><span class="p">,</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="n">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">headers</span><span class="p">,</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="n">itemKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="n">rowHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">       </span><span class="c1">// a column of prose that wraps to however many lines it needs</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="p">)</span>
+</code></pre></div>
+<p><strong>Columns are then not culled, and cannot be.</strong> A wrapping column makes every row tall even while
+it is off screen; cull it and the rows snap short, scroll it back and they grow again, shoving
+everything below down the page. In the library's own test a row moves 333 points doing nothing
+but scrolling sideways. So <code>rowHeight = null</code> composes every column at every offset — correct,
+and the reason it is not the default.</p>
+<p>Prefer a taller <code>rowHeight</code> over <code>null</code> whenever the cell content has a <em>fixed</em> size — a chip, an
+avatar, two lines of text. You keep the culling and you keep uniform rows. Reach for <code>null</code> only
+when the number of lines genuinely varies per row.</p>
+<h3 id="what-culling-costs">What culling costs<a class="headerlink" href="#what-culling-costs" title="Permanent link">&para;</a></h3>
+<p>A <code>cellContent</code> that runs an effect stops running it once its column leaves. <code>LazyColumn</code> already
+does this to a row scrolled off the bottom, so an effect in a cell has to tolerate disposal
+regardless — but a paginated table never scrolls off the bottom at all, and there the horizontal
+axis is the first thing that will dispose one.</p>
+<p>The header and filter rows are never culled. They cost one row apiece rather than one per data
+row, and culling the filter row would pull the focus out of a field mid-scroll.</p>
 <h2 id="nested-grouped-headers">Nested (grouped) headers<a class="headerlink" href="#nested-grouped-headers" title="Permanent link">&para;</a></h2>
 <p>Give a header <code>children</code> and it becomes a <strong>group</strong>: a band drawn above its children, spanning
 them. Only the leaves render as real columns — sorting, resizing, and cell content all belong to
 them.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="n">DataTableHeader</span><span class="o">&lt;</span><span class="n">Person</span><span class="o">&gt;</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"id"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ID"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">60.</span><span class="n">dp</span><span class="p">),</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="n">DataTableHeader</span><span class="p">(</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">        </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"contact"</span><span class="p">,</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Contact"</span><span class="p">,</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">        </span><span class="n">children</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">            </span><span class="n">DataTableHeader</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"email"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Email"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">email</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">200.</span><span class="n">dp</span><span class="p">),</span>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">            </span><span class="n">DataTableHeader</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"phone"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Phone"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">phone</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">140.</span><span class="n">dp</span><span class="p">),</span>
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">        </span><span class="p">),</span>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">    </span><span class="p">),</span>
-<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span><span class="n">DataTableHeader</span><span class="o">&lt;</span><span class="n">Person</span><span class="o">&gt;</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"id"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ID"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">60.</span><span class="n">dp</span><span class="p">),</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="n">DataTableHeader</span><span class="p">(</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">        </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"contact"</span><span class="p">,</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Contact"</span><span class="p">,</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">        </span><span class="n">children</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">            </span><span class="n">DataTableHeader</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"email"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Email"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">email</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">200.</span><span class="n">dp</span><span class="p">),</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">            </span><span class="n">DataTableHeader</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"phone"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Phone"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">phone</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">140.</span><span class="n">dp</span><span class="p">),</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">        </span><span class="p">),</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">    </span><span class="p">),</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="p">)</span>
 </code></pre></div>
 <table class="header-demo">
   <colgroup>

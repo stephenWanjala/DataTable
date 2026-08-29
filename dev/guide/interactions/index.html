@@ -689,6 +689,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Scrolling behaviour">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#styling-the-scrollbars" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Styling the scrollbars
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -969,6 +986,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Scrolling behaviour">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#styling-the-scrollbars" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Styling the scrollbars
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1133,8 +1167,25 @@ belong to a session and live only as long as the composition.</p>
 <p>Horizontal scrolling responds to a horizontal wheel or trackpad swipe, and to <span class="keys"><kbd class="key-shift">Shift</kbd></span> + vertical
 wheel. Press-and-drag deliberately does <strong>not</strong> pan the table — that would fight the column resize
 handles and text selection.</p>
-<p>Scrollbars can be hidden with <code>showScrollbars = false</code>, and their width set with
-<code>scrollbarThickness</code> (8.dp by default). Both apply to the vertical and horizontal bars together.</p>
+<p>Scrollbars can be hidden with <code>showScrollbars = false</code>, which applies to the vertical and
+horizontal bars together.</p>
+<h3 id="styling-the-scrollbars">Styling the scrollbars<a class="headerlink" href="#styling-the-scrollbars" title="Permanent link">&para;</a></h3>
+<p>The table draws Compose Desktop's own <code>VerticalScrollbar</code> and <code>HorizontalScrollbar</code>, so they are
+styled the way every other scrollbar in your application is — through <code>LocalScrollbarStyle</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">CompositionLocalProvider</span><span class="p">(</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="n">LocalScrollbarStyle</span><span class="w"> </span><span class="n">provides</span><span class="w"> </span><span class="n">LocalScrollbarStyle</span><span class="p">.</span><span class="na">current</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="n">thickness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">12.</span><span class="n">dp</span><span class="p">,</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="n">hoverColor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Color</span><span class="p">(</span><span class="m">0</span><span class="n">x99000000</span><span class="p">),</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">        </span><span class="n">unhoverColor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Color</span><span class="p">(</span><span class="m">0</span><span class="n">x33000000</span><span class="p">),</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="n">DataTable</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">)</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="p">}</span>
+</code></pre></div>
+<p><code>ScrollbarStyle</code> carries <code>thickness</code>, <code>minimalHeight</code>, <code>shape</code>, <code>hoverDurationMillis</code>,
+<code>unhoverColor</code>, and <code>hoverColor</code>. <code>DataTable</code> has no scrollbar parameters of its own: a knob for
+one of those six would leave the other five to the composition local anyway, and set the table's
+scrollbars apart from the rest of the window for no good reason.</p>
 
 
 

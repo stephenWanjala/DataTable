@@ -2,7 +2,7 @@
 <html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
-    <title>iconTint</title>
+    <title>rowHeight</title>
     <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
     <script>var pathToRoot = "../../../";</script>
     <script>document.documentElement.classList.replace("no-js","js");</script>
@@ -104,12 +104,12 @@
                 </div>
             </div>
             <div id="main">
-<div class="main-content" data-page-type="member" id="content" pageIds="DataTable::io.github.stephenwanjala.datatable/DataTableColors/iconTint/#/PointingToDeclaration//-1956488046">
-  <div class="breadcrumbs"><a href="../../../index.html">DataTable</a><span class="delimiter">/</span><a href="../index.html">io.github.stephenwanjala.datatable</a><span class="delimiter">/</span><a href="index.html">DataTableColors</a><span class="delimiter">/</span><span class="current">iconTint</span></div>
+<div class="main-content" data-page-type="member" id="content" pageIds="DataTable::io.github.stephenwanjala.datatable/DataTableDefaults/rowHeight/#io.github.stephenwanjala.datatable.DataTableDensity/PointingToDeclaration//-1956488046">
+  <div class="breadcrumbs"><a href="../../../index.html">DataTable</a><span class="delimiter">/</span><a href="../index.html">io.github.stephenwanjala.datatable</a><span class="delimiter">/</span><a href="index.html">DataTableDefaults</a><span class="delimiter">/</span><span class="current">rowHeight</span></div>
   <div class="cover ">
-    <h1 class="cover"><span>icon</span><wbr></wbr><span><span>Tint</span></span></h1>
+    <h1 class="cover"><span>row</span><wbr></wbr><span><span>Height</span></span></h1>
   </div>
-  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="icon-tint.html">iconTint</a><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.graphics/Color///PointingToDeclaration/">Color</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/stephenWanjala/DataTable/tree/master/DataTable/src/main/java/io/github/stephenwanjala/datatable/DataTableDefaults.kt#L69">source</a>)</span></span></div></div></div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="row-height.html"><span class="token function">rowHeight</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">density<span class="token operator">: </span><a href="../-data-table-density/index.html">DataTableDensity</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="androidx.compose.ui.unit/Dp///PointingToDeclaration/">Dp</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/stephenWanjala/DataTable/tree/master/DataTable/src/main/java/io/github/stephenwanjala/datatable/DataTableDefaults.kt#L166">source</a>)</span></span></div><p class="paragraph">The height <code class="lang-kotlin">DataTable</code> gives a row when it is not told one: enough for a single line of body text at <a href="row-height.html">density</a>'s padding.</p><p class="paragraph">Rows being a uniform, known height is what lets the table cull the columns that scroll out of sight — a row that sizes to its content changes height when the tall cell is the culled one, so <code class="lang-kotlin">DataTable</code> will not cull for a table whose <code class="lang-kotlin">rowHeight</code> is <code class="lang-kotlin">null</code>.</p><p class="paragraph">This assumes the default <code class="lang-kotlin">bodyCell</code> style. A larger font, two lines of text, or a <code class="lang-kotlin">cellContent</code> holding a chip or an avatar needs a height of its own — pass one to <code class="lang-kotlin">DataTable</code> rather than deriving it from here.</p></div></div>
 </div>
     <div class="footer">
         <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>

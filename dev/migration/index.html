@@ -709,16 +709,38 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#unreleased" class="md-nav__link">
+  <a href="#050" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unreleased
+        0.5.0
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+    <nav class="md-nav" aria-label="0.5.0">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rows-have-a-uniform-height-and-columns-are-virtualized" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rows have a uniform height, and columns are virtualized
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scrollbarthickness-is-gone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scrollbarThickness is gone
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#cell-navigation-is-opt-in" class="md-nav__link">
@@ -1080,16 +1102,38 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#unreleased" class="md-nav__link">
+  <a href="#050" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unreleased
+        0.5.0
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+    <nav class="md-nav" aria-label="0.5.0">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rows-have-a-uniform-height-and-columns-are-virtualized" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rows have a uniform height, and columns are virtualized
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scrollbarthickness-is-gone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scrollbarThickness is gone
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#cell-navigation-is-opt-in" class="md-nav__link">
@@ -1416,11 +1460,53 @@
 
 <h1 id="migration">Migration<a class="headerlink" href="#migration" title="Permanent link">&para;</a></h1>
 <p>Each release is listed newest first.</p>
-<h2 id="unreleased">Unreleased<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h2 id="050">0.5.0<a class="headerlink" href="#050" title="Permanent link">&para;</a></h2>
 <p>Cell-level focus, grid keyboard navigation, in-place cell editing, cell range selection,
-clipboard copy, per-column display formatting, a filter row, and a saveable column layout. Everything here is additive: no
-signature changed, and a table that does not opt in behaves as it did in 0.4.0 — with one
-exception, <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-c">C</kbd></span>, noted below.</p>
+clipboard copy, per-column display formatting, a filter row, a saveable column layout, and
+horizontal virtualization. Almost all of it is additive: a table that does not opt in behaves as
+it did in 0.4.0, with three exceptions noted below — <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-c">C</kbd></span> is now bound, <code>scrollbarThickness</code>
+is removed, and <strong>row height</strong> has a default, which is the one change that can alter how an
+existing table looks.</p>
+<h3 id="rows-have-a-uniform-height-and-columns-are-virtualized">Rows have a uniform height, and columns are virtualized<a class="headerlink" href="#rows-have-a-uniform-height-and-columns-are-virtualized" title="Permanent link">&para;</a></h3>
+<p><strong>This is the one change that can alter an existing table's appearance.</strong> <code>DataTable</code> gained a
+<code>rowHeight</code>, defaulting to one line of body text at the table's density — 52dp at <code>DEFAULT</code>, 44dp
+at <code>COMFORTABLE</code>, 36dp at <code>COMPACT</code>. Every data row is exactly that tall.</p>
+<p>Before, a row grew to fit its tallest cell, so a column wrapping onto three lines made every row
+three lines deep. Now that column is clipped instead. Two ways to take it:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// The content has a fixed size that just needs more room — a chip, an avatar, two lines.</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">DataTable</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">,</span><span class="w"> </span><span class="n">rowHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">56.</span><span class="n">dp</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1">// The number of lines genuinely varies per row.</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">DataTable</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">,</span><span class="w"> </span><span class="n">rowHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span>
+</code></pre></div>
+<p>If your table already had a <strong>frozen column</strong>, its rows were being pinned at 50dp anyway — that
+was hardcoded, undocumented, and a point short of what a line of text at <code>DEFAULT</code> density needs,
+so text was clipped by a pixel. Those tables get a pixel back and lose the inconsistency: a row
+is now the same height whether or not anything is pinned.</p>
+<p><strong>What it buys.</strong> Because a row's height is known without measuring its cells, the table now
+composes only the columns near the viewport, replacing each run that scrolled out of sight with
+one spacer of the same width. A forty-column grid stops composing forty cells for every visible
+row. This is why the two are one setting: under <code>rowHeight = null</code> a row's height depends on
+cells that may not be composed, so culling switches itself off. See
+<a href="../guide/columns/#row-height-and-horizontal-virtualization">Columns</a>.</p>
+<p>One thing to check if you use <code>cellContent</code>: a culled cell is not composed, so an effect inside
+one stops running while its column is off screen. <code>LazyColumn</code> already does this to rows scrolled
+off the bottom, but a paginated table never scrolls off the bottom at all.</p>
+<h3 id="scrollbarthickness-is-gone"><code>scrollbarThickness</code> is gone<a class="headerlink" href="#scrollbarthickness-is-gone" title="Permanent link">&para;</a></h3>
+<p><code>DataTable</code> no longer takes a <code>scrollbarThickness</code>. It never did anything — the parameter was
+accepted and never read, in every version since the first, and its original KDoc said as much
+("currently decorative") before that caveat was lost. Nothing renders differently for having
+dropped it; only a call site that passed it stops compiling, which is the point — it was not
+doing what it looked like it was doing.</p>
+<p>Scrollbars are Compose Desktop's own, so style them through <code>LocalScrollbarStyle</code>, which covers
+thickness along with colours, shape, and hover timing:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">CompositionLocalProvider</span><span class="p">(</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">LocalScrollbarStyle</span><span class="w"> </span><span class="n">provides</span><span class="w"> </span><span class="n">LocalScrollbarStyle</span><span class="p">.</span><span class="na">current</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">thickness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">12.</span><span class="n">dp</span><span class="p">)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="n">DataTable</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
+</code></pre></div>
+<p>See <a href="../guide/interactions/#styling-the-scrollbars">Styling the scrollbars</a>.</p>
 <h3 id="cell-navigation-is-opt-in">Cell navigation is opt-in<a class="headerlink" href="#cell-navigation-is-opt-in" title="Permanent link">&para;</a></h3>
 <p><code>cellNavigation = true</code> moves keyboard focus from the row down to the cell. Declaring any column
 <code>editable = true</code> turns it on by itself, because an editor you cannot reach with the keyboard is
@@ -1461,14 +1547,14 @@ text a cell shows. It changes nothing on its own — a column without one still 
 <code>value.toString()</code> — but it retires the workaround it replaces. Formatting inside <code>value</code> made a
 column sort as text, which cost a <code>comparator</code>, and opened editors onto formatted text, which
 cost an <code>editValue</code>. Move the formatting to <code>format</code> and both go away:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// Before</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">"</span><span class="err">$</span><span class="si">${</span><span class="s">"</span><span class="o">%</span><span class="p">,.</span><span class="m">0f</span><span class="s">"</span><span class="p">.</span><span class="na">format</span><span class="p">(</span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="p">)</span><span class="si">}</span><span class="s">"</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">comparator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compareBy</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">editValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="p">.</span><span class="na">toLong</span><span class="p">().</span><span class="na">toString</span><span class="p">()</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1">// After</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">currency</span><span class="p">(</span><span class="n">decimals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// Before</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">"</span><span class="err">$</span><span class="si">${</span><span class="s">"</span><span class="o">%</span><span class="p">,.</span><span class="m">0f</span><span class="s">"</span><span class="p">.</span><span class="na">format</span><span class="p">(</span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="p">)</span><span class="si">}</span><span class="s">"</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">comparator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compareBy</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">editValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="p">.</span><span class="na">toLong</span><span class="p">().</span><span class="na">toString</span><span class="p">()</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1">// After</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">currency</span><span class="p">(</span><span class="n">decimals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
 </code></pre></div>
 <p><code>DataTableFormatters</code> is a new object of ready-made formatters — <code>currency</code>, <code>number</code>, <code>percent</code>,
 <code>date</code>, and <code>boolean</code> — each locale-aware, and each rendering nulls and unexpected types rather
@@ -1479,10 +1565,10 @@ handler that wants the raw values still has <code>columns</code> (with their <co
 <h3 id="columns-can-filter-themselves">Columns can filter themselves<a class="headerlink" href="#columns-can-filter-themselves" title="Permanent link">&para;</a></h3>
 <p><code>DataTableHeader</code> gains <code>filterable</code>, and with it a filter row under the header. The row exists
 only once some column asks for it, so nothing changes for a table that does not.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">DataTableHeader</span><span class="p">(</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"name"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Name"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">name</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">filterable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">filterPlaceholder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Contains…"</span><span class="p">,</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">DataTableHeader</span><span class="p">(</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"name"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Name"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">name</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">filterable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">filterPlaceholder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Contains…"</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">)</span>
 </code></pre></div>
 <p>The default match is a case-insensitive contains against the cell's text <em>and</em> its raw value;
 <code>filterPredicate</code> replaces it with a range, an exact match, or whatever the column needs, and
@@ -1504,14 +1590,14 @@ covers the empty state a filter causes, which the table now tells apart from hav
 column order, sort, and filters — and <code>applyLayout</code> puts one back. <code>encodeToString</code> and
 <code>DataTableLayout.decodeFromString</code> turn it into a string for a preferences store and back, so
 persisting a grid is two lines rather than a mapping layer:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">settings</span><span class="p">.</span><span class="na">putString</span><span class="p">(</span><span class="s">"employees.layout"</span><span class="p">,</span><span class="w"> </span><span class="n">tableState</span><span class="p">.</span><span class="na">captureLayout</span><span class="p">().</span><span class="na">encodeToString</span><span class="p">())</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1">// next session, before the first composition</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">remember</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="n">settings</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="s">"employees.layout"</span><span class="p">)</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">DataTableLayout</span><span class="p">.</span><span class="na">decodeFromString</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="o">?.</span><span class="na">let</span><span class="p">(</span><span class="n">tableState</span><span class="o">::</span><span class="n">applyLayout</span><span class="p">)</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">settings</span><span class="p">.</span><span class="na">putString</span><span class="p">(</span><span class="s">"employees.layout"</span><span class="p">,</span><span class="w"> </span><span class="n">tableState</span><span class="p">.</span><span class="na">captureLayout</span><span class="p">().</span><span class="na">encodeToString</span><span class="p">())</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1">// next session, before the first composition</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">remember</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="n">settings</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="s">"employees.layout"</span><span class="p">)</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">DataTableLayout</span><span class="p">.</span><span class="na">decodeFromString</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">        </span><span class="o">?.</span><span class="na">let</span><span class="p">(</span><span class="n">tableState</span><span class="o">::</span><span class="n">applyLayout</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">}</span>
 </code></pre></div>
 <p><code>showColumnMenuButton = true</code> gives the header its own menu for showing and hiding columns — the
 equivalent of JavaFX's <code>isTableMenuButtonVisible</code> — so the common case needs no UI of your own.</p>
@@ -1563,6 +1649,11 @@ are how the other 30 are passed in practice.</p>
 <code>isColumnHidden</code>, <code>hiddenColumns</code>, <code>columnOrder</code>, and <code>moveColumn</code>, with <code>DataTableLayout</code> as a new
 type.</p>
 <p><code>DataTable</code> gains <code>reorderableColumns</code>.</p>
+<p><code>DataTable</code> gains <code>rowHeight</code>, and <code>DataTableDefaults</code> gains <code>rowHeight(density)</code> to derive its
+default. This one has a behavioural default rather than an inert one — see <a href="#rows-have-a-uniform-height-and-columns-are-virtualized">Rows have a uniform
+height</a> above.</p>
+<p><code>DataTable</code> <strong>loses</strong> <code>scrollbarThickness</code>, the only removal in this release. It was inert, and
+<code>LocalScrollbarStyle</code> replaces it — see <a href="#scrollbarthickness-is-gone">above</a>.</p>
 <p><code>DataTableColors</code> gains <code>focusedCellBorder</code>, <code>editingCell</code>, <code>invalidCellBorder</code>, <code>selectedCell</code>,
 <code>draggedColumn</code>, <code>columnDropIndicator</code>, <code>filterRow</code>, and <code>filterField</code>; <code>DataTableTextStyles</code> gains <code>cellEditor</code> and <code>filterField</code>. Both
 are <code>data class</code>es with defaulted parameters, so existing <code>copy</code> and factory calls are unaffected.</p>
@@ -1626,18 +1717,18 @@ changes are worth checking.</p>
 <p>In 0.2.0 the table kept an internal copy that it updated on interaction regardless, so a caller
 who passed the callback but ignored the parameter still saw sorting work. That now does nothing
 visible — the click fires the callback, and the table waits for you to feed the value back:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Broken in 0.3.0: the callback fires, but sortBy never changes</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">DataTable</span><span class="p">(</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">sortBy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SortState</span><span class="p">(),</span><span class="w">                     </span><span class="c1">// constant!</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="n">onSortChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">analytics</span><span class="p">.</span><span class="na">track</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">)</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1">// Correct: hoist it</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="kd">var</span><span class="w"> </span><span class="nv">sort</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="p">(</span><span class="n">SortState</span><span class="p">())</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">DataTable</span><span class="p">(</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="n">sortBy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sort</span><span class="p">,</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="n">onSortChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">sort</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">it</span><span class="p">;</span><span class="w"> </span><span class="n">analytics</span><span class="p">.</span><span class="na">track</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1">// Broken in 0.3.0: the callback fires, but sortBy never changes</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">DataTable</span><span class="p">(</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="n">sortBy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SortState</span><span class="p">(),</span><span class="w">                     </span><span class="c1">// constant!</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="n">onSortChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">analytics</span><span class="p">.</span><span class="na">track</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">)</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1">// Correct: hoist it</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="kd">var</span><span class="w"> </span><span class="nv">sort</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="p">(</span><span class="n">SortState</span><span class="p">())</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">DataTable</span><span class="p">(</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="n">sortBy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sort</span><span class="p">,</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="n">onSortChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">sort</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">it</span><span class="p">;</span><span class="w"> </span><span class="n">analytics</span><span class="p">.</span><span class="na">track</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="p">)</span>
 </code></pre></div>
 <p>Passing no callback is unchanged — the table owns the state, and click-to-sort works with no wiring.</p>
 <h3 id="nested-headers-render">Nested headers render<a class="headerlink" href="#nested-headers-render" title="Permanent link">&para;</a></h3>
@@ -1691,35 +1782,35 @@ will point at each call site.</p>
 </table>
 <h3 id="selection-and-expansion">Selection and expansion<a class="headerlink" href="#selection-and-expansion" title="Permanent link">&para;</a></h3>
 <p>Hoist keys rather than items:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1">// 0.1.x</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kd">var</span><span class="w"> </span><span class="nv">selectedItems</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="o">&lt;</span><span class="n">Set</span><span class="o">&lt;</span><span class="n">Person</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">emptySet</span><span class="p">())</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kd">var</span><span class="w"> </span><span class="nv">expandedItems</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="o">&lt;</span><span class="n">Set</span><span class="o">&lt;</span><span class="n">Person</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">emptySet</span><span class="p">())</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">DataTable</span><span class="p">(</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">people</span><span class="p">,</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="n">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">headers</span><span class="p">,</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="n">selectedItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">selectedItems</span><span class="p">,</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="n">onSelectionChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">selectedItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">it</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="n">expandedItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expandedItems</span><span class="p">,</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="n">onExpandChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">expandedItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">it</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="p">)</span>
-<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
-<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="c1">// 0.2.0</span>
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="kd">var</span><span class="w"> </span><span class="nv">selectedKeys</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="o">&lt;</span><span class="n">Set</span><span class="o">&lt;</span><span class="kt">Any</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">emptySet</span><span class="p">())</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="kd">var</span><span class="w"> </span><span class="nv">expandedKeys</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="o">&lt;</span><span class="n">Set</span><span class="o">&lt;</span><span class="kt">Any</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">emptySet</span><span class="p">())</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>
-<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="n">DataTable</span><span class="p">(</span>
-<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">    </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">people</span><span class="p">,</span>
-<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">    </span><span class="n">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">headers</span><span class="p">,</span>
-<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">    </span><span class="n">itemKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">    </span><span class="n">selectedKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">selectedKeys</span><span class="p">,</span>
-<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">    </span><span class="n">onSelectionChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">selectedKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">it</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">    </span><span class="n">expandedKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expandedKeys</span><span class="p">,</span>
-<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">    </span><span class="n">onExpandChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">expandedKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">it</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1">// 0.1.x</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kd">var</span><span class="w"> </span><span class="nv">selectedItems</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="o">&lt;</span><span class="n">Set</span><span class="o">&lt;</span><span class="n">Person</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">emptySet</span><span class="p">())</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kd">var</span><span class="w"> </span><span class="nv">expandedItems</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="o">&lt;</span><span class="n">Set</span><span class="o">&lt;</span><span class="n">Person</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">emptySet</span><span class="p">())</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">DataTable</span><span class="p">(</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">people</span><span class="p">,</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="n">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">headers</span><span class="p">,</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="n">selectedItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">selectedItems</span><span class="p">,</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="n">onSelectionChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">selectedItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">it</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="n">expandedItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expandedItems</span><span class="p">,</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="n">onExpandChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">expandedItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">it</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="p">)</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="c1">// 0.2.0</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="kd">var</span><span class="w"> </span><span class="nv">selectedKeys</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="o">&lt;</span><span class="n">Set</span><span class="o">&lt;</span><span class="kt">Any</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">emptySet</span><span class="p">())</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="kd">var</span><span class="w"> </span><span class="nv">expandedKeys</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="o">&lt;</span><span class="n">Set</span><span class="o">&lt;</span><span class="kt">Any</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">emptySet</span><span class="p">())</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="n">DataTable</span><span class="p">(</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">    </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">people</span><span class="p">,</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">    </span><span class="n">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">headers</span><span class="p">,</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="w">    </span><span class="n">itemKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="w">    </span><span class="n">selectedKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">selectedKeys</span><span class="p">,</span>
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="w">    </span><span class="n">onSelectionChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">selectedKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">it</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a><span class="w">    </span><span class="n">expandedKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expandedKeys</span><span class="p">,</span>
+<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="w">    </span><span class="n">onExpandChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">expandedKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">it</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="p">)</span>
 </code></pre></div>
 <p>Where you previously read selected items directly, resolve them from keys:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">selectedPeople</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">people</span><span class="p">.</span><span class="na">filter</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">selectedKeys</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">selectedPeople</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">people</span><span class="p">.</span><span class="na">filter</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">selectedKeys</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <p>This is what the change buys you: selection and expansion now survive item instances being
 replaced — a refresh from your repository, for example — and your row type no longer needs to
@@ -1727,7 +1818,7 @@ implement <code>equals</code>/<code>hashCode</code>.</p>
 <h3 id="itemkey">itemKey<a class="headerlink" href="#itemkey" title="Permanent link">&para;</a></h3>
 <p><code>itemKey</code> is required and must be <strong>unique across <code>items</code></strong>. Two rows sharing a key will select,
 expand, and recycle as a single row. Use a database id or equivalent:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">itemKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">},</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">itemKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">},</span>
 </code></pre></div>
 <p>The old <code>{ it.hashCode() }</code> default collides for equal-valued rows. It was already unsound for
 <code>LazyColumn</code> identity, and now that it also backs selection, expansion, and focus, it is gone
@@ -1736,13 +1827,13 @@ rather than left as a trap.</p>
 required parameters first. Call sites that pass it by name — as all the examples here do — are
 unaffected by the reordering.</p>
 <h3 id="keyboard-focus">Keyboard focus<a class="headerlink" href="#keyboard-focus" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1">// 0.1.x</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">focused</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">focusedRowIndex</span><span class="w">          </span><span class="c1">// -1 when nothing is focused</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1">// 0.2.0</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">focused</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">focusedKey</span><span class="w">               </span><span class="c1">// null when nothing is focused</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">state</span><span class="p">.</span><span class="na">focusRow</span><span class="p">(</span><span class="n">person</span><span class="p">.</span><span class="na">id</span><span class="p">)</span><span class="w">                    </span><span class="c1">// move focus programmatically</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="n">state</span><span class="p">.</span><span class="na">focusRow</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span><span class="w">                         </span><span class="c1">// clear focus</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1">// 0.1.x</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">focused</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">focusedRowIndex</span><span class="w">          </span><span class="c1">// -1 when nothing is focused</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1">// 0.2.0</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">focused</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">focusedKey</span><span class="w">               </span><span class="c1">// null when nothing is focused</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="n">state</span><span class="p">.</span><span class="na">focusRow</span><span class="p">(</span><span class="n">person</span><span class="p">.</span><span class="na">id</span><span class="p">)</span><span class="w">                    </span><span class="c1">// move focus programmatically</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="n">state</span><span class="p">.</span><span class="na">focusRow</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span><span class="w">                         </span><span class="c1">// clear focus</span>
 </code></pre></div>
 <p>Focus now stays on its row when the table is re-sorted, instead of holding a fixed position.
 If the focused row leaves the view — filtered out, or on another page — the next arrow key

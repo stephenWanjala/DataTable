@@ -957,8 +957,9 @@ being replaced and never depend on your row type implementing <code>equals</code
 </li>
 <li>
 <p><strong>Built for large data</strong></p>
-<p>Virtualized rows, client-side or server-side pagination, and <code>manualPagination</code> so the table
-holds one page while your query holds the rest.</p>
+<p>Rows are virtualized, and a uniform <code>rowHeight</code> gets the columns virtualized too. Plus
+client-side or server-side pagination, and <code>manualPagination</code> so the table holds one page
+while your query holds the rest.</p>
 </li>
 <li>
 <p><strong>Keyboard driven</strong></p>
@@ -1050,6 +1051,10 @@ it:</p>
   <a href="guide/grouping/#limitations">Grouping</a>.</li>
 <li><strong>No accessibility semantics.</strong> Rows and cells carry no roles or content descriptions, so screen
   reader support is whatever Compose infers from the text.</li>
+<li><strong>Horizontal virtualization covers the body only.</strong> Off-screen cells are culled in the data
+  rows; the header and filter rows always compose every column. It switches itself off under
+  <code>rowHeight = null</code>, where a row's height depends on cells that may not be composed. See
+  <a href="guide/columns/#row-height-and-horizontal-virtualization">Columns</a>.</li>
 <li><strong>Frozen columns pin left only</strong>, and rows cannot be frozen at all.</li>
 </ul>
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>

@@ -1062,8 +1062,9 @@ is what stops a cell jumping as it goes into edit mode — if you restyle one, r
 <thead>
 <tr>
 <th>Density</th>
-<th>Vertical</th>
-<th>Horizontal</th>
+<th>Vertical padding</th>
+<th>Horizontal padding</th>
+<th>Default row height</th>
 </tr>
 </thead>
 <tbody>
@@ -1071,19 +1072,27 @@ is what stops a cell jumping as it goes into edit mode — if you restyle one, r
 <td><code>DEFAULT</code></td>
 <td>16.dp</td>
 <td>16.dp</td>
+<td>52.dp</td>
 </tr>
 <tr>
 <td><code>COMFORTABLE</code></td>
 <td>12.dp</td>
 <td>16.dp</td>
+<td>44.dp</td>
 </tr>
 <tr>
 <td><code>COMPACT</code></td>
 <td>8.dp</td>
 <td>12.dp</td>
+<td>36.dp</td>
 </tr>
 </tbody>
 </table>
+<p>Density sets the padding, and the default row height follows from it:
+<code>DataTableDefaults.rowHeight(density)</code> is that padding either side of one line of body text. Pass
+<code>DataTable</code> a <code>rowHeight</code> of your own for cells that need more room, or <code>rowHeight = null</code> for
+rows that size to their content — see
+<a href="../columns/#row-height-and-horizontal-virtualization">Row height</a>.</p>
 <h2 id="a-dark-palette">A dark palette<a class="headerlink" href="#a-dark-palette" title="Permanent link">&para;</a></h2>
 <p>There is no built-in dark preset. Both halves have to move together:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">darkColors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataTableDefaults</span><span class="p">.</span><span class="na">colors</span><span class="p">(</span>
