@@ -2,7 +2,7 @@
 
 Each release is listed newest first.
 
-## Unreleased
+## 0.5.0
 
 Cell-level focus, grid keyboard navigation, in-place cell editing, cell range selection,
 clipboard copy, per-column display formatting, a filter row, a saveable column layout, and
