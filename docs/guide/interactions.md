@@ -148,4 +148,5 @@ Horizontal scrolling responds to a horizontal wheel or trackpad swipe, and to ++
 wheel. Press-and-drag deliberately does **not** pan the table — that would fight the column resize
 handles and text selection.
 
-Scrollbars can be hidden with `showScrollbars = false`.
+Scrollbars can be hidden with `showScrollbars = false`, and their width set with
+`scrollbarThickness` (8.dp by default). Both apply to the vertical and horizontal bars together.

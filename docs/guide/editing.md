@@ -33,6 +33,23 @@ DataTable(
 
 That is the whole minimum: `editable = true` on the column, and `onCellEdit` to apply the result.
 
+The `CellEdit<T>` it hands you carries five things:
+
+`item`
+
+:   The row that was edited. Matching on `rowKey` as above keeps the example self-contained, but
+    the row itself is right here when your update needs more than its key.
+
+`rowKey` / `columnKey`
+
+:   Which cell it was, named by the key `itemKey` produced and the column's `key` — so an edit
+    reported while the table is sorted, filtered, or paged still points at the right row.
+
+`oldText` / `newText`
+
+:   The value before and after, both `String`. Parsing `newText` back into your model's type is
+    your job; see [Validation](#validation) for the guard that makes it safe.
+
 !!! note "Declaring an editable column turns on cell navigation"
     Editing needs a cell cursor — an editor you cannot reach with the keyboard is no use. So a
     single `editable` column implies `cellNavigation = true`, described below. Tables with no

@@ -31,10 +31,18 @@ DataTable(
 | `rowAlternate` | Every other row. `Color.Transparent` (the default) disables striping |
 | `expandedRow` | Background behind `expandContent` |
 | `focusedRowBorder` | Leading edge marker on the keyboard-focused row |
+| `focusedCellBorder` | Outline around the focused cell, once `cellNavigation` is on |
+| `selectedCell` | Wash over cells in a selected range. Translucent, and the cursor cell is left unwashed |
+| `editingCell` | Background behind an open cell editor |
+| `invalidCellBorder` | Replaces `focusedCellBorder` while an editor's value has been rejected |
 | `checkboxChecked` / `checkboxUnchecked` / `checkboxCheckmark` | Selection checkboxes |
 | `iconTint` | Sort arrows, expand chevrons, pagination arrows |
 | `disabledContent` | Disabled pagination arrows |
-| `onSurface` / `onSurfaceSecondary` | Reserved for text defaults |
+| `onSurface` | The caret in an open cell editor. Also available to custom cell content |
+| `onSurfaceSecondary` | Muted content colour, for custom cell content |
+
+`focusedCellBorder`, `selectedCell`, `editingCell`, and `invalidCellBorder` only ever draw under
+[cell navigation or editing](editing.md) — a table that opts into neither can ignore them.
 
 ## Text styles
 
@@ -48,12 +56,16 @@ DataTable(
         pagination = TextStyle(fontSize = 14.sp),
         loading = TextStyle(fontSize = 14.sp),
         noData = TextStyle(fontSize = 16.sp),
+        cellEditor = TextStyle(fontSize = 14.sp),
     ),
 )
 ```
 
 Text colour lives on the `TextStyle`, not in `DataTableColors` — so a dark palette means setting
 both.
+
+`cellEditor` styles the text inside an open cell editor. It matches `bodyCell` by default, which
+is what stops a cell jumping as it goes into edit mode — if you restyle one, restyle the other.
 
 ## Density
 
@@ -87,6 +99,10 @@ val darkColors = DataTableDefaults.colors(
     checkboxChecked = Color(0xFF4F8CC9),
     checkboxUnchecked = Color(0xFF888888),
     focusedRowBorder = Color(0xFF4F8CC9),
+    focusedCellBorder = Color(0xFF4F8CC9),
+    selectedCell = Color(0x334F8CC9),
+    editingCell = Color(0xFF2F2F2F),
+    onSurface = Color(0xFFEDEDED),
 )
 
 val darkText = DataTableDefaults.textStyles(
@@ -94,8 +110,14 @@ val darkText = DataTableDefaults.textStyles(
     bodyCell = TextStyle(fontSize = 14.sp, color = Color(0xFFDDDDDD)),
     footer = TextStyle(fontSize = 12.sp, color = Color(0xFFBBBBBB)),
     pagination = TextStyle(fontSize = 14.sp, color = Color(0xFFDDDDDD)),
+    cellEditor = TextStyle(fontSize = 14.sp, color = Color(0xFFDDDDDD)),
 )
 ```
+
+!!! warning "`editingCell` is white until you move it"
+    It defaults to `Color(0xFFFFFFFF)` — the one token that will flash a white box in an otherwise
+    dark table the first time someone opens an editor. `onSurface` paints the caret in that editor,
+    so it has to move with it or the cursor is invisible.
 
 Driving it from Material is just a matter of reading the scheme:
 
