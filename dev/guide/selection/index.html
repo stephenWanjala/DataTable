@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://stephenwanjala.github.io/DataTable/dev/dev/guide/selection/">
       
       
-        <link rel="prev" href="../columns/">
+        <link rel="prev" href="../filtering/">
       
       
         <link rel="next" href="../sorting-and-paging/">
@@ -400,6 +400,34 @@
     
   
     Columns
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../filtering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Filtering
   
 
     
@@ -1135,7 +1163,7 @@ rather than a flattened string:</p>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="n">onCopy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">selection</span><span class="w"> </span><span class="o">-&gt;</span>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">        </span><span class="c1">// selection.rows    : List&lt;Person&gt;, in display order</span>
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">        </span><span class="c1">// selection.columns : List&lt;DataTableHeader&lt;Person&gt;&gt;, in display order</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">        </span><span class="c1">// selection.cells   : List&lt;List&lt;String&gt;&gt;, row-major</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">        </span><span class="c1">// selection.cells   : List&lt;List&lt;String&gt;&gt;, row-major, as the cells read</span>
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">        </span><span class="n">exportCsv</span><span class="p">(</span><span class="n">selection</span><span class="p">.</span><span class="na">rows</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="na">columns</span><span class="p">)</span>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="p">},</span>
 <a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="p">)</span>
@@ -1143,6 +1171,10 @@ rather than a flattened string:</p>
 <p>Because you get your own row type back — not text the exporter would have to re-parse — this is
 the seam a CSV or XLSX export hangs off, applied to exactly what the user selected, sorted and
 paged as they are looking at it.</p>
+<p><code>cells</code> is what the cells <em>read</em>: each column's <code>value</code> put through its
+<a href="../columns/#formatting"><code>format</code></a>, so a copy carries the same currency symbols and dates the user
+was looking at. An exporter that wants the numbers behind them has both halves — <code>columns</code> carries
+every column's <code>value</code> extractor, and <code>rows</code> the items to run it against.</p>
 <div class="admonition warning">
 <p class="admonition-title"><code>onCopy</code> replaces the clipboard write, it does not run alongside it</p>
 <p>Supplying <code>onCopy</code> puts you in charge of where the copy goes. A handler that only logs or
@@ -1217,7 +1249,7 @@ round-trip through a spreadsheet is one-way. Selection is also a single rectangl
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../columns/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Columns">
+          <a href="../filtering/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Filtering">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1227,7 +1259,7 @@ round-trip through a spreadsheet is one-way. Selection is also a single rectangl
                 Previous
               </span>
               <div class="md-ellipsis">
-                Columns
+                Filtering
               </div>
             </div>
           </a>

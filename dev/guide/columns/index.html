@@ -18,7 +18,7 @@
         <link rel="prev" href="../../getting-started/">
       
       
-        <link rel="next" href="../selection/">
+        <link rel="next" href="../filtering/">
       
       
         
@@ -474,6 +474,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#formatting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formatting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Formatting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#built-in-formatters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Built-in formatters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#custom-content" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -543,6 +582,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../filtering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Filtering
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -826,6 +893,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#formatting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formatting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Formatting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#built-in-formatters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Built-in formatters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#custom-content" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -921,29 +1027,36 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">DataTableHeader</span><span class="o">&lt;</span><span class="n">Person</span><span class="o">&gt;</span><span class="p">(</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"salary"</span><span class="p">,</span><span class="w">                          </span><span class="c1">// unique column identifier</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Salary"</span><span class="p">,</span><span class="w">                        </span><span class="c1">// header label</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">"</span><span class="err">$</span><span class="si">${</span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="si">}</span><span class="s">"</span><span class="w"> </span><span class="p">},</span><span class="w">             </span><span class="c1">// value extractor for display</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">120.</span><span class="n">dp</span><span class="p">,</span><span class="w">                          </span><span class="c1">// fixed width (null = fill with weight)</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="n">align</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TextAlign</span><span class="p">.</span><span class="na">End</span><span class="p">,</span><span class="w">                   </span><span class="c1">// text alignment</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="n">sortable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">                         </span><span class="c1">// enable sorting</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="n">fixed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">                           </span><span class="c1">// true = frozen/pinned column</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="n">visible</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">                          </span><span class="c1">// toggle visibility</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="n">maxLines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w">                            </span><span class="c1">// text line limit</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="n">overflow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TextOverflow</span><span class="p">.</span><span class="na">Ellipsis</span><span class="p">,</span><span class="w">        </span><span class="c1">// overflow strategy</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="n">comparator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compareBy</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="w"> </span><span class="p">},</span><span class="w">    </span><span class="c1">// custom sort comparator</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="n">cellContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">                  </span><span class="c1">// custom cell composable</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">        </span><span class="n">Text</span><span class="p">(</span><span class="s">"</span><span class="err">$</span><span class="si">${</span><span class="kt">String</span><span class="p">.</span><span class="na">format</span><span class="p">(</span><span class="s">"</span><span class="o">%</span><span class="p">.</span><span class="m">2f</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="na">salary</span><span class="p">)</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span><span class="n">headerContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">                        </span><span class="c1">// custom header composable</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">        </span><span class="n">Text</span><span class="p">(</span><span class="s">"Salary (USD)"</span><span class="p">,</span><span class="w"> </span><span class="n">fontWeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FontWeight</span><span class="p">.</span><span class="na">Bold</span><span class="p">)</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="n">editable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">                         </span><span class="c1">// edit this column in place</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">    </span><span class="n">editValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="p">.</span><span class="na">toString</span><span class="p">()</span><span class="w"> </span><span class="p">},</span><span class="w">    </span><span class="c1">// raw text to seed the editor with</span>
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">    </span><span class="n">validateEdit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">              </span><span class="c1">// null accepts, a message rejects</span>
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">text</span><span class="p">.</span><span class="na">toDoubleOrNull</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="s">"Enter a number"</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">null</span>
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="w"> </span><span class="p">},</span><span class="w">                   </span><span class="c1">// value extractor — raw, not formatted</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="n">format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">currency</span><span class="p">(),</span><span class="w"> </span><span class="c1">// how that value is displayed</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">120.</span><span class="n">dp</span><span class="p">,</span><span class="w">                          </span><span class="c1">// fixed width (null = fill with weight)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="n">align</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TextAlign</span><span class="p">.</span><span class="na">End</span><span class="p">,</span><span class="w">                   </span><span class="c1">// text alignment</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="n">sortable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">                         </span><span class="c1">// enable sorting</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="n">fixed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">                           </span><span class="c1">// true = frozen/pinned column</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="n">visible</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">                          </span><span class="c1">// toggle visibility</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="n">maxLines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w">                            </span><span class="c1">// text line limit</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="n">overflow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TextOverflow</span><span class="p">.</span><span class="na">Ellipsis</span><span class="p">,</span><span class="w">        </span><span class="c1">// overflow strategy</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="n">comparator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compareBy</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="w"> </span><span class="p">},</span><span class="w">    </span><span class="c1">// custom sort comparator</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">    </span><span class="n">cellContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">                  </span><span class="c1">// custom cell composable, replacing `format`</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">        </span><span class="n">Text</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="na">salary</span><span class="p">.</span><span class="na">toString</span><span class="p">(),</span><span class="w"> </span><span class="n">fontWeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FontWeight</span><span class="p">.</span><span class="na">Bold</span><span class="p">)</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="n">headerContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">                        </span><span class="c1">// custom header composable</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">        </span><span class="n">Text</span><span class="p">(</span><span class="s">"Salary (USD)"</span><span class="p">,</span><span class="w"> </span><span class="n">fontWeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FontWeight</span><span class="p">.</span><span class="na">Bold</span><span class="p">)</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">    </span><span class="n">filterable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">                       </span><span class="c1">// give it a field in the filter row</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">    </span><span class="n">filterPlaceholder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Min"</span><span class="p">,</span><span class="w">               </span><span class="c1">// hint shown while the field is empty</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">    </span><span class="n">filterPredicate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">item</span><span class="p">,</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">       </span><span class="c1">// default is a case-insensitive contains</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">        </span><span class="n">query</span><span class="p">.</span><span class="na">toDoubleOrNull</span><span class="p">()</span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="na">salary</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="nb">it</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">    </span><span class="n">editable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">                         </span><span class="c1">// edit this column in place</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="w">    </span><span class="n">editValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="p">.</span><span class="na">toString</span><span class="p">()</span><span class="w"> </span><span class="p">},</span><span class="w">    </span><span class="c1">// raw text to seed the editor with</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">    </span><span class="n">validateEdit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">              </span><span class="c1">// null accepts, a message rejects</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">text</span><span class="p">.</span><span class="na">toDoubleOrNull</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="s">"Enter a number"</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">null</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="p">)</span>
 </code></pre></div>
-<p><code>key</code> must be unique — it identifies the column for sorting and for resize overrides.</p>
+<p><code>key</code> must be unique — it identifies the column for sorting, for filtering, and for resize
+overrides.</p>
 <h2 id="width">Width<a class="headerlink" href="#width" title="Permanent link">&para;</a></h2>
 <p>A column is either <strong>fixed</strong> or <strong>weighted</strong>:</p>
 <table>
@@ -982,39 +1095,111 @@ gives rows of differing heights. Most tables want the opposite:</p>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="n">overflow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TextOverflow</span><span class="p">.</span><span class="na">Ellipsis</span><span class="p">,</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">)</span>
 </code></pre></div>
+<h2 id="formatting">Formatting<a class="headerlink" href="#formatting" title="Permanent link">&para;</a></h2>
+<p><code>format</code> turns the extracted value into the text the cell shows. It is the whole of the
+difference between a column that displays money and a column that <em>holds</em> money:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">DataTableHeader</span><span class="p">(</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"salary"</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Salary"</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">salary</span><span class="w"> </span><span class="p">},</span><span class="w">                   </span><span class="c1">// stays a Double</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="n">format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">currency</span><span class="p">(),</span><span class="w"> </span><span class="c1">// reads "$92,000.00"</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="n">align</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TextAlign</span><span class="p">.</span><span class="na">End</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">)</span>
+</code></pre></div>
+<p>Formatting inside <code>value</code> instead — <code>value = { "$${it.salary}" }</code> — is the tempting shortcut, and
+it quietly costs you three things. The column sorts as text, so <code>$1,000</code> lands between <code>$100</code> and
+<code>$2</code>, and you need a <code>comparator</code> to undo it. An editable column opens its editor onto
+<code>$92,000</code>, and you need an <code>editValue</code> to undo <em>that</em>. And anything else that reads the column —
+validation, your own <code>onCopy</code> exporter — gets a string where a number was.</p>
+<p><code>format</code> keeps the value raw and applies only where text is shown:</p>
+<table>
+<thead>
+<tr>
+<th>Reads the <strong>raw</strong> value</th>
+<th>Reads the <strong>formatted</strong> text</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sorting and <code>comparator</code></td>
+<td>The rendered cell</td>
+</tr>
+<tr>
+<td><code>editValue</code>, <code>validateEdit</code>, and the <code>oldText</code> of a reported edit</td>
+<td>Clipboard copy, including <code>selection.cells</code></td>
+</tr>
+</tbody>
+</table>
+<p>Copy taking the formatted text is deliberate: what you see is what you paste, the way a
+spreadsheet behaves. A handler that wants the underlying numbers still has them — <code>onCopy</code> hands
+you <code>columns</code>, each with its own <code>value</code> extractor, and <code>rows</code> to run it against.</p>
+<h3 id="built-in-formatters">Built-in formatters<a class="headerlink" href="#built-in-formatters" title="Permanent link">&para;</a></h3>
+<p><code>DataTableFormatters</code> covers the common cases:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">currency</span><span class="p">()</span><span class="w">                          </span><span class="c1">// $1,299.00</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">currency</span><span class="p">(</span><span class="n">Currency</span><span class="p">.</span><span class="na">getInstance</span><span class="p">(</span><span class="s">"KES"</span><span class="p">))</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">number</span><span class="p">(</span><span class="n">decimals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">)</span><span class="w">                </span><span class="c1">// 1,234.57</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">number</span><span class="p">(</span><span class="n">grouping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w">            </span><span class="c1">// 100234, for numeric ids</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">percent</span><span class="p">(</span><span class="n">decimals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span><span class="w">               </span><span class="c1">// 0.1234 -&gt; 12.3%</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">percent</span><span class="p">(</span><span class="n">fraction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w">           </span><span class="c1">// 15.0   -&gt; 15%</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">date</span><span class="p">(</span><span class="s">"dd MMM yyyy"</span><span class="p">)</span><span class="w">                 </span><span class="c1">// 07 Mar 2026</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">boolean</span><span class="p">(</span><span class="s">"Active"</span><span class="p">,</span><span class="w"> </span><span class="s">"Inactive"</span><span class="p">)</span>
+</code></pre></div>
+<p>Each takes a <code>locale</code> (and <code>date</code> a <code>zone</code>), defaulting to the machine's. Each is <strong>total</strong>: a
+null value renders as its <code>nullText</code> — empty unless you set it — and a value of a type it cannot
+handle falls back to <code>toString()</code> rather than throwing. A formatter runs during layout, once per
+visible cell, so an exception there would take the table down with it.</p>
+<p>They hold their locale and number format, so build one once rather than per recomposition:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">money</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">currency</span><span class="p">(</span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Locale</span><span class="p">.</span><span class="na">US</span><span class="p">)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1">// or, inside a composable:</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">money</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">DataTableFormatters</span><span class="p">.</span><span class="na">currency</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>Anything else is a lambda:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="w"> </span><span class="k">as?</span><span class="w"> </span><span class="kt">Int</span><span class="p">)</span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">"</span><span class="si">$</span><span class="n">it</span><span class="s"> kg"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="s">"—"</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title"><code>format</code> sees the value, not the row</p>
+<p>It is <code>(Any?) -&gt; String</code> — enough for the value in front of it, and nothing else. When the
+text depends on the rest of the row, that is what <code>cellContent</code> is for.</p>
+</div>
+<p>A column with <code>cellContent</code> draws itself and ignores <code>format</code> on screen, but copy still uses it —
+which is how an icon column copies as <code>Active</code> rather than <code>true</code>.</p>
+<h2 id="filtering">Filtering<a class="headerlink" href="#filtering" title="Permanent link">&para;</a></h2>
+<p><code>filterable</code> puts a field under the column's header, and the table filters on what is typed. It
+has a guide of its own — see <a href="../filtering/">Filtering</a> for predicates, custom controls, hoisted
+filter state, and <code>manualFiltering</code>.</p>
 <h2 id="custom-content">Custom content<a class="headerlink" href="#custom-content" title="Permanent link">&para;</a></h2>
 <p><code>cellContent</code> and <code>headerContent</code> replace the default text rendering entirely. This is where the
 table stops caring that it has no Material dependency — put whatever you like in a cell.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">DataTableHeader</span><span class="p">(</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"status"</span><span class="p">,</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Status"</span><span class="p">,</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">150.</span><span class="n">dp</span><span class="p">,</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="n">cellContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="o">-&gt;</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="n">AssistChip</span><span class="p">(</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">            </span><span class="n">onClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{},</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">            </span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Text</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="na">status</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">        </span><span class="p">)</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">DataTableHeader</span><span class="p">(</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"status"</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Status"</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">150.</span><span class="n">dp</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="n">cellContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="o">-&gt;</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">        </span><span class="n">AssistChip</span><span class="p">(</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">            </span><span class="n">onClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{},</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">            </span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Text</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="na">status</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">        </span><span class="p">)</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="p">)</span>
 </code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Hoist your header list</p>
 <p><code>DataTableHeader</code> is <code>@Immutable</code>, but a list rebuilt inline on every recomposition is still a
 new list. Wrap it in <code>remember</code> — keyed on whatever it depends on — so the table can skip
 re-sorting:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">remember</span><span class="p">(</span><span class="n">showNotesColumn</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">remember</span><span class="p">(</span><span class="n">showNotesColumn</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 </div>
 <h2 id="visibility">Visibility<a class="headerlink" href="#visibility" title="Permanent link">&para;</a></h2>
 <p><code>visible = false</code> removes a column from rendering without disturbing the rest of the list:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">var</span><span class="w"> </span><span class="nv">showNotes</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">remember</span><span class="p">(</span><span class="n">showNotes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="n">listOf</span><span class="p">(</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="c1">// ...</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="n">DataTableHeader</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"notes"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Notes"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">notes</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">visible</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">showNotes</span><span class="p">),</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="p">)</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kd">var</span><span class="w"> </span><span class="nv">showNotes</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">remember</span><span class="p">(</span><span class="n">showNotes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="n">listOf</span><span class="p">(</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">        </span><span class="c1">// ...</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">        </span><span class="n">DataTableHeader</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"notes"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Notes"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">notes</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">visible</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">showNotes</span><span class="p">),</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="p">}</span>
 </code></pre></div>
 <h2 id="editing">Editing<a class="headerlink" href="#editing" title="Permanent link">&para;</a></h2>
 <p><code>editable = true</code> lets a column be edited in place. <code>editValue</code> seeds the editor with the raw
@@ -1024,13 +1209,13 @@ value behind a formatted display, <code>validateEdit</code> rejects values befor
 an editor you cannot reach is no use. See <a href="../editing/">Cell Editing</a> for the whole feature.</p>
 <h2 id="frozen-pinned-columns">Frozen (pinned) columns<a class="headerlink" href="#frozen-pinned-columns" title="Permanent link">&para;</a></h2>
 <p><code>fixed = true</code> pins a column to the left edge so it does not scroll horizontally.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">DataTableHeader</span><span class="o">&lt;</span><span class="n">Person</span><span class="o">&gt;</span><span class="p">(</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"id"</span><span class="p">,</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ID"</span><span class="p">,</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">60.</span><span class="n">dp</span><span class="p">,</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="n">fixed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">DataTableHeader</span><span class="o">&lt;</span><span class="n">Person</span><span class="o">&gt;</span><span class="p">(</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"id"</span><span class="p">,</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ID"</span><span class="p">,</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">60.</span><span class="n">dp</span><span class="p">,</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="n">fixed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="p">)</span>
 </code></pre></div>
 <div class="admonition danger">
 <p class="admonition-title">Frozen columns need an explicit width</p>
@@ -1038,11 +1223,11 @@ an editor you cannot reach is no use. See <a href="../editing/">Cell Editing</a>
 has nothing to take a share of. <code>fixed = true</code> without a <code>width</code> throws, naming the column.</p>
 </div>
 <h2 id="resizable-columns">Resizable columns<a class="headerlink" href="#resizable-columns" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">DataTable</span><span class="p">(</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="c1">// ...</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="n">resizableColumns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="n">minColumnWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">50.</span><span class="n">dp</span><span class="p">,</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">DataTable</span><span class="p">(</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="c1">// ...</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="n">resizableColumns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="n">minColumnWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">50.</span><span class="n">dp</span><span class="p">,</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="p">)</span>
 </code></pre></div>
 <p>Drag the right edge of any header to resize. Overrides live on <code>DataTableState</code>; call
 <code>state.resetColumnWidths()</code> to clear them.</p>
@@ -1052,17 +1237,17 @@ the band stays aligned.</p>
 <p>Give a header <code>children</code> and it becomes a <strong>group</strong>: a band drawn above its children, spanning
 them. Only the leaves render as real columns — sorting, resizing, and cell content all belong to
 them.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="n">DataTableHeader</span><span class="o">&lt;</span><span class="n">Person</span><span class="o">&gt;</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"id"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ID"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">60.</span><span class="n">dp</span><span class="p">),</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="n">DataTableHeader</span><span class="p">(</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"contact"</span><span class="p">,</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Contact"</span><span class="p">,</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">        </span><span class="n">children</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">            </span><span class="n">DataTableHeader</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"email"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Email"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">email</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">200.</span><span class="n">dp</span><span class="p">),</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">            </span><span class="n">DataTableHeader</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"phone"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Phone"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">phone</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">140.</span><span class="n">dp</span><span class="p">),</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">        </span><span class="p">),</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">    </span><span class="p">),</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="n">DataTableHeader</span><span class="o">&lt;</span><span class="n">Person</span><span class="o">&gt;</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"id"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"ID"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">id</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">60.</span><span class="n">dp</span><span class="p">),</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="n">DataTableHeader</span><span class="p">(</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">        </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"contact"</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">        </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Contact"</span><span class="p">,</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">        </span><span class="n">children</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">            </span><span class="n">DataTableHeader</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"email"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Email"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">email</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">200.</span><span class="n">dp</span><span class="p">),</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">            </span><span class="n">DataTableHeader</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"phone"</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Phone"</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">phone</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">140.</span><span class="n">dp</span><span class="p">),</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">        </span><span class="p">),</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">    </span><span class="p">),</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="p">)</span>
 </code></pre></div>
 <table class="header-demo">
   <colgroup>
@@ -1160,13 +1345,13 @@ leaves beneath it.</p>
         
         
           
-          <a href="../selection/" class="md-footer__link md-footer__link--next" aria-label="Next: Selection &amp; Expansion">
+          <a href="../filtering/" class="md-footer__link md-footer__link--next" aria-label="Next: Filtering">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Selection & Expansion
+                Filtering
               </div>
             </div>
             <div class="md-footer__button md-icon">
