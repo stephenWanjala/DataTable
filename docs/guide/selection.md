@@ -150,7 +150,7 @@ DataTable(
     onCopy = { selection ->
         // selection.rows    : List<Person>, in display order
         // selection.columns : List<DataTableHeader<Person>>, in display order
-        // selection.cells   : List<List<String>>, row-major
+        // selection.cells   : List<List<String>>, row-major, as the cells read
         exportCsv(selection.rows, selection.columns)
     },
 )
@@ -159,6 +159,11 @@ DataTable(
 Because you get your own row type back — not text the exporter would have to re-parse — this is
 the seam a CSV or XLSX export hangs off, applied to exactly what the user selected, sorted and
 paged as they are looking at it.
+
+`cells` is what the cells *read*: each column's `value` put through its
+[`format`](columns.md#formatting), so a copy carries the same currency symbols and dates the user
+was looking at. An exporter that wants the numbers behind them has both halves — `columns` carries
+every column's `value` extractor, and `rows` the items to run it against.
 
 !!! warning "`onCopy` replaces the clipboard write, it does not run alongside it"
     Supplying `onCopy` puts you in charge of where the copy goes. A handler that only logs or

@@ -309,9 +309,8 @@ internal fun <T> RowScope.DataTableCell(
             header.cellContent != null -> header.cellContent.invoke(item)
 
             else -> {
-                val value = header.value?.invoke(item) ?: ""
                 BasicText(
-                    text = value.toString(),
+                    text = header.displayText(item),
                     style = textStyles.bodyCell.copy(textAlign = header.align),
                     maxLines = header.maxLines,
                     overflow = header.overflow,

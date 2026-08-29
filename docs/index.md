@@ -27,6 +27,12 @@ DataTable(
     header composables, drag-to-resize, left-pinned frozen columns, and grouped headers nested to
     any depth.
 
+-   **Formatted for reading, raw underneath**
+
+    A `format` lambda per column — money, percentages, dates, booleans, or your own — decides
+    what a cell reads, while the value stays raw for sorting, editing, and validation. Copy takes
+    the formatted text, the way a spreadsheet does.
+
 -   **Sorting that scales**
 
     Single-column, multi-column with ++ctrl++ +click, custom comparators — or hand sorting off to
@@ -51,8 +57,9 @@ DataTable(
 -   **Editing in place**
 
     Mark a column `editable` and cells edit on ++enter++, ++f2++, a double-click, or just by
-    typing. Per-column validation, a raw `editValue` behind a formatted display, and
-    `editorContent` for pickers. The table reports the edit; your model stays the only copy.
+    typing. Per-column validation, an editor that opens on the raw value behind a formatted
+    display, and `editorContent` for pickers. The table reports the edit; your model stays the
+    only copy.
 
 -   **Select a block, copy it out**
 

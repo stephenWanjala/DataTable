@@ -6,7 +6,8 @@ Columns are declared with `DataTableHeader<T>`. One instance per column, in disp
 DataTableHeader<Person>(
     key = "salary",                          // unique column identifier
     title = "Salary",                        // header label
-    value = { "$${it.salary}" },             // value extractor for display
+    value = { it.salary },                   // value extractor — raw, not formatted
+    format = DataTableFormatters.currency(), // how that value is displayed
     width = 120.dp,                          // fixed width (null = fill with weight)
     align = TextAlign.End,                   // text alignment
     sortable = true,                         // enable sorting
@@ -15,8 +16,8 @@ DataTableHeader<Person>(
     maxLines = 1,                            // text line limit
     overflow = TextOverflow.Ellipsis,        // overflow strategy
     comparator = compareBy { it.salary },    // custom sort comparator
-    cellContent = { item ->                  // custom cell composable
-        Text("$${String.format("%.2f", item.salary)}")
+    cellContent = { item ->                  // custom cell composable, replacing `format`
+        Text(item.salary.toString(), fontWeight = FontWeight.Bold)
     },
     headerContent = {                        // custom header composable
         Text("Salary (USD)", fontWeight = FontWeight.Bold)
@@ -63,6 +64,79 @@ DataTableHeader(
     overflow = TextOverflow.Ellipsis,
 )
 ```
+
+## Formatting
+
+`format` turns the extracted value into the text the cell shows. It is the whole of the
+difference between a column that displays money and a column that *holds* money:
+
+```kotlin
+DataTableHeader(
+    key = "salary",
+    title = "Salary",
+    value = { it.salary },                   // stays a Double
+    format = DataTableFormatters.currency(), // reads "$92,000.00"
+    align = TextAlign.End,
+)
+```
+
+Formatting inside `value` instead — `value = { "$${it.salary}" }` — is the tempting shortcut, and
+it quietly costs you three things. The column sorts as text, so `$1,000` lands between `$100` and
+`$2`, and you need a `comparator` to undo it. An editable column opens its editor onto
+`$92,000`, and you need an `editValue` to undo *that*. And anything else that reads the column —
+validation, your own `onCopy` exporter — gets a string where a number was.
+
+`format` keeps the value raw and applies only where text is shown:
+
+| Reads the **raw** value | Reads the **formatted** text |
+|---|---|
+| Sorting and `comparator` | The rendered cell |
+| `editValue`, `validateEdit`, and the `oldText` of a reported edit | Clipboard copy, including `selection.cells` |
+
+Copy taking the formatted text is deliberate: what you see is what you paste, the way a
+spreadsheet behaves. A handler that wants the underlying numbers still has them — `onCopy` hands
+you `columns`, each with its own `value` extractor, and `rows` to run it against.
+
+### Built-in formatters
+
+`DataTableFormatters` covers the common cases:
+
+```kotlin
+DataTableFormatters.currency()                          // $1,299.00
+DataTableFormatters.currency(Currency.getInstance("KES"))
+DataTableFormatters.number(decimals = 2)                // 1,234.57
+DataTableFormatters.number(grouping = false)            // 100234, for numeric ids
+DataTableFormatters.percent(decimals = 1)               // 0.1234 -> 12.3%
+DataTableFormatters.percent(fraction = false)           // 15.0   -> 15%
+DataTableFormatters.date("dd MMM yyyy")                 // 07 Mar 2026
+DataTableFormatters.boolean("Active", "Inactive")
+```
+
+Each takes a `locale` (and `date` a `zone`), defaulting to the machine's. Each is **total**: a
+null value renders as its `nullText` — empty unless you set it — and a value of a type it cannot
+handle falls back to `toString()` rather than throwing. A formatter runs during layout, once per
+visible cell, so an exception there would take the table down with it.
+
+They hold their locale and number format, so build one once rather than per recomposition:
+
+```kotlin
+private val money = DataTableFormatters.currency(locale = Locale.US)
+// or, inside a composable:
+val money = remember { DataTableFormatters.currency() }
+```
+
+Anything else is a lambda:
+
+```kotlin
+format = { value -> (value as? Int)?.let { "$it kg" } ?: "—" }
+```
+
+!!! note "`format` sees the value, not the row"
+    It is `(Any?) -> String` — enough for the value in front of it, and nothing else. When the
+    text depends on the rest of the row, that is what `cellContent` is for.
+
+A column with `cellContent` draws itself and ignores `format` on screen, but copy still uses it —
+which is how an icon column copies as `Active` rather than `true`.
 
 ## Custom content
 

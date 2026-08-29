@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.stephenwanjala.datatable.*
 import kotlinx.coroutines.delay
+import java.util.Locale
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -35,6 +36,12 @@ private fun SampleControls(content: @Composable RowScope.() -> Unit) {
     }
 }
 
+/**
+ * Shared by every salary column in the gallery. Built once, not per recomposition: a formatter
+ * holds its locale and number format.
+ */
+private val money = DataTableFormatters.currency(locale = Locale.US, decimals = 0)
+
 private val employeeHeaders = listOf(
     DataTableHeader<Employee>(key = "id", title = "ID", value = { it.id }, width = 60.dp, align = TextAlign.End),
     DataTableHeader(key = "name", title = "Name", value = { it.name }, width = 180.dp),
@@ -43,8 +50,9 @@ private val employeeHeaders = listOf(
     DataTableHeader(key = "role", title = "Role", value = { it.role }, width = 140.dp),
     DataTableHeader(
         key = "salary", title = "Salary", width = 120.dp, align = TextAlign.End,
-        value = { it.salary }, comparator = compareBy { it.salary },
-        cellContent = { Text("$${"%,.0f".format(it.salary)}", style = MaterialTheme.typography.bodyMedium) },
+        // The value stays a Double, so the column sorts numerically without a comparator and
+        // copies as what it reads. Only `format` knows about currency.
+        value = { it.salary }, format = money,
     ),
 )
 
@@ -108,9 +116,9 @@ fun LargeDataSetSample() {
             DataTableHeader(key = "country", title = "Country", value = { it.country }, width = 100.dp),
             DataTableHeader(key = "occupation", title = "Occupation", value = { it.occupation }, width = 120.dp),
             DataTableHeader(
-                key = "salary", title = "Salary", value = { "$${"%.2f".format(it.salary)}" },
+                key = "salary", title = "Salary", value = { it.salary },
                 width = 120.dp, align = TextAlign.End,
-                comparator = compareBy { it.salary },   // sort numerically, not as a string
+                format = DataTableFormatters.currency(locale = Locale.US),
             ),
             DataTableHeader(key = "department", title = "Department", value = { it.department }, width = 120.dp),
             DataTableHeader(key = "startDate", title = "Start Date", value = { it.startDate }, width = 120.dp),
@@ -137,6 +145,9 @@ fun LargeDataSetSample() {
             DataTableHeader(key = "hoursWorked", title = "Hours", value = { it.hoursWorked }, width = 80.dp, align = TextAlign.End),
             DataTableHeader(
                 key = "isActive", title = "Active", value = { it.isActive }, width = 80.dp, align = TextAlign.Center,
+                // The cell is an icon, so `format` never draws anything here — but a copy of this
+                // column reads "Active"/"Inactive" instead of "true"/"false".
+                format = DataTableFormatters.boolean(trueText = "Active", falseText = "Inactive"),
                 cellContent = { item ->
                     Icon(
                         imageVector = if (item.isActive) Icons.Default.CheckCircle else Icons.Default.Cancel,
@@ -226,7 +237,7 @@ fun NestedHeadersSample() {
                             DataTableHeader(key = "role", title = "Role", value = { it.role }, width = 140.dp),
                         ),
                     ),
-                    DataTableHeader(key = "salary", title = "Salary", value = { "$${"%,.0f".format(it.salary)}" }, width = 120.dp, align = TextAlign.End),
+                    DataTableHeader(key = "salary", title = "Salary", value = { it.salary }, format = money, width = 120.dp, align = TextAlign.End),
                 ),
             ),
         )
@@ -672,11 +683,12 @@ fun CellEditingSample() {
             ),
             DataTableHeader(
                 key = "salary", title = "Salary", width = 140.dp, align = TextAlign.End,
-                value = { "$${"%,.0f".format(it.salary)}" },
-                comparator = compareBy { it.salary },
+                // Formatting is display-only: the cell reads "$92,000" while the value stays a
+                // Double, so the column sorts numerically and the editor opens on a number.
+                value = { it.salary }, format = money,
                 editable = true,
-                // The displayed value carries a currency symbol and separators. Without this the
-                // user would open the editor onto "$92,000" and have to clean it up first.
+                // The raw value would still open the editor onto "92000.0". A salary is entered
+                // in whole units, so trim the decimals the Double carries.
                 editValue = { it.salary.toLong().toString() },
                 validateEdit = { _, text ->
                     val amount = text.toLongOrNull()

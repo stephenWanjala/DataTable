@@ -35,9 +35,12 @@ data class CellRange(
  * @property rows The selected row items, in display order.
  * @property columns The selected leaf columns, in display order.
  * @property cells Cell text, row-major: `cells[row][column]` lines up with [rows] and [columns].
- *                 Text comes from each column's `value`, so a column that renders only through
- *                 `cellContent` copies as empty — give it a `value` and it becomes sortable and
- *                 copyable at once.
+ *                 Text is what the cell shows — each column's `value` put through its `format` —
+ *                 so a copy carries the same money symbols and dates the user was looking at. A
+ *                 column that renders only through `cellContent` copies as empty; give it a
+ *                 `value` and it becomes sortable and copyable at once. The raw values are still
+ *                 within reach for a handler that wants them: [columns] carries every column's
+ *                 own `value` extractor, and [rows] the items to run it against.
  */
 @Immutable
 data class ClipboardSelection<T>(
