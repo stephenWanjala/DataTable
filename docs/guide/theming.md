@@ -35,6 +35,8 @@ DataTable(
 | `selectedCell` | Wash over cells in a selected range. Translucent, and the cursor cell is left unwashed |
 | `editingCell` | Background behind an open cell editor |
 | `invalidCellBorder` | Replaces `focusedCellBorder` while an editor's value has been rejected |
+| `draggedColumn` | Wash over the header being dragged, once `reorderableColumns` is on |
+| `columnDropIndicator` | The line marking the edge a dragged column will land against |
 | `checkboxChecked` / `checkboxUnchecked` / `checkboxCheckmark` | Selection checkboxes |
 | `iconTint` | Sort arrows, expand chevrons, pagination arrows |
 | `disabledContent` | Disabled pagination arrows |

@@ -88,6 +88,11 @@ import kotlinx.coroutines.launch
  *                        filter row still renders and still reports what the user types.
  * @param noResultsContent Shown in place of the rows when filters match nothing, telling that
  *                         apart from a table that has no data at all.
+ * @param reorderableColumns Lets a user drag a header to a new position, with a line marking
+ *                           where it will land. A grouped header is dragged by its band and moves
+ *                           every column under it as one block; a column cannot be dragged out of
+ *                           its group, nor across the freeze boundary. The result is
+ *                           `state.columnOrder`, so it is saved with the layout.
  * @param showColumnMenuButton Puts a menu button at the trailing edge of the header listing every
  *                             column with a checkbox, so a user can show and hide them without
  *                             any UI of your own. Columns whose header declares `visible = false`
@@ -147,6 +152,7 @@ fun <T> DataTable(
     // Column resizing
     resizableColumns: Boolean = false,
     minColumnWidth: Dp = 40.dp,
+    reorderableColumns: Boolean = false,
     // Header / Footer
     hideDefaultHeader: Boolean = false,
     hideDefaultFooter: Boolean = false,
@@ -190,6 +196,13 @@ fun <T> DataTable(
         applyColumnOverrides(headers, state.hiddenColumns, state.columnOrder)
     }
     val flatHeaders = remember(arrangedHeaders) { flattenHeaders(arrangedHeaders) }
+
+    // The same leaves with the user's hiding left out, which is the full set a reorder writes
+    // against: an order list that stopped naming a hidden column would send it to the end of the
+    // table the moment it came back.
+    val orderedColumnKeys = remember(headers, state.columnOrder) {
+        flattenHeaders(applyColumnOverrides(headers, emptySet(), state.columnOrder)).map { it.key }
+    }
 
     // Partition into frozen and scrollable. A frozen column has to declare a width — the frozen
     // section sits outside the horizontally scrolling area, so there is nothing for a weighted
@@ -433,6 +446,7 @@ fun <T> DataTable(
         state.rowScrollIndices = rowScrollIndices
         // The sort and filters on display, whoever owns them, for `captureLayout`.
         state.columnKeys = columnKeys
+        state.allColumnKeys = orderedColumnKeys
         state.activeSort = activeSort
         state.activeMultiSort = activeMultiSort
         state.activeFilters = activeFilters
@@ -590,6 +604,7 @@ fun <T> DataTable(
                                     onMultiSortChange = selectMultiSort,
                                     resizableColumns = resizableColumns,
                                     minColumnWidth = minColumnWidth,
+                                    reorderableColumns = reorderableColumns,
                                     state = state,
                                 )
                             },
@@ -612,6 +627,7 @@ fun <T> DataTable(
                                     onMultiSortChange = selectMultiSort,
                                     resizableColumns = resizableColumns,
                                     minColumnWidth = minColumnWidth,
+                                    reorderableColumns = reorderableColumns,
                                     state = state,
                                 )
                             },
@@ -645,6 +661,7 @@ fun <T> DataTable(
                                 onMultiSortChange = selectMultiSort,
                                 resizableColumns = resizableColumns,
                                 minColumnWidth = minColumnWidth,
+                                reorderableColumns = reorderableColumns,
                                 state = state,
                             )
                         }

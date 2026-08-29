@@ -149,6 +149,23 @@ state now lives as long as the `DataTableState` rather than as long as the `Data
 table that is removed and re-composed against the same remembered state keeps its sort instead of
 re-seeding from `sortBy`.
 
+### Headers sort on release, not on press
+
+`reorderableColumns = true` lets a user drag a header to a new position. Because a drag starts as
+a press on the same header a click sorts, sorting now fires when the pointer comes **up** rather
+than when it goes down — otherwise reaching for a column to move it would re-sort the table on the
+way. A press and release without travel sorts exactly as before, and this applies whether or not
+reordering is on, so the two behave the same.
+
+A drag is hit-tested against the column's own siblings: a grouped column moves within its group
+and stops at the edge of it, a group is dragged by its band and moves as one block, and the frozen
+and scrolling sections are separate header rows, so nothing crosses the freeze boundary. There is
+no keyboard equivalent — `moveColumn` remains the seam for UI of your own.
+
+One related fix: a column the user has **hidden** now keeps its place in `columnOrder` while the
+others are rearranged. Before, reordering anything while a column was hidden dropped it out of the
+order, and it reappeared at the end of the table.
+
 ### New API
 
 `DataTable` gains `cellNavigation` and `onCellEdit`. `DataTableHeader` gains `editable`,
@@ -174,8 +191,10 @@ are how the other 30 are passed in practice.
 `isColumnHidden`, `hiddenColumns`, `columnOrder`, and `moveColumn`, with `DataTableLayout` as a new
 type.
 
+`DataTable` gains `reorderableColumns`.
+
 `DataTableColors` gains `focusedCellBorder`, `editingCell`, `invalidCellBorder`, `selectedCell`,
-`filterRow`, and `filterField`; `DataTableTextStyles` gains `cellEditor` and `filterField`. Both
+`draggedColumn`, `columnDropIndicator`, `filterRow`, and `filterField`; `DataTableTextStyles` gains `cellEditor` and `filterField`. Both
 are `data class`es with defaulted parameters, so existing `copy` and factory calls are unaffected.
 
 See [Filtering](guide/filtering.md), [Column Layout](guide/layout.md),

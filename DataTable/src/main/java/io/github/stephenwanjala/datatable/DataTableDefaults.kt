@@ -42,6 +42,9 @@ import androidx.compose.ui.unit.sp
  *                       rather than as text that happens to have a caret in it.
  * @property invalidCellBorder Outline replacing [focusedCellBorder] while the value in an open
  *                             editor has been rejected by the column's `validateEdit`.
+ * @property draggedColumn Wash over the header being dragged to a new position, so it is clear
+ *                        which column is on the move. Translucent, so the title still reads.
+ * @property columnDropIndicator The line drawn down the edge a dragged column would land against.
  * @property filterRow Background of the filter row, under the header. Set a shade off
  *                     [header] so the two read as separate rows rather than one tall band.
  * @property filterField Background of a filter field itself, which sits on [filterRow].
@@ -70,6 +73,8 @@ data class DataTableColors(
     val editingCell: Color = Color(0xFFFFFFFF),
     val invalidCellBorder: Color = Color(0xFFD32F2F),
     val selectedCell: Color = Color(0x331976D2),
+    val draggedColumn: Color = Color(0x1F1976D2),
+    val columnDropIndicator: Color = Color(0xFF1976D2),
     val filterRow: Color = Color(0xFFF7F7F7),
     val filterField: Color = Color(0xFFFFFFFF),
 )
@@ -177,6 +182,8 @@ object DataTableDefaults {
         editingCell: Color = Color(0xFFFFFFFF),
         invalidCellBorder: Color = Color(0xFFD32F2F),
         selectedCell: Color = Color(0x331976D2),
+        draggedColumn: Color = Color(0x1F1976D2),
+        columnDropIndicator: Color = Color(0xFF1976D2),
         filterRow: Color = Color(0xFFF7F7F7),
         filterField: Color = Color(0xFFFFFFFF),
     ): DataTableColors = remember(
@@ -184,7 +191,8 @@ object DataTableDefaults {
         onSurface, onSurfaceSecondary, checkboxChecked, checkboxUnchecked,
         checkboxCheckmark, iconTint, disabledContent, rowAlternate,
         hoveredRow, focusedRowBorder, focusedCellBorder, editingCell,
-        invalidCellBorder, selectedCell, filterRow, filterField
+        invalidCellBorder, selectedCell, draggedColumn, columnDropIndicator,
+        filterRow, filterField
     ) {
         DataTableColors(
             container = container,
@@ -206,6 +214,8 @@ object DataTableDefaults {
             editingCell = editingCell,
             invalidCellBorder = invalidCellBorder,
             selectedCell = selectedCell,
+            draggedColumn = draggedColumn,
+            columnDropIndicator = columnDropIndicator,
             filterRow = filterRow,
             filterField = filterField,
         )

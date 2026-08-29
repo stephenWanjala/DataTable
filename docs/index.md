@@ -24,15 +24,16 @@ DataTable(
 -   **Columns that behave**
 
     Fixed or weighted widths, per-column alignment, ellipsis, visibility toggles, custom cell and
-    header composables, drag-to-resize, left-pinned frozen columns, and grouped headers nested to
-    any depth.
+    header composables, drag-to-resize, drag-to-reorder, left-pinned frozen columns, and grouped
+    headers nested to any depth.
 
 -   **A column menu, and a layout users can keep**
 
     `showColumnMenuButton` gives the header a menu for showing and hiding columns, the way
-    JavaFX's table menu button does. What the user picks — with widths, order, sort, and filters —
-    comes out of `captureLayout()` as one snapshot to store per user, and `applyLayout` puts the
-    grid back as they left it.
+    JavaFX's table menu button does, and `reorderableColumns` lets a user drag one to a new
+    position — groups move as blocks. What the user picks — with widths, order, sort, and
+    filters — comes out of `captureLayout()` as one snapshot to store per user, and `applyLayout`
+    puts the grid back as they left it.
 
 -   **A filter row that pairs with your query**
 
@@ -132,9 +133,9 @@ it:
   validates across columns or rolls back as a unit, and no undo stack.
 - **No export.** CSV, Excel, and PDF are the caller's job — though `onCopy` hands you the
   selected rows and columns as a starting point.
-- **No column reordering by dragging.** `moveColumn` reorders columns and a layout saves the
-  result, but the header has no drag handle. Hiding columns *does* have a built-in menu —
-  `showColumnMenuButton`. See [Column Layout](guide/layout.md).
+- **Column reordering is pointer-only.** `reorderableColumns` lets a user drag a header to a new
+  position, but there is no keyboard equivalent — `moveColumn` is the seam for UI of your own. See
+  [Column Layout](guide/layout.md).
 - **Filtering is one query per column, ANDed.** The filter row holds a string per column and
   every column has to match. There is no OR across columns, no filter that spans two of them, and
   no Excel-style checklist of the values that occur — a custom `filterContent` is where those get

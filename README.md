@@ -37,6 +37,7 @@ A highly customizable, feature-rich `DataTable` component for Compose Desktop bu
 - **Grouping** -- group rows by a key with custom group header and summary rows
 - **Keyboard navigation** -- Arrow keys, Enter, Space, Home, End; opt into `cellNavigation` for a cell cursor, Left/Right, Tab, and Page Up/Down
 - **Column menu** -- `showColumnMenuButton` puts a show/hide menu in the header, like JavaFX's table menu button
+- **Column reordering** -- `reorderableColumns` lets a user drag a header to a new position, with groups moving as a block; `moveColumn` and `columnOrder` drive it programmatically
 - **Saved layouts** -- `captureLayout()` / `applyLayout()` snapshot column widths, hidden columns, order, sort, and filters, with an encoded string to store per user
 - **Filter row** -- mark a column `filterable` for a field under its header, with a custom `filterPredicate` or `filterContent`; `manualFiltering` hands the whole thing to your query
 - **Column formatting** -- a per-column `format` decides what a cell reads (money, percentages, dates, booleans, or your own), while the value stays raw for sorting and editing
@@ -54,9 +55,9 @@ A highly customizable, feature-rich `DataTable` component for Compose Desktop bu
 So you can rule it in or out quickly: a block of cells can be copied but not pasted into or edited
 as a block, cell selection is a single rectangle, and editing has no row-level commit and no undo.
 Filtering is one query per column, ANDed, with no OR across columns and no built-in checklist of
-the values that occur. Columns can be reordered programmatically and the order is saved with a
-layout, but the header has no drag handle. There is also no export, no tree tables, and no
-accessibility semantics. Frozen columns pin left only. The
+the values that occur. Columns can be reordered by dragging their headers, but only by dragging —
+there is no keyboard equivalent. There is also no export, no tree tables, and no accessibility
+semantics. Frozen columns pin left only. The
 [documentation](https://stephenwanjala.github.io/DataTable/latest/#what-it-does-not-do) spells each of
 these out.
 
