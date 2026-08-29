@@ -170,13 +170,35 @@ val headers = listOf(
 )
 ```
 
-```
-┌──────┬───────────────────────────────┐
-│      │            Contact            │
-│  ID  ├───────────────┬───────────────┤
-│      │     Email     │     Phone     │
-├──────┼───────────────┼───────────────┤
-```
+<table class="header-demo">
+  <colgroup>
+    <col style="width: 15%">
+    <col style="width: 50%">
+    <col style="width: 35%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th rowspan="2">ID</th>
+      <th class="header-demo-group" colspan="2">Contact</th>
+    </tr>
+    <tr>
+      <th>Email</th>
+      <th>Phone</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>ada@example.com</td>
+      <td>+1 555 0100</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>grace@example.com</td>
+      <td>+1 555 0101</td>
+    </tr>
+  </tbody>
+</table>
 
 Groups nest to any depth. A leaf sitting beside a group — `ID` above — stretches over the full
 header height and centres its title, rather than leaving blank rows above it.

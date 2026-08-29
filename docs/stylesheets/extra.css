@@ -1,0 +1,36 @@
+/* Illustration of a nested (grouped) header, used in guide/columns.md. Drawn as a real table so
+   the built site shows the band spanning its leaves instead of box-drawing characters, which the
+   theme renders in a proportional-ish code block and lines up badly. */
+.header-demo {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  font-size: 0.7rem;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: 0.1rem;
+  overflow: hidden;
+}
+
+.header-demo th,
+.header-demo td {
+  padding: 0.5em 0.8em;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.header-demo th {
+  background-color: var(--md-default-fg-color--lightest);
+  color: var(--md-default-fg-color);
+  font-weight: 700;
+}
+
+/* The group band: the one cell that is not a column of its own. */
+.header-demo th.header-demo-group {
+  letter-spacing: 0.04em;
+}
+
+.header-demo td {
+  color: var(--md-default-fg-color--light);
+  font-family: var(--md-code-font-family);
+}
