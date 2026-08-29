@@ -658,6 +658,34 @@
   
   
     <li class="md-nav__item">
+      <a href="guide/layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Column Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="guide/editing/" class="md-nav__link">
         
   
@@ -897,6 +925,13 @@ header composables, drag-to-resize, left-pinned frozen columns, and grouped head
 any depth.</p>
 </li>
 <li>
+<p><strong>A column menu, and a layout users can keep</strong></p>
+<p><code>showColumnMenuButton</code> gives the header a menu for showing and hiding columns, the way
+JavaFX's table menu button does. What the user picks — with widths, order, sort, and filters —
+comes out of <code>captureLayout()</code> as one snapshot to store per user, and <code>applyLayout</code> puts the
+grid back as they left it.</p>
+</li>
+<li>
 <p><strong>A filter row that pairs with your query</strong></p>
 <p>Mark a column <code>filterable</code> and it gets a field under its header; give it a <code>filterPredicate</code>
 for a range or an exact match, or a <code>filterContent</code> for a dropdown. Filtering is a
@@ -1003,10 +1038,9 @@ it:</p>
   validates across columns or rolls back as a unit, and no undo stack.</li>
 <li><strong>No export.</strong> CSV, Excel, and PDF are the caller's job — though <code>onCopy</code> hands you the
   selected rows and columns as a starting point.</li>
-<li><strong>No column reordering by dragging</strong>, and no built-in column chooser — <code>visible</code> is a flag you
-  drive from your own UI.</li>
-<li><strong>No layout persistence.</strong> Column widths, sort, cell focus, and scroll live only as long as the
-  composition. See <a href="guide/interactions/#column-widths">Interactions</a>.</li>
+<li><strong>No column reordering by dragging.</strong> <code>moveColumn</code> reorders columns and a layout saves the
+  result, but the header has no drag handle. Hiding columns <em>does</em> have a built-in menu —
+  <code>showColumnMenuButton</code>. See <a href="guide/layout/">Column Layout</a>.</li>
 <li><strong>Filtering is one query per column, ANDed.</strong> The filter row holds a string per column and
   every column has to match. There is no OR across columns, no filter that spans two of them, and
   no Excel-style checklist of the values that occur — a custom <code>filterContent</code> is where those get

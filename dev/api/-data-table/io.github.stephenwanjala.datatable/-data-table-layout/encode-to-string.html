@@ -2,7 +2,7 @@
 <html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
-    <title>scrollToItem</title>
+    <title>encodeToString</title>
     <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
     <script>var pathToRoot = "../../../";</script>
     <script>document.documentElement.classList.replace("no-js","js");</script>
@@ -104,12 +104,12 @@
                 </div>
             </div>
             <div id="main">
-<div class="main-content" data-page-type="member" id="content" pageIds="DataTable::io.github.stephenwanjala.datatable/DataTableState/scrollToItem/#kotlin.Int#kotlin.Int/PointingToDeclaration//-1956488046">
-  <div class="breadcrumbs"><a href="../../../index.html">DataTable</a><span class="delimiter">/</span><a href="../index.html">io.github.stephenwanjala.datatable</a><span class="delimiter">/</span><a href="index.html">DataTableState</a><span class="delimiter">/</span><span class="current">scrollToItem</span></div>
+<div class="main-content" data-page-type="member" id="content" pageIds="DataTable::io.github.stephenwanjala.datatable/DataTableLayout/encodeToString/#/PointingToDeclaration//-1956488046">
+  <div class="breadcrumbs"><a href="../../../index.html">DataTable</a><span class="delimiter">/</span><a href="../index.html">io.github.stephenwanjala.datatable</a><span class="delimiter">/</span><a href="index.html">DataTableLayout</a><span class="delimiter">/</span><span class="current">encodeToString</span></div>
   <div class="cover ">
-    <h1 class="cover"><span>scroll</span><wbr></wbr><span>To</span><wbr></wbr><span><span>Item</span></span></h1>
+    <h1 class="cover"><span>encode</span><wbr></wbr><span>To</span><wbr></wbr><span><span>String</span></span></h1>
   </div>
-  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="scroll-to-item.html"><span class="token function">scrollToItem</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">scrollOffset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/stephenWanjala/DataTable/tree/master/DataTable/src/main/java/io/github/stephenwanjala/datatable/DataTableState.kt#L227">source</a>)</span></span></div><p class="paragraph">Scrolls the table so that the given item index is visible.</p></div></div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="encode-to-string.html"><span class="token function">encodeToString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="clearfix"><span class="floating-right">(<a href="https://github.com/stephenWanjala/DataTable/tree/master/DataTable/src/main/java/io/github/stephenwanjala/datatable/DataTableLayout.kt#L57">source</a>)</span></span></div><p class="paragraph">Encodes this layout as one line-based string, for a preferences store, a database column, or a file.</p><p class="paragraph">The format is versioned and its contents are an implementation detail: hand back exactly what you were given, and read it with <a href="-companion/decode-from-string.html">decodeFromString</a>. Every value is escaped, so a filter query holding spaces, newlines, or <code class="lang-kotlin">=</code> round-trips unchanged. Encoding is deterministic — the same layout always produces the same string — so it can be compared to decide whether anything is worth saving.</p></div></div>
 </div>
     <div class="footer">
         <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>

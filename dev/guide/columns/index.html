@@ -734,6 +734,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Column Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../editing/" class="md-nav__link">
         
   
@@ -1191,7 +1219,9 @@ re-sorting:</p>
 </code></pre></div>
 </div>
 <h2 id="visibility">Visibility<a class="headerlink" href="#visibility" title="Permanent link">&para;</a></h2>
-<p><code>visible = false</code> removes a column from rendering without disturbing the rest of the list:</p>
+<p><code>visible = false</code> removes a column from rendering without disturbing the rest of the list. For
+letting the <em>user</em> show and hide columns, turn on the table's own menu with
+<code>showColumnMenuButton</code> — see <a href="../layout/#hiding-columns">Column Layout</a>.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kd">var</span><span class="w"> </span><span class="nv">showNotes</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">remember</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mutableStateOf</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
 <a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">remember</span><span class="p">(</span><span class="n">showNotes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>

@@ -2,7 +2,7 @@
 <html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
-    <title>scrollToItem</title>
+    <title>applyLayout</title>
     <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
     <script>var pathToRoot = "../../../";</script>
     <script>document.documentElement.classList.replace("no-js","js");</script>
@@ -104,12 +104,12 @@
                 </div>
             </div>
             <div id="main">
-<div class="main-content" data-page-type="member" id="content" pageIds="DataTable::io.github.stephenwanjala.datatable/DataTableState/scrollToItem/#kotlin.Int#kotlin.Int/PointingToDeclaration//-1956488046">
-  <div class="breadcrumbs"><a href="../../../index.html">DataTable</a><span class="delimiter">/</span><a href="../index.html">io.github.stephenwanjala.datatable</a><span class="delimiter">/</span><a href="index.html">DataTableState</a><span class="delimiter">/</span><span class="current">scrollToItem</span></div>
+<div class="main-content" data-page-type="member" id="content" pageIds="DataTable::io.github.stephenwanjala.datatable/DataTableState/applyLayout/#io.github.stephenwanjala.datatable.DataTableLayout/PointingToDeclaration//-1956488046">
+  <div class="breadcrumbs"><a href="../../../index.html">DataTable</a><span class="delimiter">/</span><a href="../index.html">io.github.stephenwanjala.datatable</a><span class="delimiter">/</span><a href="index.html">DataTableState</a><span class="delimiter">/</span><span class="current">applyLayout</span></div>
   <div class="cover ">
-    <h1 class="cover"><span>scroll</span><wbr></wbr><span>To</span><wbr></wbr><span><span>Item</span></span></h1>
+    <h1 class="cover"><span>apply</span><wbr></wbr><span><span>Layout</span></span></h1>
   </div>
-  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="scroll-to-item.html"><span class="token function">scrollToItem</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">scrollOffset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/stephenWanjala/DataTable/tree/master/DataTable/src/main/java/io/github/stephenwanjala/datatable/DataTableState.kt#L227">source</a>)</span></span></div><p class="paragraph">Scrolls the table so that the given item index is visible.</p></div></div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":DataTable/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="apply-layout.html"><span class="token function">applyLayout</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">layout<span class="token operator">: </span><a href="../-data-table-layout/index.html">DataTableLayout</a></span></span><span class="token punctuation">)</span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/stephenWanjala/DataTable/tree/master/DataTable/src/main/java/io/github/stephenwanjala/datatable/DataTableState.kt#L406">source</a>)</span></span></div><p class="paragraph">Puts a captured layout back.</p><p class="paragraph">Widths, hidden columns, and order always apply — the table owns those. The sort and the filters apply only where the table owns them too: a table given <code class="lang-kotlin">onSortChange</code> or <code class="lang-kotlin">onFiltersChange</code> renders what its caller passes, so restore those from <a href="../-data-table-layout/sort-by.html">DataTableLayout.sortBy</a>, <a href="../-data-table-layout/multi-sort-by.html">DataTableLayout.multiSortBy</a>, and <a href="../-data-table-layout/filters.html">DataTableLayout.filters</a> into your own state instead.</p><p class="paragraph">Safe to call with a layout saved against an older version of the table: entries naming columns that no longer exist are ignored.</p></div></div>
 </div>
     <div class="footer">
         <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
