@@ -6,6 +6,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
@@ -149,6 +151,23 @@ data class DataTableTextStyles(
  * Factory functions for [DataTableColors] and [DataTableTextStyles].
  */
 object DataTableDefaults {
+    /**
+     * The height `DataTable` gives a row when it is not told one: enough for a single line of
+     * body text at [density]'s padding.
+     *
+     * Rows being a uniform, known height is what lets the table cull the columns that scroll out
+     * of sight — a row that sizes to its content changes height when the tall cell is the culled
+     * one, so `DataTable` will not cull for a table whose `rowHeight` is `null`.
+     *
+     * This assumes the default `bodyCell` style. A larger font, two lines of text, or a
+     * `cellContent` holding a chip or an avatar needs a height of its own — pass one to
+     * `DataTable` rather than deriving it from here.
+     */
+    fun rowHeight(density: DataTableDensity): Dp = density.verticalPadding * 2 + SINGLE_LINE
+
+    /** Room for one line of the default 14sp `bodyCell` style, with a little slack. */
+    private val SINGLE_LINE = 20.dp
+
     /**
      * Creates a [DataTableColors], remembered against its arguments.
      *

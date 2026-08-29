@@ -124,8 +124,11 @@ data class SortState(
 /**
  * Density presets that control vertical and horizontal padding for rows and headers.
  *
- * Density affects padding only. Row height still grows with cell content, so a column that wraps
- * to two lines is tall at any density — cap it with `maxLines` if you want uniform rows.
+ * Density sets padding, and `DataTable`'s default row height is derived from it —
+ * [DataTableDefaults.rowHeight] is this padding either side of a single line of body text. A row
+ * is that tall whatever its cells hold, so a column that wraps is clipped rather than allowed to
+ * make the row taller. Pass `DataTable` a larger `rowHeight` for cells that need one, or
+ * `rowHeight = null` for rows that grow to fit their content.
  *
  * @property verticalPadding Padding above and below the content of every row and header cell.
  * @property horizontalPadding Padding on each side of a cell's content.

@@ -187,6 +187,9 @@ fun LargeDataSetSample() {
             resizableColumns = true,
             reorderableColumns = true,
             minColumnWidth = 50.dp,
+            // Tall enough for the status chip, and uniform — which is also what lets the table
+            // leave the two dozen columns beyond the viewport uncomposed.
+            rowHeight = 56.dp,
             showPagination = true,
             itemsPerPage = itemsPerPage,
             currentPage = currentPage,

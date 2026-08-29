@@ -43,6 +43,7 @@ A highly customizable, feature-rich `DataTable` component for Compose Desktop bu
 - **Column formatting** -- a per-column `format` decides what a cell reads (money, percentages, dates, booleans, or your own), while the value stays raw for sorting and editing
 - **Cell editing** -- editable columns with per-column validation, an editor that opens on the raw value behind a formatted display, and custom `editorContent` editors
 - **Range selection & clipboard** -- Shift+arrows or Shift+click select a block of cells, Ctrl+C copies it as tab-separated text; `onCopy` takes the copy over and hands you the rows and columns as your own types
+- **Horizontal virtualization** -- a uniform `rowHeight` (the default) lets the table compose only the columns near the viewport, so a forty-column grid stops composing forty cells for every visible row; `rowHeight = null` returns to content-sized rows and composes them all
 - **Row hover & alternating colors** -- visual row highlighting
 - **Right-click context menu** -- callback with item and position
 - **Text overflow** -- per-column `maxLines` and `TextOverflow` control
@@ -57,7 +58,8 @@ as a block, cell selection is a single rectangle, and editing has no row-level c
 Filtering is one query per column, ANDed, with no OR across columns and no built-in checklist of
 the values that occur. Columns can be reordered by dragging their headers, but only by dragging —
 there is no keyboard equivalent. There is also no export, no tree tables, and no accessibility
-semantics. Frozen columns pin left only. The
+semantics. Frozen columns pin left only, and horizontal virtualization covers the data rows only —
+the header and filter rows always compose every column. The
 [documentation](https://stephenwanjala.github.io/DataTable/latest/#what-it-does-not-do) spells each of
 these out.
 

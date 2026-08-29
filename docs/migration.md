@@ -5,9 +5,65 @@ Each release is listed newest first.
 ## Unreleased
 
 Cell-level focus, grid keyboard navigation, in-place cell editing, cell range selection,
-clipboard copy, per-column display formatting, a filter row, and a saveable column layout. Everything here is additive: no
-signature changed, and a table that does not opt in behaves as it did in 0.4.0 — with one
-exception, ++ctrl+c++, noted below.
+clipboard copy, per-column display formatting, a filter row, a saveable column layout, and
+horizontal virtualization. Almost all of it is additive: a table that does not opt in behaves as
+it did in 0.4.0, with three exceptions noted below — ++ctrl+c++ is now bound, `scrollbarThickness`
+is removed, and **row height** has a default, which is the one change that can alter how an
+existing table looks.
+
+### Rows have a uniform height, and columns are virtualized
+
+**This is the one change that can alter an existing table's appearance.** `DataTable` gained a
+`rowHeight`, defaulting to one line of body text at the table's density — 52dp at `DEFAULT`, 44dp
+at `COMFORTABLE`, 36dp at `COMPACT`. Every data row is exactly that tall.
+
+Before, a row grew to fit its tallest cell, so a column wrapping onto three lines made every row
+three lines deep. Now that column is clipped instead. Two ways to take it:
+
+```kotlin
+// The content has a fixed size that just needs more room — a chip, an avatar, two lines.
+DataTable(/* ... */, rowHeight = 56.dp)
+
+// The number of lines genuinely varies per row.
+DataTable(/* ... */, rowHeight = null)
+```
+
+If your table already had a **frozen column**, its rows were being pinned at 50dp anyway — that
+was hardcoded, undocumented, and a point short of what a line of text at `DEFAULT` density needs,
+so text was clipped by a pixel. Those tables get a pixel back and lose the inconsistency: a row
+is now the same height whether or not anything is pinned.
+
+**What it buys.** Because a row's height is known without measuring its cells, the table now
+composes only the columns near the viewport, replacing each run that scrolled out of sight with
+one spacer of the same width. A forty-column grid stops composing forty cells for every visible
+row. This is why the two are one setting: under `rowHeight = null` a row's height depends on
+cells that may not be composed, so culling switches itself off. See
+[Columns](guide/columns.md#row-height-and-horizontal-virtualization).
+
+One thing to check if you use `cellContent`: a culled cell is not composed, so an effect inside
+one stops running while its column is off screen. `LazyColumn` already does this to rows scrolled
+off the bottom, but a paginated table never scrolls off the bottom at all.
+
+### `scrollbarThickness` is gone
+
+`DataTable` no longer takes a `scrollbarThickness`. It never did anything — the parameter was
+accepted and never read, in every version since the first, and its original KDoc said as much
+("currently decorative") before that caveat was lost. Nothing renders differently for having
+dropped it; only a call site that passed it stops compiling, which is the point — it was not
+doing what it looked like it was doing.
+
+Scrollbars are Compose Desktop's own, so style them through `LocalScrollbarStyle`, which covers
+thickness along with colours, shape, and hover timing:
+
+```kotlin
+CompositionLocalProvider(
+    LocalScrollbarStyle provides LocalScrollbarStyle.current.copy(thickness = 12.dp)
+) {
+    DataTable(/* ... */)
+}
+```
+
+See [Styling the scrollbars](guide/interactions.md#styling-the-scrollbars).
 
 ### Cell navigation is opt-in
 
@@ -192,6 +248,13 @@ are how the other 30 are passed in practice.
 type.
 
 `DataTable` gains `reorderableColumns`.
+
+`DataTable` gains `rowHeight`, and `DataTableDefaults` gains `rowHeight(density)` to derive its
+default. This one has a behavioural default rather than an inert one — see [Rows have a uniform
+height](#rows-have-a-uniform-height-and-columns-are-virtualized) above.
+
+`DataTable` **loses** `scrollbarThickness`, the only removal in this release. It was inert, and
+`LocalScrollbarStyle` replaces it — see [above](#scrollbarthickness-is-gone).
 
 `DataTableColors` gains `focusedCellBorder`, `editingCell`, `invalidCellBorder`, `selectedCell`,
 `draggedColumn`, `columnDropIndicator`, `filterRow`, and `filterField`; `DataTableTextStyles` gains `cellEditor` and `filterField`. Both
