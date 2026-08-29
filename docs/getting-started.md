@@ -6,7 +6,7 @@
 
     ```kotlin
     dependencies {
-        implementation("io.github.stephenwanjala:datatable:0.4.0")
+        implementation("io.github.stephenwanjala:datatable:0.5.0")
     }
     ```
 
@@ -14,7 +14,7 @@
 
     ```groovy
     dependencies {
-        implementation 'io.github.stephenwanjala:datatable:0.4.0'
+        implementation 'io.github.stephenwanjala:datatable:0.5.0'
     }
     ```
 
@@ -22,7 +22,7 @@
 
     ```toml
     [libraries]
-    datatable = { module = "io.github.stephenwanjala:datatable", version = "0.4.0" }
+    datatable = { module = "io.github.stephenwanjala:datatable", version = "0.5.0" }
     ```
 
 Compose is exposed as an `api` dependency, so `compose.runtime`, `compose.foundation`, and
