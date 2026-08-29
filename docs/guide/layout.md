@@ -90,7 +90,9 @@ tableState.columnOrder = emptyList()                // back to declaration order
 ```
 
 `moveColumn` counts positions over the visible leaf columns in display order, frozen ones first,
-and clamps an index outside the table rather than throwing.
+and clamps an index outside the table rather than throwing. A column the user has hidden keeps its
+place in the order while the others are rearranged around it, so bringing it back does not find it
+swept to the end of the table.
 
 !!! note "Groups move as blocks"
     With [grouped headers](columns.md#nested-grouped-headers), the order applies at every level of
@@ -98,7 +100,36 @@ and clamps an index outside the table rather than throwing.
     within its group. What it cannot do is take a column out of the group it was declared in — a
     group whose columns were scattered across the table would no longer be a group.
 
-There is no drag-to-reorder in the header yet; `moveColumn` is the seam it will sit on.
+### Dragging columns
+
+Turn the header into the control for it:
+
+```kotlin
+DataTable(
+    // ...
+    reorderableColumns = true,
+)
+```
+
+Grab a header and drag it sideways; a line marks the edge the column will land against, and
+releasing writes the result to `columnOrder` — so a dragged arrangement is saved and restored with
+everything else in the layout.
+
+A press that never travels far enough to become a drag is still a sort, which is why turning this
+on moves sorting from the press to the release. Reach for a column to drag it and the table no
+longer re-sorts itself under you on the way.
+
+What a drag cannot do is the same as what `columnOrder` cannot do:
+
+| | |
+|---|---|
+| Inside a group | A column is dragged among its own siblings. Aim past the group and it stops at the edge of it rather than leaving. |
+| A whole group | Dragged by its band, and every column under it moves as one block. |
+| Across the freeze boundary | Frozen and scrolling columns are two separate header rows, and a drag stays in the one it started in. Whether a column is frozen is `fixed` on its header — the caller's decision, not the user's. |
+
+!!! note "Dragging is the only way in"
+    There is no keyboard equivalent of the drag. Users who cannot use a pointer need
+    `columnOrder` or `moveColumn` driven from UI of your own.
 
 ## Capturing and applying
 

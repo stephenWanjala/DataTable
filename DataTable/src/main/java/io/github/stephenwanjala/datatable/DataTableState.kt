@@ -216,6 +216,16 @@ class DataTableState(
     internal var columnKeys: List<String> by mutableStateOf(emptyList())
 
     /**
+     * Every leaf column key the user can arrange, in display order — including the ones they
+     * have hidden, which [columnKeys] leaves out.
+     *
+     * Reordering is written against this rather than against what is on display, so that hiding
+     * a column and then moving another does not sweep the hidden one to the end of the table the
+     * moment it is brought back.
+     */
+    internal var allColumnKeys: List<String> by mutableStateOf(emptyList())
+
+    /**
      * Left and right edge, in pixels, of every *scrollable* column within the horizontally
      * scrolled content. Frozen columns are absent — they are always on screen.
      */
@@ -359,19 +369,49 @@ class DataTableState(
      * than throwing.
      */
     fun moveColumn(key: String, toIndex: Int) {
-        // The order in force: the stored one extended with anything it has not heard of, or the
-        // visual order when nothing has been reordered yet.
-        val base = if (columnOrder.isEmpty()) {
-            columnKeys
+        // Expressed against the column it lands beside rather than as an index, so that columns
+        // the user has hidden keep their place in the order instead of falling off the end of it.
+        val others = columnKeys.filter { it != key }
+        if (others.isEmpty()) return
+        val landing = toIndex.coerceIn(0, others.size)
+        if (landing == others.size) {
+            moveColumnsBeside(listOf(key), others.last(), after = true)
         } else {
-            columnOrder + columnKeys.filter { it !in columnOrder }
+            moveColumnsBeside(listOf(key), others[landing], after = false)
         }
-        val reordered = base.toMutableList()
-        val from = reordered.indexOf(key)
-        if (from < 0) return
-        reordered.removeAt(from)
-        reordered.add(toIndex.coerceIn(0, reordered.size), key)
-        columnOrder = reordered
+    }
+
+    /**
+     * The column order in force: the stored one extended with anything it has not heard of, or
+     * the declared order when nothing has been reordered yet.
+     */
+    private fun effectiveColumnOrder(): List<String> {
+        val known = allColumnKeys.ifEmpty { columnKeys }
+        return if (columnOrder.isEmpty()) known else columnOrder + known.filter { it !in columnOrder }
+    }
+
+    /**
+     * Moves a block of columns to sit beside [anchorKey] — after it when [after], before it
+     * otherwise — keeping them together and in their own order.
+     *
+     * This is what a header drag commits. It takes a block rather than a single key because a
+     * group is dragged as one: moving it means moving every leaf under it, contiguously, or the
+     * group would be torn apart by its own move.
+     */
+    internal fun moveColumnsBeside(keys: List<String>, anchorKey: String, after: Boolean) {
+        val moving = keys.toSet()
+        if (anchorKey in moving) return
+
+        val base = effectiveColumnOrder()
+        val block = base.filter { it in moving }
+        if (block.isEmpty()) return
+
+        val rest = base.filterNot { it in moving }
+        val at = rest.indexOf(anchorKey)
+        if (at < 0) return
+
+        val insertion = if (after) at + 1 else at
+        columnOrder = rest.take(insertion) + block + rest.drop(insertion)
     }
 
     /**

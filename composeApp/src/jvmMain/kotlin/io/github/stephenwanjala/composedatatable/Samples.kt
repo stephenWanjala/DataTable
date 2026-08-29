@@ -185,6 +185,7 @@ fun LargeDataSetSample() {
             multiSortBy = multiSort,
             onMultiSortChange = { multiSort = it },
             resizableColumns = true,
+            reorderableColumns = true,
             minColumnWidth = 50.dp,
             showPagination = true,
             itemsPerPage = itemsPerPage,
@@ -239,7 +240,8 @@ fun NestedHeadersSample() {
         SampleControls {
             Text(
                 "Three levels deep. ID and Name are leaves at the top level, so they reserve " +
-                    "width in the bands and keep their titles in the leaf row.",
+                    "width in the bands and keep their titles in the leaf row. Drag a band to " +
+                    "move a whole group; drag a column inside one and it stays in it.",
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -247,6 +249,7 @@ fun NestedHeadersSample() {
             items = sampleEmployees,
             headers = headers,
             itemKey = { it.id },
+            reorderableColumns = true,
             modifier = Modifier.weight(1f),
         )
     }
@@ -283,6 +286,7 @@ fun SelectionSample() {
             selectedKeys = selectedKeys,
             onSelectionChange = { selectedKeys = it },
             onRowClick = { println("Clicked ${it.name}") },
+            reorderableColumns = true,
             colors = DataTableDefaults.colors(rowAlternate = Color(0xFFF7F7F7)),
             modifier = Modifier.weight(1f),
         )
@@ -318,6 +322,7 @@ fun ExpansionSample() {
                     Text("Status: ${if (employee.active) "Active" else "Inactive"}", style = MaterialTheme.typography.bodySmall)
                 }
             },
+            reorderableColumns = true,
             modifier = Modifier.weight(1f),
         )
     }
@@ -358,6 +363,7 @@ fun GroupingSample() {
                     )
                 }
             },
+            reorderableColumns = true,
             modifier = Modifier.weight(1f),
         )
     }
@@ -474,6 +480,7 @@ fun FilteringSample() {
             itemKey = { it.id },
             filters = filters,
             onFiltersChange = { filters = it },
+            reorderableColumns = true,
             density = DataTableDensity.COMFORTABLE,
             showPagination = true,
             itemsPerPage = 10,
@@ -504,8 +511,9 @@ fun LayoutSample() {
     Column(Modifier.fillMaxSize()) {
         SampleControls {
             Text(
-                "Hide columns from the table's own menu at the right of the header. Resize, " +
-                    "sort and filter too — then save, wreck it, and restore.",
+                "Drag a header to move the column. Hide columns from the table's own menu at " +
+                    "the right of the header, resize, sort and filter too — then save, wreck " +
+                    "it, and restore.",
                 style = MaterialTheme.typography.bodySmall,
             )
             Spacer(Modifier.weight(1f))
@@ -536,6 +544,7 @@ fun LayoutSample() {
             itemKey = { it.id },
             state = tableState,
             resizableColumns = true,
+            reorderableColumns = true,
             showColumnMenuButton = true,
             density = DataTableDensity.COMFORTABLE,
             colors = DataTableDefaults.colors(rowAlternate = Color(0xFFF7F7F7)),
@@ -637,6 +646,7 @@ fun ServerSideSample() {
             onPageChange = { page = it },
             onItemsPerPageChange = { pageSize = it; page = 0 },
 
+            reorderableColumns = true,
             modifier = Modifier.weight(1f),
         )
     }
@@ -664,6 +674,8 @@ fun ThemingSample() {
             checkboxChecked = Color(0xFF4F8CC9),
             checkboxUnchecked = Color(0xFF888888),
             focusedRowBorder = Color(0xFF4F8CC9),
+            draggedColumn = Color(0x334F8CC9),
+            columnDropIndicator = Color(0xFF4F8CC9),
         )
     } else {
         DataTableDefaults.colors(rowAlternate = Color(0xFFF5F5F5))
@@ -707,6 +719,7 @@ fun ThemingSample() {
             showPagination = true,
             itemsPerPage = 10,
             onItemsPerPageChange = {},
+            reorderableColumns = true,
             modifier = Modifier.weight(1f),
         )
     }
@@ -841,6 +854,7 @@ fun KeyboardSample() {
             selectedKeys = selectedKeys,
             onSelectionChange = { selectedKeys = it },
             onRowClick = { println("Activated ${it.name}") },
+            reorderableColumns = true,
             colors = DataTableDefaults.colors(
                 rowAlternate = Color(0xFFF7F7F7),
                 focusedRowBorder = Color(0xFFD32F2F),
@@ -952,6 +966,7 @@ fun CellEditingSample() {
             state = tableState,
             density = DataTableDensity.COMPACT,
             resizableColumns = true,
+            reorderableColumns = true,
             onCellEdit = { edit ->
                 log = (listOf("${edit.columnKey}: ${edit.oldText} → ${edit.newText}") + log).take(6)
                 employees = employees.map { employee ->
@@ -1012,6 +1027,7 @@ fun RangeSelectionSample() {
             state = tableState,
             density = DataTableDensity.COMFORTABLE,
             cellNavigation = true,
+            reorderableColumns = true,
             showSelect = true,
             selectedKeys = selectedKeys,
             onSelectionChange = { selectedKeys = it },

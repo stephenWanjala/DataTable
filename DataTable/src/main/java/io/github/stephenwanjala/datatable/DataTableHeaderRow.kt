@@ -1,25 +1,45 @@
 package io.github.stephenwanjala.datatable
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitHorizontalTouchSlopOrCancellation
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.horizontalDrag
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import java.awt.Cursor
+
+/** Thickness of the line marking where a dragged column will land. */
+private val DropIndicatorWidth = 2.dp
+
+/**
+ * Shown over a header that can be dragged, since a column that moves has no other tell — the
+ * header looks exactly like one that only sorts.
+ */
+private val ColumnMoveCursor = PointerIcon(Cursor(Cursor.MOVE_CURSOR))
 
 /**
  * Renders the header, including optional select-all checkbox and expand spacer.
@@ -28,6 +48,9 @@ import java.awt.Cursor
  * group: its title sits in a band above its children, spanning them. A header without children
  * renders as a column and stretches over the full header height, so a leaf sitting beside a
  * deeply nested group is vertically centred rather than leaving blank rows above it.
+ *
+ * Each rendered header row owns its own [ColumnDragState], which is what keeps a reordering drag
+ * inside its own section: the frozen headers and the scrolling ones are two rows.
  */
 @Composable
 internal fun <T> DataTableHeaderRow(
@@ -48,6 +71,7 @@ internal fun <T> DataTableHeaderRow(
     onMultiSortChange: ((List<SortState>) -> Unit)? = null,
     resizableColumns: Boolean = false,
     minColumnWidth: Dp = 40.dp,
+    reorderableColumns: Boolean = false,
     state: DataTableState? = null,
 ) {
     val hasGroups = headers.any { visibleChildren(it) != null }
@@ -56,6 +80,12 @@ internal fun <T> DataTableHeaderRow(
     // a flat, resizable header measures against the whole table and `ColumnResizeHandle`'s
     // `fillMaxHeight` stretches it over the rows, leaving the body with nothing.
     val sizeToContent = hasGroups || resizableColumns
+
+    // Reordering writes through the state, so without one there is nowhere to record the result.
+    val dragState = remember { ColumnDragState() }
+    val drag = if (reorderableColumns && state != null) dragState else null
+
+    val visibleHeaders = headers.filter { it.visible }
 
     Row(
         modifier = modifier
@@ -81,23 +111,23 @@ internal fun <T> DataTableHeaderRow(
             Spacer(modifier = Modifier.width(48.dp))
         }
 
-        headers.forEach { header ->
-            if (header.visible) {
-                HeaderNode(
-                    header = header,
-                    density = density,
-                    sortState = sortState,
-                    onSortChange = onSortChange,
-                    colors = colors,
-                    textStyles = textStyles,
-                    multiSortBy = multiSortBy,
-                    onMultiSortChange = onMultiSortChange,
-                    resizableColumns = resizableColumns,
-                    minColumnWidth = minColumnWidth,
-                    stretch = hasGroups,
-                    state = state,
-                )
-            }
+        visibleHeaders.forEach { header ->
+            HeaderNode(
+                header = header,
+                siblings = visibleHeaders,
+                density = density,
+                sortState = sortState,
+                onSortChange = onSortChange,
+                colors = colors,
+                textStyles = textStyles,
+                multiSortBy = multiSortBy,
+                onMultiSortChange = onMultiSortChange,
+                resizableColumns = resizableColumns,
+                minColumnWidth = minColumnWidth,
+                stretch = hasGroups,
+                drag = drag,
+                state = state,
+            )
         }
     }
 }
@@ -105,12 +135,17 @@ internal fun <T> DataTableHeaderRow(
 /**
  * Renders one node of the header tree — a column, or a group spanning its children.
  *
+ * @param siblings The visible headers at this level, in display order. A reordering drag is
+ *                 hit-tested against these and lands among them, which is what stops a column
+ *                 being dragged out of the group it was declared in.
  * @param stretch Whether to fill the header's full height. Set once groups are present, so that
  *                leaves span every level instead of leaving the space above them empty.
+ * @param drag The row's drag tracker, or `null` when columns are not reorderable.
  */
 @Composable
 private fun <T> RowScope.HeaderNode(
     header: DataTableHeader<T>,
+    siblings: List<DataTableHeader<T>>,
     density: DataTableDensity,
     sortState: SortState,
     onSortChange: (SortState) -> Unit,
@@ -121,6 +156,7 @@ private fun <T> RowScope.HeaderNode(
     resizableColumns: Boolean,
     minColumnWidth: Dp,
     stretch: Boolean,
+    drag: ColumnDragState?,
     state: DataTableState?,
 ) {
     val children = visibleChildren(header)
@@ -140,7 +176,20 @@ private fun <T> RowScope.HeaderNode(
     } else {
         Modifier.weight(leaves.size.toFloat())
     }
-    val cellModifier = if (stretch) sizeModifier.fillMaxHeight() else sizeModifier
+    val cellModifier = (if (stretch) sizeModifier.fillMaxHeight() else sizeModifier)
+        .columnDropDecoration(header.key, drag, colors)
+
+    // A drop is expressed against the target's outermost leaf, because that is the column the
+    // order list can name — the group itself is never in it.
+    val onDrop: (ColumnDrop) -> Unit = drop@{ landing ->
+        val table = state ?: return@drop
+        val target = siblings.firstOrNull { it.key == landing.targetKey } ?: return@drop
+        val targetLeaves = leavesOf(target)
+        val anchor = (if (landing.after) targetLeaves.lastOrNull() else targetLeaves.firstOrNull())
+            ?: return@drop
+        table.moveColumnsBeside(leaves.map { it.key }, anchor.key, landing.after)
+    }
+    val siblingKeys = siblings.map { it.key }
 
     if (children == null) {
         DataTableHeaderLeaf(
@@ -155,6 +204,9 @@ private fun <T> RowScope.HeaderNode(
             onMultiSortChange = onMultiSortChange,
             resizableColumns = resizableColumns,
             minColumnWidth = minColumnWidth,
+            drag = drag,
+            siblingKeys = siblingKeys,
+            onDrop = onDrop,
             state = state,
         )
     } else {
@@ -162,6 +214,15 @@ private fun <T> RowScope.HeaderNode(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    // The band is the group's drag handle: grabbing it moves every column under
+                    // it as one block.
+                    .headerPointerInput(
+                        columnKey = header.key,
+                        siblingKeys = siblingKeys,
+                        drag = drag,
+                        onDrop = onDrop,
+                        onClick = null,
+                    )
                     .padding(horizontal = 4.dp),
                 contentAlignment = Alignment.Center,
             ) {
@@ -193,6 +254,7 @@ private fun <T> RowScope.HeaderNode(
                 children.forEach { child ->
                     HeaderNode(
                         header = child,
+                        siblings = children,
                         density = density,
                         sortState = sortState,
                         onSortChange = onSortChange,
@@ -203,6 +265,7 @@ private fun <T> RowScope.HeaderNode(
                         resizableColumns = resizableColumns,
                         minColumnWidth = minColumnWidth,
                         stretch = true,
+                        drag = drag,
                         state = state,
                     )
                 }
@@ -228,11 +291,15 @@ private fun <T> DataTableHeaderLeaf(
     onMultiSortChange: ((List<SortState>) -> Unit)? = null,
     resizableColumns: Boolean = false,
     minColumnWidth: Dp = 40.dp,
+    drag: ColumnDragState? = null,
+    siblingKeys: List<String> = emptyList(),
+    onDrop: (ColumnDrop) -> Unit = {},
     state: DataTableState? = null,
 ) {
-    // `pointerInput(Unit)` never restarts, so its lambda would otherwise keep reading the values
-    // captured on first composition — leaving the sort cycle stuck on ASCENDING because it always
-    // saw the initial, empty sort state. Same reason the body row does this for its tap handler.
+    // `pointerInput` restarts only when its keys change, so its lambda would otherwise keep
+    // reading the values captured on first composition — leaving the sort cycle stuck on
+    // ASCENDING because it always saw the initial, empty sort state. Same reason the body row
+    // does this for its tap handler.
     val currentSortState by rememberUpdatedState(sortState)
     val currentMultiSortBy by rememberUpdatedState(multiSortBy)
     val currentOnSortChange by rememberUpdatedState(onSortChange)
@@ -247,56 +314,47 @@ private fun <T> DataTableHeaderLeaf(
         else -> null
     }
 
+    val onSortClick: ((Boolean) -> Unit)? = if (!header.sortable) null else { isCtrl ->
+        val multiSortHandler = currentOnMultiSortChange
+        if (isCtrl && multiSortHandler != null) {
+            // Multi-sort: Ctrl+click
+            val existing = currentMultiSortBy.toMutableList()
+            val idx = existing.indexOfFirst { it.key == header.key }
+            if (idx >= 0) {
+                val current = existing[idx]
+                when (current.order) {
+                    SortOrder.ASCENDING -> existing[idx] = current.copy(order = SortOrder.DESCENDING)
+                    SortOrder.DESCENDING -> existing.removeAt(idx)
+                    SortOrder.NONE -> existing.removeAt(idx)
+                }
+            } else {
+                existing.add(SortState(header.key, SortOrder.ASCENDING))
+            }
+            multiSortHandler(existing)
+        } else {
+            // Single sort
+            val active = currentSortState
+            val newOrder = when {
+                active.key != header.key -> SortOrder.ASCENDING
+                active.order == SortOrder.ASCENDING -> SortOrder.DESCENDING
+                else -> SortOrder.NONE
+            }
+            currentOnSortChange(SortState(header.key, newOrder))
+            // Clear multi-sort when doing single sort
+            multiSortHandler?.invoke(emptyList())
+        }
+    }
+
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
                 .weight(1f)
-                .then(
-                    if (header.sortable) {
-                        Modifier.pointerInput(Unit) {
-                            awaitPointerEventScope {
-                                while (true) {
-                                    val event = awaitPointerEvent()
-                                    if (event.type == PointerEventType.Press) {
-                                        val change = event.changes.firstOrNull() ?: continue
-                                        if (change.pressed) {
-                                            change.consume()
-                                            val isCtrl = event.keyboardModifiers.isCtrlPressed
-
-                                            val multiSortHandler = currentOnMultiSortChange
-                                            if (isCtrl && multiSortHandler != null) {
-                                                // Multi-sort: Ctrl+click
-                                                val existing = currentMultiSortBy.toMutableList()
-                                                val idx = existing.indexOfFirst { it.key == header.key }
-                                                if (idx >= 0) {
-                                                    val current = existing[idx]
-                                                    when (current.order) {
-                                                        SortOrder.ASCENDING -> existing[idx] = current.copy(order = SortOrder.DESCENDING)
-                                                        SortOrder.DESCENDING -> existing.removeAt(idx)
-                                                        SortOrder.NONE -> existing.removeAt(idx)
-                                                    }
-                                                } else {
-                                                    existing.add(SortState(header.key, SortOrder.ASCENDING))
-                                                }
-                                                multiSortHandler(existing)
-                                            } else {
-                                                // Single sort
-                                                val active = currentSortState
-                                                val newOrder = when {
-                                                    active.key != header.key -> SortOrder.ASCENDING
-                                                    active.order == SortOrder.ASCENDING -> SortOrder.DESCENDING
-                                                    else -> SortOrder.NONE
-                                                }
-                                                currentOnSortChange(SortState(header.key, newOrder))
-                                                // Clear multi-sort when doing single sort
-                                                multiSortHandler?.invoke(emptyList())
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else Modifier
+                .headerPointerInput(
+                    columnKey = header.key,
+                    siblingKeys = siblingKeys,
+                    drag = drag,
+                    onDrop = onDrop,
+                    onClick = onSortClick,
                 )
                 .padding(horizontal = density.horizontalPadding),
             contentAlignment = when (header.align) {
@@ -360,6 +418,115 @@ private fun <T> DataTableHeaderLeaf(
             )
         }
     }
+}
+
+/**
+ * Reports where a header node was placed, washes it while it is the one being dragged, and draws
+ * the line marking a landing spot on its leading or trailing edge.
+ *
+ * Applied to the node's outer modifier rather than to its title, so the extent it reports — and
+ * the line it draws — covers the whole column including its resize handle, leaving no dead gap
+ * between one column's hit area and the next.
+ */
+private fun Modifier.columnDropDecoration(
+    columnKey: String,
+    drag: ColumnDragState?,
+    colors: DataTableColors,
+): Modifier {
+    if (drag == null) return this
+    return this
+        .onGloballyPositioned { coordinates ->
+            // Position plus size rather than `boundsInWindow`, which clips to the scroll
+            // viewport: a column half off the edge would otherwise report half its width, and
+            // one scrolled fully out would collapse onto the edge alongside its neighbours.
+            val left = coordinates.positionInWindow().x
+            drag.reportExtent(columnKey, left, left + coordinates.size.width)
+        }
+        .drawWithContent {
+            drawContent()
+            if (drag.draggingKey == columnKey) {
+                drawRect(colors.draggedColumn)
+            }
+            val landing = drag.drop
+            if (landing?.targetKey == columnKey) {
+                val width = DropIndicatorWidth.toPx()
+                drawRect(
+                    color = colors.columnDropIndicator,
+                    topLeft = Offset(if (landing.after) size.width - width else 0f, 0f),
+                    size = Size(width, size.height),
+                )
+            }
+        }
+}
+
+/**
+ * The header's press handling: one gesture that resolves into either a sort or a reordering drag,
+ * decided by whether the pointer travels far enough sideways to cross the touch slop.
+ *
+ * They have to share a gesture. Sorting on press — which is what the header used to do — would
+ * re-sort the table under the user every time they reached for a column to drag it.
+ *
+ * @param onClick Invoked with whether Ctrl was held when the press began, for a press that never
+ *                became a drag. `null` on a column that cannot be sorted.
+ */
+@Composable
+private fun Modifier.headerPointerInput(
+    columnKey: String,
+    siblingKeys: List<String>,
+    drag: ColumnDragState?,
+    onDrop: (ColumnDrop) -> Unit,
+    onClick: ((ctrlPressed: Boolean) -> Unit)?,
+): Modifier {
+    if (drag == null && onClick == null) return this
+
+    // Held across the gesture so the pointer's offset can be turned into a window coordinate:
+    // the header being dragged slides out from under the pointer as the table reorders, so its
+    // own local coordinates are not a fixed frame to measure against.
+    var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    val currentOnClick by rememberUpdatedState(onClick)
+    val currentOnDrop by rememberUpdatedState(onDrop)
+    val currentSiblings by rememberUpdatedState(siblingKeys)
+
+    return this
+        .then(if (drag == null) Modifier else Modifier.pointerHoverIcon(ColumnMoveCursor))
+        .onGloballyPositioned { coordinates = it }
+        .pointerInput(columnKey, drag) {
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false)
+                // Read at the press: by the time the gesture ends the key may have been released.
+                val ctrlPressed = currentEvent.keyboardModifiers.isCtrlPressed
+
+                if (drag != null) {
+                    val start = awaitHorizontalTouchSlopOrCancellation(down.id) { change, _ ->
+                        change.consume()
+                    }
+                    if (start != null) {
+                        drag.start(columnKey)
+
+                        fun track(change: PointerInputChange) {
+                            val origin = coordinates ?: return
+                            drag.update(origin.localToWindow(change.position).x, currentSiblings)
+                        }
+
+                        track(start)
+                        val released = horizontalDrag(start.id) { change ->
+                            track(change)
+                            change.consume()
+                        }
+                        // Always ends the drag, but only a release commits it: a gesture taken
+                        // over by something else is an abandoned drag, not a drop.
+                        val landing = drag.finish()
+                        if (released && landing != null) currentOnDrop(landing)
+                        return@awaitEachGesture
+                    }
+                    // Slop was never crossed, so the pointer came up where it went down.
+                    currentOnClick?.invoke(ctrlPressed)
+                    return@awaitEachGesture
+                }
+
+                if (waitForUpOrCancellation() != null) currentOnClick?.invoke(ctrlPressed)
+            }
+        }
 }
 
 /**
