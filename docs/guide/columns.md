@@ -57,8 +57,10 @@ Mixing both in one table is fine. Mixing them *under a single grouped header* is
 
 ## Text overflow
 
-The defaults (`maxLines = Int.MAX_VALUE`, `overflow = TextOverflow.Clip`) let text wrap, which
-gives rows of differing heights. Most tables want the opposite:
+The defaults are `maxLines = Int.MAX_VALUE` and `overflow = TextOverflow.Clip`, so text wraps —
+but a row is a fixed height (see [Row height](#row-height-and-horizontal-virtualization)), so the
+wrapped lines past the first are cut off. Say what you want to happen for any column of long
+values:
 
 ```kotlin
 DataTableHeader(
@@ -70,6 +72,10 @@ DataTableHeader(
     overflow = TextOverflow.Ellipsis,
 )
 ```
+
+One line ending in an ellipsis is what most tables want — the user can see there is more without
+the row growing. To let a column genuinely occupy several lines, give the table a taller
+`rowHeight`, or `rowHeight = null` when the number of lines varies from row to row.
 
 ## Formatting
 
@@ -237,6 +243,59 @@ Drag the right edge of any header to resize. Overrides live on `DataTableState`;
 
 Grouped headers resize with their children — a group's width is recomputed from its leaves, so
 the band stays aligned.
+
+## Row height and horizontal virtualization
+
+These are one setting, not two. `rowHeight` defaults to a single line of body text at the table's
+density — 52dp at `DEFAULT`, 44dp at `COMFORTABLE`, 36dp at `COMPACT` — and every data row is
+exactly that tall:
+
+```kotlin
+DataTable(
+    items = orderLines,
+    headers = headers,
+    itemKey = { it.id },
+    rowHeight = 56.dp,      // taller: these cells hold a status chip
+)
+```
+
+Because a row's height is known without measuring its cells, the table composes only the columns
+near the viewport and replaces each run that scrolled out of sight with a single spacer of the
+same width. Rows stay aligned with the header, and a forty-column grid stops composing forty
+cells for every visible row. A couple of columns either side are composed ahead of the eye.
+
+### Rows that size to content
+
+`rowHeight = null` brings back rows that grow to fit their tallest cell:
+
+```kotlin
+DataTable(
+    items = notes,
+    headers = headers,
+    itemKey = { it.id },
+    rowHeight = null,       // a column of prose that wraps to however many lines it needs
+)
+```
+
+**Columns are then not culled, and cannot be.** A wrapping column makes every row tall even while
+it is off screen; cull it and the rows snap short, scroll it back and they grow again, shoving
+everything below down the page. In the library's own test a row moves 333 points doing nothing
+but scrolling sideways. So `rowHeight = null` composes every column at every offset — correct,
+and the reason it is not the default.
+
+Prefer a taller `rowHeight` over `null` whenever the cell content has a *fixed* size — a chip, an
+avatar, two lines of text. You keep the culling and you keep uniform rows. Reach for `null` only
+when the number of lines genuinely varies per row.
+
+### What culling costs
+
+A `cellContent` that runs an effect stops running it once its column leaves. `LazyColumn` already
+does this to a row scrolled off the bottom, so an effect in a cell has to tolerate disposal
+regardless — but a paginated table never scrolls off the bottom at all, and there the horizontal
+axis is the first thing that will dispose one.
+
+The header and filter rows are never culled. They cost one row apiece rather than one per data
+row, and culling the filter row would pull the focus out of a field mid-scroll.
 
 ## Nested (grouped) headers
 

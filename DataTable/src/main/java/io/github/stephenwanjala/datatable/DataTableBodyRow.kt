@@ -1,6 +1,5 @@
 package io.github.stephenwanjala.datatable
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -8,21 +7,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.*
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.input.pointer.isSecondaryPressed
-import androidx.compose.ui.input.pointer.isShiftPressed
 import kotlinx.coroutines.launch
 
 /**
@@ -34,8 +29,11 @@ import kotlinx.coroutines.launch
  * @param gridNavigation Whether cell-level focus and editing are active.
  * @param editOnDoubleClick Whether double-clicking an editable cell opens its editor.
  * @param onCellEdit Where committed edits are reported.
+ * @param columnWindow Which of [headers] to compose, under horizontal virtualization, or `null`
+ *                     to compose them all. Held as a [State] and read inside the row's content so
+ *                     that scrolling sideways past a column boundary recomposes the rows and
+ *                     nothing around them.
  */
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 internal fun <T> DataTableRow(
     item: T,
@@ -62,6 +60,7 @@ internal fun <T> DataTableRow(
     gridNavigation: Boolean = false,
     editOnDoubleClick: Boolean = false,
     onCellEdit: ((CellEdit<T>) -> Unit)? = null,
+    columnWindow: State<List<ColumnSlot>>? = null,
 ) {
     var isHovered by remember { mutableStateOf(false) }
 
@@ -84,6 +83,12 @@ internal fun <T> DataTableRow(
 
     Row(
         modifier = modifier
+            // Take the whole height the layout offers, so cells center against a constant rather
+            // than against whatever the tallest of them happens to be. Without it a fixed row
+            // height still clips a wrapping cell, but the cell grows into the clip and nudges
+            // its neighbors a pixel as it comes and goes. A no-op when the height is unbounded,
+            // which is the `rowHeight = null` case.
+            .fillMaxHeight()
             .background(backgroundColor)
             .then(
                 if (isFocused) {
@@ -171,19 +176,41 @@ internal fun <T> DataTableRow(
             }
         }
 
-        headers.forEach { header ->
-            DataTableCell(
-                item = item,
-                rowKey = rowKey,
-                header = header,
-                density = density,
-                colors = colors,
-                textStyles = textStyles,
-                state = state,
-                gridNavigation = gridNavigation,
-                editOnDoubleClick = editOnDoubleClick,
-                onCellEdit = onCellEdit,
-            )
+        // Reading the window here rather than in the caller keeps a sideways scroll from
+        // recomposing anything but the rows.
+        val slots =
+            columnWindow?.value ?: remember(headers) {
+                List(headers.size) { ColumnSlot.Column(it) }
+            }
+
+        // Keyed by column, so a window that grows or loses a leading gap shifts the cells along
+        // rather than tearing them down and building them again — an open editor, a cell cursor,
+        // and the press tracking behind double-click all live in a cell's own composition.
+        slots.forEachIndexed { position, slot ->
+            when (slot) {
+                // The columns that scrolled out of sight, standing in at their combined width so
+                // the row measures the same and stays aligned with the header.
+                is ColumnSlot.Gap -> key("gap", position) {
+                    Spacer(Modifier.width(with(LocalDensity.current) { slot.widthPx.toDp() }))
+                }
+
+                is ColumnSlot.Column -> headers.getOrNull(slot.index)?.let { header ->
+                    key(header.key) {
+                        DataTableCell(
+                            item = item,
+                            rowKey = rowKey,
+                            header = header,
+                            density = density,
+                            colors = colors,
+                            textStyles = textStyles,
+                            state = state,
+                            gridNavigation = gridNavigation,
+                            editOnDoubleClick = editOnDoubleClick,
+                            onCellEdit = onCellEdit,
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -226,7 +253,7 @@ internal fun <T> RowScope.DataTableCell(
 
     val cursorModifier = if (isFocusedCell || isInRange) {
         val borderColor =
-            if (isEditingCell && state!!.editError != null) colors.invalidCellBorder
+            if (isEditingCell && (state!!.editError != null)) colors.invalidCellBorder
             else colors.focusedCellBorder
         val rangeColor = colors.selectedCell
         // The row's vertical padding sits outside every cell, so both the range wash and the

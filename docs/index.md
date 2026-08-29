@@ -60,8 +60,9 @@ DataTable(
 
 -   **Built for large data**
 
-    Virtualized rows, client-side or server-side pagination, and `manualPagination` so the table
-    holds one page while your query holds the rest.
+    Rows are virtualized, and a uniform `rowHeight` gets the columns virtualized too. Plus
+    client-side or server-side pagination, and `manualPagination` so the table holds one page
+    while your query holds the rest.
 
 -   **Keyboard driven**
 
@@ -144,6 +145,10 @@ it:
   [Grouping](guide/grouping.md#limitations).
 - **No accessibility semantics.** Rows and cells carry no roles or content descriptions, so screen
   reader support is whatever Compose infers from the text.
+- **Horizontal virtualization covers the body only.** Off-screen cells are culled in the data
+  rows; the header and filter rows always compose every column. It switches itself off under
+  `rowHeight = null`, where a row's height depends on cells that may not be composed. See
+  [Columns](guide/columns.md#row-height-and-horizontal-virtualization).
 - **Frozen columns pin left only**, and rows cannot be frozen at all.
 
 ## License

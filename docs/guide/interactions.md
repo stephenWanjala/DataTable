@@ -151,5 +151,27 @@ Horizontal scrolling responds to a horizontal wheel or trackpad swipe, and to ++
 wheel. Press-and-drag deliberately does **not** pan the table — that would fight the column resize
 handles and text selection.
 
-Scrollbars can be hidden with `showScrollbars = false`, and their width set with
-`scrollbarThickness` (8.dp by default). Both apply to the vertical and horizontal bars together.
+Scrollbars can be hidden with `showScrollbars = false`, which applies to the vertical and
+horizontal bars together.
+
+### Styling the scrollbars
+
+The table draws Compose Desktop's own `VerticalScrollbar` and `HorizontalScrollbar`, so they are
+styled the way every other scrollbar in your application is — through `LocalScrollbarStyle`:
+
+```kotlin
+CompositionLocalProvider(
+    LocalScrollbarStyle provides LocalScrollbarStyle.current.copy(
+        thickness = 12.dp,
+        hoverColor = Color(0x99000000),
+        unhoverColor = Color(0x33000000),
+    )
+) {
+    DataTable(/* ... */)
+}
+```
+
+`ScrollbarStyle` carries `thickness`, `minimalHeight`, `shape`, `hoverDurationMillis`,
+`unhoverColor`, and `hoverColor`. `DataTable` has no scrollbar parameters of its own: a knob for
+one of those six would leave the other five to the composition local anyway, and set the table's
+scrollbars apart from the rest of the window for no good reason.

@@ -78,11 +78,17 @@ DataTable(
 )
 ```
 
-| Density | Vertical | Horizontal |
-|---------|----------|-----------|
-| `DEFAULT` | 16.dp | 16.dp |
-| `COMFORTABLE` | 12.dp | 16.dp |
-| `COMPACT` | 8.dp | 12.dp |
+| Density | Vertical padding | Horizontal padding | Default row height |
+|---------|------------------|--------------------|--------------------|
+| `DEFAULT` | 16.dp | 16.dp | 52.dp |
+| `COMFORTABLE` | 12.dp | 16.dp | 44.dp |
+| `COMPACT` | 8.dp | 12.dp | 36.dp |
+
+Density sets the padding, and the default row height follows from it:
+`DataTableDefaults.rowHeight(density)` is that padding either side of one line of body text. Pass
+`DataTable` a `rowHeight` of your own for cells that need more room, or `rowHeight = null` for
+rows that size to their content — see
+[Row height](columns.md#row-height-and-horizontal-virtualization).
 
 ## A dark palette
 

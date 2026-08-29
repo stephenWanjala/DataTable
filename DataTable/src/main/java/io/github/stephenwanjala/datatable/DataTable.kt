@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
  * - Cell-level focus and grid keyboard navigation
  * - Cell range selection and clipboard copy
  * - In-place cell editing, with validation and custom editors
+ * - Uniform row height, and the horizontal virtualization that a known row height allows
  * - Programmatic scroll-to-row via [DataTableState]
  * - Customizable colors and text styles without any theming framework
  *
@@ -93,6 +94,27 @@ import kotlinx.coroutines.launch
  *                           every column under it as one block; a column cannot be dragged out of
  *                           its group, nor across the freeze boundary. The result is
  *                           `state.columnOrder`, so it is saved with the layout.
+ * @param rowHeight Height of every data row, defaulting to one line of body text at [density]'s
+ *                  padding. A uniform row height is also what lets the table virtualize
+ *                  *horizontally*: knowing a row's height without measuring its cells, it
+ *                  composes only the columns near the viewport and replaces each run that
+ *                  scrolled out of sight with one spacer of the same width. That is what stops a
+ *                  forty-column grid composing forty cells for every visible row.
+ *
+ *                  Pass `null` for rows that size to their content, the way a table without a
+ *                  height does. Columns are then **not** culled, and cannot be: a row that grows
+ *                  to fit its tallest cell changes height when the tall cell is the one culled,
+ *                  so rows would jump as you scrolled sideways. Reach for `null` when a column
+ *                  wraps to a variable number of lines; give a taller `rowHeight` instead when
+ *                  cells hold something of a fixed size — a chip, an avatar, two lines of text —
+ *                  and keep the culling.
+ *
+ *                  Note what culling costs where it is on: a `cellContent` running an effect
+ *                  stops running it once its column leaves. `LazyColumn` already does that to a
+ *                  row scrolled off the bottom, but a paginated table never scrolls off the
+ *                  bottom at all. The header and filter rows are never culled — they cost one row
+ *                  apiece rather than one per data row, and culling the filter row would drop the
+ *                  focus out of a field mid-scroll.
  * @param showColumnMenuButton Puts a menu button at the trailing edge of the header listing every
  *                             column with a checkbox, so a user can show and hide them without
  *                             any UI of your own. Columns whose header declares `visible = false`
@@ -117,7 +139,6 @@ import kotlinx.coroutines.launch
  *               Leave it `null` and the table writes tab-separated text to the system clipboard
  *               itself; supply it to write a different format, or to copy somewhere else.
  */
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun <T> DataTable(
     items: List<T>,
@@ -153,6 +174,7 @@ fun <T> DataTable(
     resizableColumns: Boolean = false,
     minColumnWidth: Dp = 40.dp,
     reorderableColumns: Boolean = false,
+    rowHeight: Dp? = DataTableDefaults.rowHeight(density),
     // Header / Footer
     hideDefaultHeader: Boolean = false,
     hideDefaultFooter: Boolean = false,
@@ -186,7 +208,6 @@ fun <T> DataTable(
     onCopy: ((ClipboardSelection<T>) -> Unit)? = null,
     // Scrollbars
     showScrollbars: Boolean = true,
-    scrollbarThickness: Dp = 8.dp,
 ) {
     val scope = rememberCoroutineScope()
     val listState = state.lazyListState
@@ -546,24 +567,36 @@ fun <T> DataTable(
         val scrollableWidthModifier =
             if (scrollableContentWidth != null) Modifier.width(scrollableContentWidth) else Modifier
 
+        // `null` means the row sizes to its tallest cell, which is what a table without a
+        // `rowHeight` has always done — and the one case the column window has to stand down for.
+        // Left as a bare `Modifier` rather than an intrinsic height, so that case measures
+        // exactly as it did before there was a `rowHeight` to pass at all.
+        val rowHeightModifier = if (rowHeight != null) Modifier.height(rowHeight) else Modifier
+
+        // What every scrollable column will measure, worked out before anything is laid out.
+        // A weighted column splits whatever the fixed ones leave, which is exactly what
+        // `Modifier.weight` does a moment later — so widths can be computed rather than
+        // measured, and are right on the first frame rather than one frame late.
+        val pixelDensity = LocalDensity.current
+        val columnsStart = if (hasFrozenColumns) 0.dp else leadingWidth
+        val weightedWidth =
+            if (weightedColumnCount > 0 && scrollableContentWidth != null) {
+                ((scrollableContentWidth - columnsStart - scrollableFixedWidth) / weightedColumnCount)
+                    .coerceAtLeast(0.dp)
+            } else {
+                0.dp
+            }
+        val scrollableColumnWidths = scrollableHeaders.map { header ->
+            state.resolvedColumnWidth(header.key, header.width) ?: weightedWidth
+        }
+
         // Where each scrollable column sits inside the scrolled content, so moving cell focus
-        // sideways can bring an off-screen column into view. Weighted columns split whatever the
-        // fixed ones leave, which is exactly what `Modifier.weight` does a moment later — so the
-        // bounds can be computed rather than measured, and are right on the first frame.
+        // sideways can bring an off-screen column into view.
         if (gridNavigation) {
-            val pixelDensity = LocalDensity.current
-            val weightedWidth =
-                if (weightedColumnCount > 0 && scrollableContentWidth != null) {
-                    val leading = if (hasFrozenColumns) 0.dp else leadingWidth
-                    ((scrollableContentWidth - leading - scrollableFixedWidth) / weightedColumnCount)
-                        .coerceAtLeast(0.dp)
-                } else {
-                    0.dp
-                }
-            var left = if (hasFrozenColumns) 0.dp else leadingWidth
+            var left = columnsStart
             val bounds = LinkedHashMap<String, IntRange>(scrollableHeaders.size)
-            scrollableHeaders.forEach { header ->
-                val width = state.resolvedColumnWidth(header.key, header.width) ?: weightedWidth
+            scrollableHeaders.forEachIndexed { index, header ->
+                val width = scrollableColumnWidths[index]
                 with(pixelDensity) {
                     bounds[header.key] = IntRange(left.roundToPx(), (left + width).roundToPx())
                 }
@@ -571,6 +604,36 @@ fun <T> DataTable(
             }
             SideEffect { state.scrollableColumnBounds = bounds }
         }
+
+        // Which columns a body row actually composes. Read inside the rows rather than here, so
+        // scrolling sideways past a column boundary recomposes the rows and nothing above them.
+        //
+        // Widths are rounded to pixels the same way `Modifier.width` rounds them, and a skipped
+        // run becomes one spacer of exactly that many pixels — so a virtualized body stays
+        // aligned, column for column, with a header that is always composed in full.
+        val columnWindow: State<List<ColumnSlot>>? =
+            if (rowHeight == null || scrollableHeaders.isEmpty()) {
+                null
+            } else {
+                val widthsPx = with(pixelDensity) {
+                    scrollableColumnWidths.map { it.roundToPx() }
+                }
+                val weighted = scrollableHeaders.map {
+                    state.resolvedColumnWidth(it.key, it.width) == null
+                }
+                val startPx = with(pixelDensity) { columnsStart.roundToPx() }
+                remember(widthsPx, weighted, startPx, horizontalScrollState) {
+                    derivedStateOf {
+                        buildColumnWindow(
+                            widthsPx = widthsPx,
+                            weighted = weighted,
+                            startOffsetPx = startPx,
+                            scrollPx = horizontalScrollState.value,
+                            viewportPx = horizontalScrollState.viewportSize,
+                        )
+                    }
+                }
+            }
 
         Column {
             // ---- Header ----
@@ -828,6 +891,9 @@ fun <T> DataTable(
                                                     scrollableHeaders = scrollableHeaders,
                                                     horizontalScrollState = horizontalScrollState,
                                                     dividerColor = colors.divider,
+                                                    // A data row, unlike the header, is a known height — and that is what lets
+                                                    // the columns beyond the viewport go uncomposed.
+                                                    height = rowHeight,
                                                     frozenContent = {
                                                         DataTableRow(
                                                             item = item,
@@ -887,6 +953,7 @@ fun <T> DataTable(
                                                             gridNavigation = gridNavigation,
                                                             editOnDoubleClick = editOnDoubleClick,
                                                             onCellEdit = onCellEdit,
+                                                            columnWindow = columnWindow,
                                                         )
                                                     },
                                                 )
@@ -894,6 +961,10 @@ fun <T> DataTable(
                                                 Box {
                                                     Row(
                                                         modifier = Modifier
+                                                            // Fixed here as well as in the frozen
+                                                            // layout, so a row is the same height
+                                                            // whether or not anything is pinned.
+                                                            .then(rowHeightModifier)
                                                             .horizontalScroll(horizontalScrollState)
                                                             .enableTrackpadHorizontalScroll(scrollState = horizontalScrollState)
                                                     ) {
@@ -926,6 +997,7 @@ fun <T> DataTable(
                                                             gridNavigation = gridNavigation,
                                                             editOnDoubleClick = editOnDoubleClick,
                                                             onCellEdit = onCellEdit,
+                                                            columnWindow = columnWindow,
                                                         )
                                                     }
                                                 }
