@@ -79,9 +79,9 @@ first if you need to type a value that begins with a space.
 
 ## Formatting versus editing
 
-`value` is what the cell *displays*. When that is formatted — a currency symbol, thousands
-separators, a rendered date — it is the wrong thing to seed an editor with, because the user has
-to clean it up before typing. `editValue` supplies the raw, editable form:
+Formatted text is rarely text you can type back — nobody wants to edit `$1,250.00` down to a
+number before changing it. Keep the display in [`format`](columns.md#formatting) and the editor
+opens on the raw value by itself:
 
 ```kotlin
 DataTableHeader<Invoice>(
@@ -89,14 +89,21 @@ DataTableHeader<Invoice>(
     title = "Amount",
     width = 140.dp,
     align = TextAlign.End,
-    value = { "$${"%,.2f".format(it.amount)}" },   // $1,250.00
+    value = { it.amount },                                 // 1250.0 — what the editor opens on
+    format = DataTableFormatters.currency(decimals = 2),   // $1,250.00 — what the cell reads
     editable = true,
-    editValue = { it.amount.toString() },          // 1250.0
 )
 ```
 
-`CellEdit.oldText` is reported from `editValue` too, so an unchanged commit is correctly
-recognised as a non-edit.
+`editValue` is for the case left over: when even the raw value's `toString()` is not what you want
+typed. An amount held as a `Double` opens on `1250.0`; if the column takes whole units, say so:
+
+```kotlin
+    editValue = { it.amount.toLong().toString() },         // 1250
+```
+
+`CellEdit.oldText` is reported from the same text the editor opened with, so an unchanged commit
+is correctly recognised as a non-edit.
 
 ## Validation
 

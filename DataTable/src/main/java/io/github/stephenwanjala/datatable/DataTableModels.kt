@@ -35,8 +35,10 @@ import androidx.compose.ui.unit.dp
  *                 and requires an `onCellEdit` callback for the edit to go anywhere — the table
  *                 reports edits, it never mutates your items.
  * @param editValue Text the editor opens with. Defaults to [value]'s result rendered with
- *                  `toString()`, which is wrong for anything you format for display: give a
- *                  currency or date column the raw, editable form here.
+ *                  `toString()` — the raw value, never the [format]ted one, since formatted text
+ *                  is rarely text you can type back. Set this where even the raw form is not what
+ *                  you want typed: `92000.0` for a salary held as a `Double`, or an enum's
+ *                  `name`.
  * @param validateEdit Checks a value the user is trying to commit, returning an error message to
  *                     reject it or `null` to accept. A rejected commit keeps the editor open with
  *                     the message on `DataTableState.editError`. This is the guard that stops
@@ -44,6 +46,14 @@ import androidx.compose.ui.unit.dp
  * @param editorContent Optional composable replacing the built-in text field — a dropdown, a date
  *                      picker, a lookup. It is handed the row and a [CellEditController] to
  *                      commit or cancel with, and is expected to take keyboard focus itself.
+ * @param format Turns the value [value] extracted into the text the cell shows. Formatting here
+ *               rather than inside [value] is what keeps a column's raw value raw: `{ it.salary }`
+ *               reads `$92,000` and still sorts numerically, with no [comparator] to make up for
+ *               a value that had become a string. Clipboard copy takes the formatted text — what
+ *               you see is what you copy — while an editor still opens on the raw value, or on
+ *               [editValue]. Ignored when [cellContent] draws the cell itself, though copy still
+ *               uses it. [DataTableFormatters] has ready-made ones for money, numbers,
+ *               percentages, dates, and booleans.
  */
 @Immutable
 data class DataTableHeader<T>(
@@ -65,6 +75,7 @@ data class DataTableHeader<T>(
     val editValue: ((T) -> String)? = null,
     val validateEdit: ((T, String) -> String?)? = null,
     val editorContent: (@Composable (T, CellEditController) -> Unit)? = null,
+    val format: ((Any?) -> String)? = null,
 )
 
 /**

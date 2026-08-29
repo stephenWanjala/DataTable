@@ -4,9 +4,10 @@ Each release is listed newest first.
 
 ## Unreleased
 
-Cell-level focus, grid keyboard navigation, in-place cell editing, cell range selection, and
-clipboard copy. Everything here is additive: no signature changed, and a table that does not opt
-in behaves as it did in 0.4.0 — with one exception, ++ctrl+c++, noted below.
+Cell-level focus, grid keyboard navigation, in-place cell editing, cell range selection,
+clipboard copy, and per-column display formatting. Everything here is additive: no signature
+changed, and a table that does not opt in behaves as it did in 0.4.0 — with one exception,
+++ctrl+c++, noted below.
 
 ### Cell navigation is opt-in
 
@@ -54,11 +55,38 @@ With `cellNavigation` on, holding ++shift++ with a movement key extends a block 
 than moving the cursor alone, and ++ctrl+a++ selects every cell. Neither key did anything in
 0.4.0. ++tab++ is unaffected — ++shift++ still means "backwards" there.
 
+### Columns format for display, and keep their values raw
+
+`DataTableHeader` gains `format: ((Any?) -> String)?`, which turns the extracted value into the
+text a cell shows. It changes nothing on its own — a column without one still renders
+`value.toString()` — but it retires the workaround it replaces. Formatting inside `value` made a
+column sort as text, which cost a `comparator`, and opened editors onto formatted text, which
+cost an `editValue`. Move the formatting to `format` and both go away:
+
+```kotlin
+// Before
+value = { "$${"%,.0f".format(it.salary)}" },
+comparator = compareBy { it.salary },
+editValue = { it.salary.toLong().toString() },
+
+// After
+value = { it.salary },
+format = DataTableFormatters.currency(decimals = 0),
+```
+
+`DataTableFormatters` is a new object of ready-made formatters — `currency`, `number`, `percent`,
+`date`, and `boolean` — each locale-aware, and each rendering nulls and unexpected types rather
+than throwing during layout.
+
+One behaviour did change for tables that already copy: `ClipboardSelection.cells` now holds the
+formatted text rather than `value.toString()`. Columns without a `format` are unaffected, and a
+handler that wants the raw values still has `columns` (with their `value` extractors) and `rows`.
+
 ### New API
 
 `DataTable` gains `cellNavigation` and `onCellEdit`. `DataTableHeader` gains `editable`,
-`editValue`, `validateEdit`, and `editorContent` — all appended after `cellContent`, so any
-positional construction of a header still compiles. `DataTableState` gains `focusedColumnKey`,
+`editValue`, `validateEdit`, `editorContent`, and `format` — all appended after `cellContent`, so
+any positional construction of a header still compiles. `DataTableState` gains `focusedColumnKey`,
 `focusedCell`, `isEditing`, `editingCell`, `editError`, `focusCell`, `startEditing`,
 `cancelEditing`, and `revealFocusedCell`.
 

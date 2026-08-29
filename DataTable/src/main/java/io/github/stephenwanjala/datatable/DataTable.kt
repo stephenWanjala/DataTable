@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
  * - Pagination with configurable items-per-page
  * - Column visibility toggle
  * - Text overflow / ellipsis per column
+ * - Per-column display formatting, leaving values raw for sorting and editing
  * - Custom sort comparators
  * - Right-click context menu callback
  * - Keyboard navigation (arrow keys, Enter, Space, Home, End)
@@ -357,8 +358,9 @@ fun <T> DataTable(
         val selection = ClipboardSelection(
             rows = rows,
             columns = columns,
+            // The formatted text, not the raw value: a copy should carry what the cell reads.
             cells = rows.map { item ->
-                columns.map { column -> column.value?.invoke(item)?.toString() ?: "" }
+                columns.map { column -> column.displayText(item) }
             },
         )
         // A caller's handler *replaces* the clipboard write rather than running alongside it, so

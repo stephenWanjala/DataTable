@@ -36,7 +36,8 @@ A highly customizable, feature-rich `DataTable` component for Compose Desktop bu
 - **Server-side data** -- `manualSorting` / `manualPagination` hand sorting and paging to your database
 - **Grouping** -- group rows by a key with custom group header and summary rows
 - **Keyboard navigation** -- Arrow keys, Enter, Space, Home, End; opt into `cellNavigation` for a cell cursor, Left/Right, Tab, and Page Up/Down
-- **Cell editing** -- editable columns with per-column validation, a raw `editValue` behind a formatted display, and custom `editorContent` editors
+- **Column formatting** -- a per-column `format` decides what a cell reads (money, percentages, dates, booleans, or your own), while the value stays raw for sorting and editing
+- **Cell editing** -- editable columns with per-column validation, an editor that opens on the raw value behind a formatted display, and custom `editorContent` editors
 - **Range selection & clipboard** -- Shift+arrows or Shift+click select a block of cells, Ctrl+C copies it as tab-separated text; `onCopy` takes the copy over and hands you the rows and columns as your own types
 - **Row hover & alternating colors** -- visual row highlighting
 - **Right-click context menu** -- callback with item and position
