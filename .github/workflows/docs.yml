@@ -7,8 +7,10 @@ name: Docs
 #   release          -> "<major>.<minor>", and moves the "latest" alias unless it is a prerelease
 #   workflow_dispatch -> whatever you ask for, including older tags (see the inputs below)
 #
-# Pages still serves an artifact rather than the branch itself, so the branch is only storage:
-# the last step exports it and hands it to actions/deploy-pages.
+# GitHub Pages serves the gh-pages branch directly, so pushing to it is the deployment — the
+# "pages build and deployment" run that follows each push is GitHub's own. If the Pages source is
+# ever switched back to "GitHub Actions", this workflow needs a job that exports the branch and
+# hands it to actions/deploy-pages, because nothing would publish it otherwise.
 
 on:
   push:
@@ -43,16 +45,12 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write   # mike commits and pushes the built site to gh-pages
-  pages: write
-  id-token: write
+  contents: write   # mike commits and pushes the built site to gh-pages, which is the deployment
 
 jobs:
   publish:
     name: Publish version
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.plan.outputs.version }}
     steps:
       - name: Decide what to publish
         id: plan
@@ -165,8 +163,8 @@ jobs:
           title="$VERSION"
           [ "$VERSION" = "dev" ] && title='dev (unreleased)'
 
-          # alias-type=copy because GitHub Pages serves the artifact as plain files, where the
-          # symlink mike would otherwise use for "latest" does not resolve.
+          # alias-type=copy because GitHub Pages does not follow the symlink mike would
+          # otherwise use for "latest".
           mike deploy \
             --push \
             --update-aliases \
@@ -174,35 +172,15 @@ jobs:
             --title "$title" \
             "$VERSION" ${ALIAS:+$ALIAS}
 
-          # Points the site root at the latest release. Idempotent, and skipped until the first
-          # release has actually created the alias.
+          # The site root is a redirect to whatever mike holds as the default, so until something
+          # claims it the root is a 404. "latest" claims it as soon as a release exists; before
+          # that, the first version published stands in so the root is never dead.
+          git fetch -q origin gh-pages
           if mike list 2>/dev/null | grep -qw latest; then
             mike set-default --push latest
+          elif ! git cat-file -e origin/gh-pages:index.html 2>/dev/null; then
+            echo 'No release published yet; pointing the site root at this build.'
+            mike set-default --push "$VERSION"
           fi
 
           mike list
-
-      # gh-pages holds every version; Pages deploys an artifact, so hand it the whole branch.
-      - name: Export the versioned site
-        run: |
-          set -euo pipefail
-          git fetch origin gh-pages
-          rm -rf site && mkdir site
-          git archive origin/gh-pages | tar -x -C site
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-
-  deploy:
-    name: Deploy to Pages
-    needs: publish
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
