@@ -650,6 +650,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Ordering columns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dragging-columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dragging columns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -868,6 +885,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Ordering columns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dragging-columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dragging columns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1033,7 +1067,9 @@ saved appears.</p>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">tableState</span><span class="p">.</span><span class="na">columnOrder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">emptyList</span><span class="p">()</span><span class="w">                </span><span class="c1">// back to declaration order</span>
 </code></pre></div>
 <p><code>moveColumn</code> counts positions over the visible leaf columns in display order, frozen ones first,
-and clamps an index outside the table rather than throwing.</p>
+and clamps an index outside the table rather than throwing. A column the user has hidden keeps its
+place in the order while the others are rearranged around it, so bringing it back does not find it
+swept to the end of the table.</p>
 <div class="admonition note">
 <p class="admonition-title">Groups move as blocks</p>
 <p>With <a href="../columns/#nested-grouped-headers">grouped headers</a>, the order applies at every level of
@@ -1041,7 +1077,47 @@ the tree: naming a column moves its group among the top-level columns <em>and</e
 within its group. What it cannot do is take a column out of the group it was declared in — a
 group whose columns were scattered across the table would no longer be a group.</p>
 </div>
-<p>There is no drag-to-reorder in the header yet; <code>moveColumn</code> is the seam it will sit on.</p>
+<h3 id="dragging-columns">Dragging columns<a class="headerlink" href="#dragging-columns" title="Permanent link">&para;</a></h3>
+<p>Turn the header into the control for it:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">DataTable</span><span class="p">(</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="c1">// ...</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="n">reorderableColumns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">)</span>
+</code></pre></div>
+<p>Grab a header and drag it sideways; a line marks the edge the column will land against, and
+releasing writes the result to <code>columnOrder</code> — so a dragged arrangement is saved and restored with
+everything else in the layout.</p>
+<p>A press that never travels far enough to become a drag is still a sort, which is why turning this
+on moves sorting from the press to the release. Reach for a column to drag it and the table no
+longer re-sorts itself under you on the way.</p>
+<p>What a drag cannot do is the same as what <code>columnOrder</code> cannot do:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Inside a group</td>
+<td>A column is dragged among its own siblings. Aim past the group and it stops at the edge of it rather than leaving.</td>
+</tr>
+<tr>
+<td>A whole group</td>
+<td>Dragged by its band, and every column under it moves as one block.</td>
+</tr>
+<tr>
+<td>Across the freeze boundary</td>
+<td>Frozen and scrolling columns are two separate header rows, and a drag stays in the one it started in. Whether a column is frozen is <code>fixed</code> on its header — the caller's decision, not the user's.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Dragging is the only way in</p>
+<p>There is no keyboard equivalent of the drag. Users who cannot use a pointer need
+<code>columnOrder</code> or <code>moveColumn</code> driven from UI of your own.</p>
+</div>
 <h2 id="capturing-and-applying">Capturing and applying<a class="headerlink" href="#capturing-and-applying" title="Permanent link">&para;</a></h2>
 <p><code>captureLayout()</code> reads what is <strong>displayed</strong>, so it captures a sort or a set of filters the caller
 controls exactly as well as one the table owns.</p>
@@ -1065,11 +1141,11 @@ everywhere else in the table:</p>
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1">// Controlled sorting and filtering: apply the parts the table cannot.</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">layout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataTableLayout</span><span class="p">.</span><span class="na">decodeFromString</span><span class="p">(</span><span class="n">saved</span><span class="p">)</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="n">DataTableLayout</span><span class="p">()</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">tableState</span><span class="p">.</span><span class="na">applyLayout</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span><span class="w">      </span><span class="c1">// widths, hidden columns, order</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">sort</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">layout</span><span class="p">.</span><span class="na">sortBy</span><span class="w">                </span><span class="c1">// your state</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">filters</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">layout</span><span class="p">.</span><span class="na">filters</span><span class="w">            </span><span class="c1">// your state</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1">// Controlled sorting and filtering: apply the parts the table cannot.</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">layout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataTableLayout</span><span class="p">.</span><span class="na">decodeFromString</span><span class="p">(</span><span class="n">saved</span><span class="p">)</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="n">DataTableLayout</span><span class="p">()</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">tableState</span><span class="p">.</span><span class="na">applyLayout</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span><span class="w">      </span><span class="c1">// widths, hidden columns, order</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">sort</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">layout</span><span class="p">.</span><span class="na">sortBy</span><span class="w">                </span><span class="c1">// your state</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">filters</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">layout</span><span class="p">.</span><span class="na">filters</span><span class="w">            </span><span class="c1">// your state</span>
 </code></pre></div>
 <p><code>resetLayout()</code> drops the arrangement — widths, hidden columns, order — and deliberately leaves
 sorting and filtering alone: they are what the table is <em>showing</em>, not how it is arranged, and a
@@ -1086,7 +1162,7 @@ releases — so applying one never fails:</p>
   value another version of the app wrote, JSON from somewhere else — rather than throwing. Fall
   back to the defaults and carry on:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">layout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stored</span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">DataTableLayout</span><span class="p">.</span><span class="na">decodeFromString</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="n">DataTableLayout</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">layout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stored</span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">DataTableLayout</span><span class="p">.</span><span class="na">decodeFromString</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="n">DataTableLayout</span><span class="p">()</span>
 </code></pre></div>
 <ul>
 <li>Within a layout it does recognise, an entry it cannot read is skipped rather than failing the
