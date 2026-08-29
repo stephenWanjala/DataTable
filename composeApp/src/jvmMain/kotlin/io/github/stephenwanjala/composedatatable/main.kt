@@ -73,8 +73,14 @@ private val samples = listOf(
         content = { GroupingSample() },
     ),
     Sample(
+        title = "Filtering",
+        exercises = "A filter row per column · text filters, a dropdown filterContent, a numeric predicate, and hoisted filter state",
+        icon = Icons.Default.FilterAlt,
+        content = { FilteringSample() },
+    ),
+    Sample(
         title = "Server-Side",
-        exercises = "manualSorting + manualPagination against a 5,000-row fake repository, holding one page in memory",
+        exercises = "manualSorting + manualPagination + manualFiltering against a 5,000-row fake repository, holding one page in memory",
         icon = Icons.Default.CloudQueue,
         content = { ServerSideSample() },
     ),

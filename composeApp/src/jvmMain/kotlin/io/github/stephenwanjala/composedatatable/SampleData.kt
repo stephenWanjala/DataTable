@@ -185,8 +185,17 @@ object EmployeeRepository {
 
     val total: Int get() = all.size
 
-    /** Mimics `ORDER BY ... LIMIT ... OFFSET ...`. */
-    fun page(offset: Int, limit: Int, sortKey: String, ascending: Boolean): List<Employee> {
+    /** Mimics `SELECT count(*) ... WHERE ...`, which is what a filtered page count needs. */
+    fun count(filters: Map<String, String> = emptyMap()): Int = matching(filters).size
+
+    /** Mimics `WHERE ... ORDER BY ... LIMIT ... OFFSET ...`. */
+    fun page(
+        offset: Int,
+        limit: Int,
+        sortKey: String,
+        ascending: Boolean,
+        filters: Map<String, String> = emptyMap(),
+    ): List<Employee> {
         val comparator: Comparator<Employee> = when (sortKey) {
             "name" -> compareBy { it.id }          // "Employee 12" sorts naturally by id here
             "department" -> compareBy { it.department }
@@ -194,8 +203,33 @@ object EmployeeRepository {
             "salary" -> compareBy { it.salary }
             else -> compareBy { it.id }
         }
-        return all.sortedWith(if (ascending) comparator else comparator.reversed())
+        return matching(filters)
+            .sortedWith(if (ascending) comparator else comparator.reversed())
             .drop(offset)
             .take(limit)
+    }
+
+    /**
+     * The `WHERE` clause: one condition per filtered column, ANDed.
+     *
+     * The table hands over the same `Map<String, String>` its filter row produces, and turning
+     * that into conditions is the whole of what `manualFiltering` asks of a caller.
+     */
+    private fun matching(filters: Map<String, String>): List<Employee> {
+        val active = filters.filterValues { it.isNotBlank() }
+        if (active.isEmpty()) return all
+        return all.filter { employee ->
+            active.all { (key, query) ->
+                when (key) {
+                    "name" -> employee.name.contains(query, ignoreCase = true)
+                    "email" -> employee.email.contains(query, ignoreCase = true)
+                    "department" -> employee.department.equals(query, ignoreCase = true)
+                    "role" -> employee.role.contains(query, ignoreCase = true)
+                    // A floor, not a substring — the column's own predicate says the same.
+                    "salary" -> query.toDoubleOrNull()?.let { employee.salary >= it } ?: true
+                    else -> true
+                }
+            }
+        }
     }
 }

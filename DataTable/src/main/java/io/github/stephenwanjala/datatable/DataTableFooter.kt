@@ -319,3 +319,21 @@ internal fun DefaultNoDataContent(textStyles: DataTableTextStyles) {
         )
     }
 }
+
+/**
+ * Default empty-state UI shown when a filter, rather than an empty data set, is what left the
+ * table with no rows. Worth telling apart: one is a table with nothing in it, the other is a
+ * table whose contents are one keystroke away.
+ */
+@Composable
+internal fun DefaultNoResultsContent(textStyles: DataTableTextStyles) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        BasicText(
+            text = "No rows match the filter",
+            style = textStyles.noData,
+        )
+    }
+}

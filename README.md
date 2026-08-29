@@ -36,6 +36,7 @@ A highly customizable, feature-rich `DataTable` component for Compose Desktop bu
 - **Server-side data** -- `manualSorting` / `manualPagination` hand sorting and paging to your database
 - **Grouping** -- group rows by a key with custom group header and summary rows
 - **Keyboard navigation** -- Arrow keys, Enter, Space, Home, End; opt into `cellNavigation` for a cell cursor, Left/Right, Tab, and Page Up/Down
+- **Filter row** -- mark a column `filterable` for a field under its header, with a custom `filterPredicate` or `filterContent`; `manualFiltering` hands the whole thing to your query
 - **Column formatting** -- a per-column `format` decides what a cell reads (money, percentages, dates, booleans, or your own), while the value stays raw for sorting and editing
 - **Cell editing** -- editable columns with per-column validation, an editor that opens on the raw value behind a formatted display, and custom `editorContent` editors
 - **Range selection & clipboard** -- Shift+arrows or Shift+click select a block of cells, Ctrl+C copies it as tab-separated text; `onCopy` takes the copy over and hands you the rows and columns as your own types
@@ -50,8 +51,9 @@ A highly customizable, feature-rich `DataTable` component for Compose Desktop bu
 
 So you can rule it in or out quickly: a block of cells can be copied but not pasted into or edited
 as a block, cell selection is a single rectangle, and editing has no row-level commit and no undo.
-There is also no filtering UI, no export, no drag-to-reorder columns, no layout persistence, no
-tree tables, and no accessibility semantics. Frozen columns pin left only. The
+Filtering is one query per column, ANDed, with no OR across columns and no built-in checklist of
+the values that occur. There is also no export, no drag-to-reorder columns, no layout persistence,
+no tree tables, and no accessibility semantics. Frozen columns pin left only. The
 [documentation](https://stephenwanjala.github.io/DataTable/latest/#what-it-does-not-do) spells each of
 these out.
 

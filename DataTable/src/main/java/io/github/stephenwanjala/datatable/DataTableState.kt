@@ -123,6 +123,17 @@ class DataTableState(
     internal var editSeedText: String? by mutableStateOf(null)
 
     /**
+     * Whether keyboard focus is inside the header's filter row.
+     *
+     * The table's key handling sits on the container as a *preview* handler, so it sees keys
+     * before any field inside it does. While a filter has focus it stands down entirely — the
+     * alternative is that typing `a` into a filter opens a cell editor and the arrow keys move
+     * the row cursor instead of the caret. Set from one focus observer over the whole header, so
+     * a custom `filterContent` is covered without having to do anything.
+     */
+    internal var filterFocused: Boolean by mutableStateOf(false)
+
+    /**
      * Column widths overridden by user resizing. Keyed by column [DataTableHeader.key].
      */
     internal val columnWidths = mutableStateMapOf<String, Dp>()

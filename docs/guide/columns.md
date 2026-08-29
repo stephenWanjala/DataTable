@@ -22,6 +22,11 @@ DataTableHeader<Person>(
     headerContent = {                        // custom header composable
         Text("Salary (USD)", fontWeight = FontWeight.Bold)
     },
+    filterable = true,                       // give it a field in the filter row
+    filterPlaceholder = "Min",               // hint shown while the field is empty
+    filterPredicate = { item, query ->       // default is a case-insensitive contains
+        query.toDoubleOrNull()?.let { item.salary >= it } ?: true
+    },
     editable = true,                         // edit this column in place
     editValue = { it.salary.toString() },    // raw text to seed the editor with
     validateEdit = { _, text ->              // null accepts, a message rejects
@@ -30,7 +35,8 @@ DataTableHeader<Person>(
 )
 ```
 
-`key` must be unique — it identifies the column for sorting and for resize overrides.
+`key` must be unique — it identifies the column for sorting, for filtering, and for resize
+overrides.
 
 ## Width
 
@@ -137,6 +143,12 @@ format = { value -> (value as? Int)?.let { "$it kg" } ?: "—" }
 
 A column with `cellContent` draws itself and ignores `format` on screen, but copy still uses it —
 which is how an icon column copies as `Active` rather than `true`.
+
+## Filtering
+
+`filterable` puts a field under the column's header, and the table filters on what is typed. It
+has a guide of its own — see [Filtering](filtering.md) for predicates, custom controls, hoisted
+filter state, and `manualFiltering`.
 
 ## Custom content
 

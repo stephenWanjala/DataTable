@@ -42,6 +42,9 @@ import androidx.compose.ui.unit.sp
  *                       rather than as text that happens to have a caret in it.
  * @property invalidCellBorder Outline replacing [focusedCellBorder] while the value in an open
  *                             editor has been rejected by the column's `validateEdit`.
+ * @property filterRow Background of the filter row, under the header. Set a shade off
+ *                     [header] so the two read as separate rows rather than one tall band.
+ * @property filterField Background of a filter field itself, which sits on [filterRow].
  * @property selectedCell Wash over cells inside a selected range. Translucent, so row striping
  *                        and row selection still read through it. The cell the cursor is on is
  *                        left unwashed, the way a spreadsheet leaves its active cell.
@@ -67,6 +70,8 @@ data class DataTableColors(
     val editingCell: Color = Color(0xFFFFFFFF),
     val invalidCellBorder: Color = Color(0xFFD32F2F),
     val selectedCell: Color = Color(0x331976D2),
+    val filterRow: Color = Color(0xFFF7F7F7),
+    val filterField: Color = Color(0xFFFFFFFF),
 )
 
 /**
@@ -87,6 +92,9 @@ data class DataTableColors(
  *                      options in its menu.
  * @property cellEditor Text inside an open cell editor. Matches [bodyCell] by default so a cell
  *                      does not jump as it goes into edit mode.
+ * @property filterField Text typed into a column filter, and its placeholder. A size down from
+ *                       [bodyCell], so the filter row reads as a control strip rather than as
+ *                       another row of data.
  */
 @Immutable
 data class DataTableTextStyles(
@@ -122,6 +130,11 @@ data class DataTableTextStyles(
     ),
     val cellEditor: TextStyle = TextStyle(
         fontSize = 14.sp,
+        fontWeight = FontWeight.Normal,
+        color = Color(0xFF1C1C1C),
+    ),
+    val filterField: TextStyle = TextStyle(
+        fontSize = 13.sp,
         fontWeight = FontWeight.Normal,
         color = Color(0xFF1C1C1C),
     ),
@@ -164,12 +177,14 @@ object DataTableDefaults {
         editingCell: Color = Color(0xFFFFFFFF),
         invalidCellBorder: Color = Color(0xFFD32F2F),
         selectedCell: Color = Color(0x331976D2),
+        filterRow: Color = Color(0xFFF7F7F7),
+        filterField: Color = Color(0xFFFFFFFF),
     ): DataTableColors = remember(
         container, header, divider, selectedRow, expandedRow,
         onSurface, onSurfaceSecondary, checkboxChecked, checkboxUnchecked,
         checkboxCheckmark, iconTint, disabledContent, rowAlternate,
         hoveredRow, focusedRowBorder, focusedCellBorder, editingCell,
-        invalidCellBorder, selectedCell
+        invalidCellBorder, selectedCell, filterRow, filterField
     ) {
         DataTableColors(
             container = container,
@@ -191,6 +206,8 @@ object DataTableDefaults {
             editingCell = editingCell,
             invalidCellBorder = invalidCellBorder,
             selectedCell = selectedCell,
+            filterRow = filterRow,
+            filterField = filterField,
         )
     }
 
@@ -216,7 +233,10 @@ object DataTableDefaults {
         noData: TextStyle = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Normal, color = Color(0x991C1C1C)),
         pagination: TextStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal, color = Color(0xFF1C1C1C)),
         cellEditor: TextStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal, color = Color(0xFF1C1C1C)),
-    ): DataTableTextStyles = remember(headerCell, bodyCell, footer, loading, noData, pagination, cellEditor) {
+        filterField: TextStyle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Normal, color = Color(0xFF1C1C1C)),
+    ): DataTableTextStyles = remember(
+        headerCell, bodyCell, footer, loading, noData, pagination, cellEditor, filterField,
+    ) {
         DataTableTextStyles(
             headerCell = headerCell,
             bodyCell = bodyCell,
@@ -225,6 +245,7 @@ object DataTableDefaults {
             noData = noData,
             pagination = pagination,
             cellEditor = cellEditor,
+            filterField = filterField,
         )
     }
 }

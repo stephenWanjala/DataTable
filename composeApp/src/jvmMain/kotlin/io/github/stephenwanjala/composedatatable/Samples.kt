@@ -372,6 +372,130 @@ fun GroupingSample() {
 }
 
 // ---------------------------------------------------------------------------
+// 5b. Filtering
+// ---------------------------------------------------------------------------
+
+/** A picker for a column whose values come from a short, known list. */
+@Composable
+private fun ChoiceFilter(
+    options: List<String>,
+    controller: ColumnFilterController,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        OutlinedButton(
+            onClick = { expanded = true },
+            modifier = Modifier.fillMaxWidth().height(30.dp),
+            contentPadding = PaddingValues(horizontal = 8.dp),
+        ) {
+            Text(
+                controller.query.ifEmpty { "All" },
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text("All") },
+                onClick = { expanded = false; controller.clear() },
+            )
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = { expanded = false; controller.setQuery(option) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FilteringSample() {
+    // Hoisted, so the strip above the table can show what is filtered and clear it in one go.
+    var filters by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+
+    val departments = remember { sampleEmployees.map { it.department }.distinct().sorted() }
+
+    val headers = remember(departments) {
+        listOf(
+            DataTableHeader<Employee>(
+                key = "name", title = "Name", value = { it.name }, width = 180.dp,
+                // Nothing but `filterable`: the built-in field and a contains match handle it.
+                filterable = true, filterPlaceholder = "Contains…",
+            ),
+            DataTableHeader(
+                key = "email", title = "Email", value = { it.email }, width = 240.dp,
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                filterable = true, filterPlaceholder = "Contains…",
+            ),
+            DataTableHeader(
+                key = "department", title = "Department", value = { it.department }, width = 170.dp,
+                // A handful of known values deserves a picker, not free text. Supplying the
+                // control is opting in — there is no `filterable = true` beside it.
+                filterContent = { controller -> ChoiceFilter(departments, controller) },
+                filterPredicate = { employee, query -> employee.department == query },
+            ),
+            DataTableHeader(
+                key = "salary", title = "Salary", value = { it.salary }, format = money,
+                width = 150.dp, align = TextAlign.End,
+                filterable = true, filterPlaceholder = "Min",
+                // The query is a floor, not a substring — which is the whole reason a column
+                // gets its own predicate.
+                filterPredicate = { employee, query ->
+                    query.toDoubleOrNull()?.let { employee.salary >= it } ?: true
+                },
+            ),
+            DataTableHeader(
+                key = "active", title = "Active", value = { it.active }, width = 110.dp,
+                align = TextAlign.Center,
+                format = DataTableFormatters.boolean(),
+                // Matching runs against the formatted text as well as the raw value, so "yes"
+                // finds what the column actually reads.
+                filterable = true, filterPlaceholder = "Yes/No",
+            ),
+        )
+    }
+
+    val active = filters.filterValues { it.isNotBlank() }
+
+    Column(Modifier.fillMaxSize()) {
+        SampleControls {
+            Text(
+                "Type in the filter row. Department is a dropdown, salary is a minimum, and " +
+                    "Esc clears a field.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.weight(1f))
+            Text(
+                if (active.isEmpty()) "No filters" else active.entries.joinToString(" · ") {
+                    "${it.key}: ${it.value}"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            OutlinedButton(
+                onClick = { filters = emptyMap() },
+                enabled = active.isNotEmpty(),
+            ) {
+                Text("Clear all")
+            }
+        }
+
+        DataTable(
+            items = sampleEmployees,
+            headers = headers,
+            itemKey = { it.id },
+            filters = filters,
+            onFiltersChange = { filters = it },
+            density = DataTableDensity.COMFORTABLE,
+            showPagination = true,
+            itemsPerPage = 10,
+            colors = DataTableDefaults.colors(rowAlternate = Color(0xFFF7F7F7)),
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
 // 6. Server-side sorting and pagination
 // ---------------------------------------------------------------------------
 
@@ -380,18 +504,39 @@ fun ServerSideSample() {
     var page by remember { mutableStateOf(0) }
     var pageSize by remember { mutableStateOf(25) }
     var sort by remember { mutableStateOf(SortState("id", SortOrder.ASCENDING)) }
+    var filters by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var rows by remember { mutableStateOf<List<Employee>?>(null) }
+    var matching by remember { mutableStateOf(EmployeeRepository.total) }
     var queries by remember { mutableStateOf(0) }
 
-    // Stands in for hitting a database whenever the page or the sort changes.
-    LaunchedEffect(page, pageSize, sort) {
+    // The filter row reports every keystroke, so the columns it filters are declared here rather
+    // than on the shared `employeeHeaders` every other sample uses.
+    val headers = remember {
+        val filtered = mapOf(
+            "name" to "Contains…",
+            "department" to "Exact",
+            "role" to "Contains…",
+        )
+        employeeHeaders.map { header ->
+            filtered[header.key]?.let { hint ->
+                header.copy(filterable = true, filterPlaceholder = hint)
+            } ?: header
+        }
+    }
+
+    // Stands in for hitting a database whenever the page, the sort, or the filters change.
+    // Restarting on every keystroke is also the debounce: the effect is cancelled and the delay
+    // begins again, so a burst of typing costs one query rather than one per character.
+    LaunchedEffect(page, pageSize, sort, filters) {
         rows = null
         delay(350.milliseconds)
+        matching = EmployeeRepository.count(filters)
         rows = EmployeeRepository.page(
             offset = page * pageSize,
             limit = pageSize,
             sortKey = sort.key,
             ascending = sort.order != SortOrder.DESCENDING,
+            filters = filters,
         )
         queries++
     }
@@ -399,15 +544,22 @@ fun ServerSideSample() {
     Column(Modifier.fillMaxSize()) {
         SampleControls {
             Text(
-                "${EmployeeRepository.total} rows in the \"database\", ${rows?.size ?: 0} in memory · $queries queries",
+                "$matching of ${EmployeeRepository.total} rows match, ${rows?.size ?: 0} in memory · $queries queries",
                 style = MaterialTheme.typography.bodyMedium,
             )
             Spacer(Modifier.weight(1f))
-            Text("ORDER BY ${sort.key} ${if (sort.order == SortOrder.DESCENDING) "DESC" else "ASC"}", style = MaterialTheme.typography.bodySmall)
+            val where = filters.entries
+                .filter { it.value.isNotBlank() }
+                .joinToString(" AND ") { "${it.key} ~ '${it.value}'" }
+            Text(
+                (if (where.isEmpty()) "" else "WHERE $where · ") +
+                    "ORDER BY ${sort.key} ${if (sort.order == SortOrder.DESCENDING) "DESC" else "ASC"}",
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
         DataTable(
             items = rows.orEmpty(),
-            headers = employeeHeaders,
+            headers = headers,
             itemKey = { it.id },
             loading = rows == null,
 
@@ -415,9 +567,14 @@ fun ServerSideSample() {
             sortBy = sort,
             onSortChange = { sort = it; page = 0 },
 
+            // The repository has already applied these; the table must not filter again.
+            manualFiltering = true,
+            filters = filters,
+            onFiltersChange = { filters = it; page = 0 },
+
             showPagination = true,
             manualPagination = true,
-            totalItems = EmployeeRepository.total,
+            totalItems = matching,
             itemsPerPage = pageSize,
             currentPage = page,
             onPageChange = { page = it },

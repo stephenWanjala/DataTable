@@ -5,9 +5,9 @@ Each release is listed newest first.
 ## Unreleased
 
 Cell-level focus, grid keyboard navigation, in-place cell editing, cell range selection,
-clipboard copy, and per-column display formatting. Everything here is additive: no signature
-changed, and a table that does not opt in behaves as it did in 0.4.0 — with one exception,
-++ctrl+c++, noted below.
+clipboard copy, per-column display formatting, and a filter row. Everything here is additive: no
+signature changed, and a table that does not opt in behaves as it did in 0.4.0 — with one
+exception, ++ctrl+c++, noted below.
 
 ### Cell navigation is opt-in
 
@@ -82,6 +82,35 @@ One behaviour did change for tables that already copy: `ClipboardSelection.cells
 formatted text rather than `value.toString()`. Columns without a `format` are unaffected, and a
 handler that wants the raw values still has `columns` (with their `value` extractors) and `rows`.
 
+### Columns can filter themselves
+
+`DataTableHeader` gains `filterable`, and with it a filter row under the header. The row exists
+only once some column asks for it, so nothing changes for a table that does not.
+
+```kotlin
+DataTableHeader(
+    key = "name", title = "Name", value = { it.name },
+    filterable = true, filterPlaceholder = "Contains…",
+)
+```
+
+The default match is a case-insensitive contains against the cell's text *and* its raw value;
+`filterPredicate` replaces it with a range, an exact match, or whatever the column needs, and
+`filterContent` replaces the text field with a control of your own.
+
+Filters are a `Map<String, String>` keyed by column, ANDed across columns, and applied ahead of
+sorting and paging. Supply `onFiltersChange` to own them yourself — the same controlled/
+uncontrolled split `onSortChange` already has — or `manualFiltering = true` to hand the whole
+thing to a query, with the filter row still reporting what the user types. `noResultsContent`
+covers the empty state a filter causes, which the table now tells apart from having no data.
+
+Two knock-on changes for tables that already page or select:
+
+- The footer's total and the page count are the **filtered** count. Under `manualPagination`
+  that is `totalItems`, which now has to be the count of what matched.
+- Select-all covers the rows that survived the filters, not every row in `items`. With no
+  filters active — every table before this release — both are the same list.
+
 ### New API
 
 `DataTable` gains `cellNavigation` and `onCellEdit`. `DataTableHeader` gains `editable`,
@@ -95,11 +124,18 @@ any positional construction of a header still compiles. `DataTableState` gains `
 `ClipboardSelection` are new types, alongside the top-level `copyToSystemClipboard(text)` and
 `ClipboardSelection.copyToSystemClipboard(includeHeader)`.
 
-`DataTableColors` gains `focusedCellBorder`, `editingCell`, `invalidCellBorder`, and
-`selectedCell`; `DataTableTextStyles` gains `cellEditor`. Both are `data class`es with defaulted
-parameters, so existing `copy` and factory calls are unaffected.
+`DataTable` also gains `filters`, `onFiltersChange`, `manualFiltering`, and `noResultsContent`,
+and `DataTableHeader` gains `filterable`, `filterPlaceholder`, `filterPredicate`, and
+`filterContent`. `ColumnFilterController` is a new type. The `DataTable` filtering parameters sit
+with the other query parameters rather than at the end of the list, so a call passing arguments
+positionally that far in needs them named — every one of them has a default, and named arguments
+are how the other 30 are passed in practice.
 
-See [Cell Editing](guide/editing.md) and
+`DataTableColors` gains `focusedCellBorder`, `editingCell`, `invalidCellBorder`, `selectedCell`,
+`filterRow`, and `filterField`; `DataTableTextStyles` gains `cellEditor` and `filterField`. Both
+are `data class`es with defaulted parameters, so existing `copy` and factory calls are unaffected.
+
+See [Filtering](guide/filtering.md), [Cell Editing](guide/editing.md), and
 [Range selection](guide/selection.md#cell-range-selection).
 
 ## 0.4.0
