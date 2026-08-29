@@ -120,5 +120,7 @@ sorting alongside uncontrolled pagination works exactly as you would expect.
 - [Columns](guide/columns.md) — widths, alignment, custom cells, frozen and nested headers
 - [Selection & Expansion](guide/selection.md) — the key-based model
 - [Sorting & Paging](guide/sorting-and-paging.md) — including server-side data
+- [Grouping](guide/grouping.md) — group headers and summary rows
 - [Interactions](guide/interactions.md) — clicks, context menus, keyboard, `DataTableState`
+- [Cell Editing](guide/editing.md) — editable columns, validation, custom editors
 - [Theming](guide/theming.md) — colors, text styles, density, empty and loading states

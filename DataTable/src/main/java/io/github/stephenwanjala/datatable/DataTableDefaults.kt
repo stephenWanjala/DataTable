@@ -23,7 +23,8 @@ import androidx.compose.ui.unit.sp
  * @property selectedRow Background of a selected row. Usually translucent, so it reads on top of
  *                       [rowAlternate].
  * @property expandedRow Background behind the content of an expanded row.
- * @property onSurface Primary content color, available for callers building custom cells.
+ * @property onSurface Primary content color. Paints the caret in an open cell editor, and is
+ *                     otherwise there for callers building custom cells.
  * @property onSurfaceSecondary Muted content color, available for callers building custom cells.
  * @property checkboxChecked Fill and border of a checked selection checkbox.
  * @property checkboxUnchecked Border of an unchecked selection checkbox.
