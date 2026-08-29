@@ -55,6 +55,8 @@
       
     
     
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1062,12 +1064,36 @@ them.</p>
 <a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">    </span><span class="p">),</span>
 <a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="p">)</span>
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>┌──────┬───────────────────────────────┐
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>│      │            Contact            │
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>│  ID  ├───────────────┬───────────────┤
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>│      │     Email     │     Phone     │
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>├──────┼───────────────┼───────────────┤
-</code></pre></div>
+<table class="header-demo">
+  <colgroup>
+    <col style="width: 15%">
+    <col style="width: 50%">
+    <col style="width: 35%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th rowspan="2">ID</th>
+      <th class="header-demo-group" colspan="2">Contact</th>
+    </tr>
+    <tr>
+      <th>Email</th>
+      <th>Phone</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>ada@example.com</td>
+      <td>+1 555 0100</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>grace@example.com</td>
+      <td>+1 555 0101</td>
+    </tr>
+  </tbody>
+</table>
+
 <p>Groups nest to any depth. A leaf sitting beside a group — <code>ID</code> above — stretches over the full
 header height and centres its title, rather than leaving blank rows above it.</p>
 <p>A group's own <code>value</code>, <code>width</code>, and sorting settings are ignored. It takes its width from the
