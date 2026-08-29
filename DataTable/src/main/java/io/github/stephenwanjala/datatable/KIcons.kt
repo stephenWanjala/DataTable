@@ -270,3 +270,30 @@ internal val ViewColumn: ImageVector
     }
 
 private var _viewColumn: ImageVector? = null
+
+internal val Add: ImageVector
+    get() {
+        if (_add != null) {
+            return _add!!
+        }
+        _add = materialIcon(name = "Filled.Add") {
+            materialPath {
+                moveTo(19.0f, 13.0f)
+                lineTo(13.0f, 13.0f)
+                lineTo(13.0f, 19.0f)
+                lineTo(11.0f, 19.0f)
+                lineTo(11.0f, 13.0f)
+                lineTo(5.0f, 13.0f)
+                lineTo(5.0f, 11.0f)
+                lineTo(11.0f, 11.0f)
+                lineTo(11.0f, 5.0f)
+                lineTo(13.0f, 5.0f)
+                lineTo(13.0f, 11.0f)
+                lineTo(19.0f, 11.0f)
+                close()
+            }
+        }
+        return _add!!
+    }
+
+private var _add: ImageVector? = null

@@ -57,7 +57,7 @@ internal fun <T> ColumnMenuButton(
             focusable = false,
         ) {
             VectorIcon(
-                imageVector = ViewColumn,
+                imageVector = Add,
                 contentDescription = "Show or hide columns",
                 modifier = Modifier.size(15.dp),
                 tint = colors.iconTint,

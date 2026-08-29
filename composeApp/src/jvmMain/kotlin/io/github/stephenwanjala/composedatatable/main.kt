@@ -44,7 +44,7 @@ private data class Sample(
 private val samples = listOf(
     Sample(
         title = "Large Dataset",
-        exercises = "500 rows, 25 columns · frozen columns · nested headers · multi-sort (Ctrl+click) · resizable columns · pagination · right-click",
+        exercises = "500 rows, 25 columns · frozen columns · nested headers · multi-sort (Ctrl+click) · resizable columns · column menu · pagination · right-click",
         icon = Icons.Default.GridOn,
         content = { LargeDataSetSample() },
     ),

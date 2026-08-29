@@ -66,11 +66,10 @@ fun LargeDataSetSample() {
     var currentPage by remember { mutableStateOf(0) }
     var itemsPerPage by remember { mutableStateOf(20) }
     var multiSort by remember { mutableStateOf<List<SortState>>(emptyList()) }
-    var showNotesColumn by remember { mutableStateOf(true) }
 
     val tableState = rememberDataTableState()
 
-    val headers = remember(showNotesColumn) {
+    val headers = remember {
         listOf(
             DataTableHeader<LargeDataSetItem>(
                 key = "id", title = "ID", value = { it.id },
@@ -160,7 +159,6 @@ fun LargeDataSetSample() {
             DataTableHeader(
                 key = "notes", title = "Notes", value = { it.notes }, width = 300.dp,
                 maxLines = 1, overflow = TextOverflow.Ellipsis,
-                visible = showNotesColumn,
             ),
         )
     }
@@ -169,9 +167,6 @@ fun LargeDataSetSample() {
         SampleControls {
             Text("${items.size} rows · ${selectedKeys.size} selected", style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.weight(1f))
-            OutlinedButton(onClick = { showNotesColumn = !showNotesColumn }) {
-                Text(if (showNotesColumn) "Hide Notes" else "Show Notes")
-            }
             OutlinedButton(onClick = { tableState.resetColumnWidths() }) { Text("Reset Widths") }
             if (selectedKeys.isNotEmpty()) {
                 Button(onClick = { selectedKeys = emptySet() }) { Text("Clear Selection") }
@@ -199,6 +194,7 @@ fun LargeDataSetSample() {
             colors = DataTableDefaults.colors(rowAlternate = Color(0xFFF5F5F5)),
             onRowContextMenu = { item, offset -> println("Right-clicked ${item.fullName} at $offset") },
             modifier = Modifier.weight(1f),
+            showColumnMenuButton=true,
         )
     }
 }
