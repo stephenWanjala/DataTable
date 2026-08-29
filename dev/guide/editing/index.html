@@ -924,6 +924,24 @@ server round-trips possible at all.</p>
 <a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="p">)</span>
 </code></pre></div>
 <p>That is the whole minimum: <code>editable = true</code> on the column, and <code>onCellEdit</code> to apply the result.</p>
+<p>The <code>CellEdit&lt;T&gt;</code> it hands you carries five things:</p>
+<dl>
+<dt><code>item</code></dt>
+<dd>
+<p>The row that was edited. Matching on <code>rowKey</code> as above keeps the example self-contained, but
+the row itself is right here when your update needs more than its key.</p>
+</dd>
+<dt><code>rowKey</code> / <code>columnKey</code></dt>
+<dd>
+<p>Which cell it was, named by the key <code>itemKey</code> produced and the column's <code>key</code> — so an edit
+reported while the table is sorted, filtered, or paged still points at the right row.</p>
+</dd>
+<dt><code>oldText</code> / <code>newText</code></dt>
+<dd>
+<p>The value before and after, both <code>String</code>. Parsing <code>newText</code> back into your model's type is
+your job; see <a href="#validation">Validation</a> for the guard that makes it safe.</p>
+</dd>
+</dl>
 <div class="admonition note">
 <p class="admonition-title">Declaring an editable column turns on cell navigation</p>
 <p>Editing needs a cell cursor — an editor you cannot reach with the keyboard is no use. So a
