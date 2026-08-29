@@ -9,8 +9,10 @@ name: Docs
 #
 # GitHub Pages serves the gh-pages branch directly, so pushing to it is the deployment — the
 # "pages build and deployment" run that follows each push is GitHub's own. If the Pages source is
-# ever switched back to "GitHub Actions", this workflow needs a job that exports the branch and
-# hands it to actions/deploy-pages, because nothing would publish it otherwise.
+# ever switched to "GitHub Actions", nothing publishes the push at all: this workflow goes green,
+# gh-pages updates, and the site quietly keeps serving whatever it last built. That happened
+# between 0.4 and 0.5 and read as a docs bug for a day, so the last step now checks the setting
+# and fails the run rather than letting it pass unnoticed.
 
 on:
   push:
@@ -46,6 +48,7 @@ concurrency:
 
 permissions:
   contents: write   # mike commits and pushes the built site to gh-pages, which is the deployment
+  pages: read       # the guard step below reads the Pages config to check the push will be served
 
 jobs:
   publish:
@@ -184,3 +187,59 @@ jobs:
           fi
 
           mike list
+
+      # Deliberately last rather than first: a wrong setting is no reason to skip the deploy.
+      # gh-pages ends up correct either way, so putting the setting back is the whole fix — this
+      # only refuses to call the run a success while the site is not actually serving the push.
+      - name: Check that Pages will serve what was just pushed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+
+          # A read failure is not evidence of a misconfiguration — say so and move on rather than
+          # failing a run whose docs are fine.
+          config="$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq '"\(.build_type) \(.source.branch)"' 2>/dev/null)" || config=""
+          if [ -z "$config" ]; then
+            echo '::warning::Could not read the Pages configuration; skipping the check.'
+            exit 0
+          fi
+
+          read -r build_type branch <<<"$config"
+
+          if [ "$build_type" = 'legacy' ] && [ "$branch" = 'gh-pages' ]; then
+            echo "Pages serves the $branch branch, so the push above is live."
+            exit 0
+          fi
+
+          echo "::error::Pages will not serve this deploy (build_type=$build_type, source=$branch). The docs are on gh-pages; the site setting is wrong."
+
+          # Only one of the two is usually wrong; mark which, so the row to act on is obvious.
+          [ "$build_type" = 'legacy' ] && type_mark='ok' || type_mark='**wrong**'
+          [ "$branch" = 'gh-pages' ] && branch_mark='ok' || branch_mark='**wrong**'
+
+          {
+            echo '## The docs were published, but the site will not show them'
+            echo
+            echo '`mike` pushed to **gh-pages** successfully. The branch is correct and nothing'
+            echo 'needs rebuilding — GitHub Pages is simply not serving it:'
+            echo
+            echo '| | Found | Needs | |'
+            echo '|---|---|---|---|'
+            echo "| Build type | \`$build_type\` | \`legacy\` — \"Deploy from a branch\" | $type_mark |"
+            echo "| Source branch | \`$branch\` | \`gh-pages\` | $branch_mark |"
+            echo
+            echo 'Fix it under **Settings → Pages → Build and deployment**, or run:'
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          sed "s|OWNER/REPO|$GITHUB_REPOSITORY|g" >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          ```bash
+          gh api -X PUT repos/OWNER/REPO/pages --input - <<'JSON'
+          {"build_type":"legacy","source":{"branch":"gh-pages","path":"/"}}
+          JSON
+          gh api -X POST repos/OWNER/REPO/pages/builds
+          ```
+          SUMMARY
+
+          exit 1
