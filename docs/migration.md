@@ -129,6 +129,9 @@ remember {
 }
 ```
 
+`showColumnMenuButton = true` gives the header its own menu for showing and hiding columns — the
+equivalent of JavaFX's `isTableMenuButtonVisible` — so the common case needs no UI of your own.
+
 Hiding and ordering columns are new state on the table, alongside the widths it already held:
 `setColumnHidden`, `isColumnHidden`, `hiddenColumns`, `columnOrder`, `moveColumn`, and
 `resetLayout`. Hiding *adds* to `DataTableHeader.visible` rather than overriding it — a column a
@@ -166,7 +169,8 @@ with the other query parameters rather than at the end of the list, so a call pa
 positionally that far in needs them named — every one of them has a default, and named arguments
 are how the other 30 are passed in practice.
 
-`DataTableState` also gains `captureLayout`, `applyLayout`, `resetLayout`, `setColumnHidden`,
+`DataTable` gains `showColumnMenuButton`. `DataTableState` also gains `captureLayout`,
+`applyLayout`, `resetLayout`, `setColumnHidden`,
 `isColumnHidden`, `hiddenColumns`, `columnOrder`, and `moveColumn`, with `DataTableLayout` as a new
 type.
 

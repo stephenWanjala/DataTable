@@ -125,11 +125,9 @@ class DataTableState(
     /**
      * Whether keyboard focus is inside the header's filter row.
      *
-     * The table's key handling sits on the container as a *preview* handler, so it sees keys
-     * before any field inside it does. While a filter has focus it stands down entirely — the
-     * alternative is that typing `a` into a filter opens a cell editor and the arrow keys move
-     * the row cursor instead of the caret. Set from one focus observer over the whole header, so
-     * a custom `filterContent` is covered without having to do anything.
+     * The table's key handling is a *preview* handler on the container, so it sees keys before
+     * any field inside it. While a filter has focus it stands down entirely, or typing `a` into
+     * a filter would open a cell editor.
      */
     internal var filterFocused: Boolean by mutableStateOf(false)
 
@@ -161,32 +159,26 @@ class DataTableState(
     var columnOrder: List<String> by mutableStateOf(emptyList())
 
     /**
-     * Sorting and filtering the table owns, used whenever the caller has not taken control of
-     * them with `onSortChange`, `onMultiSortChange`, or `onFiltersChange`. `DataTable` seeds
-     * these from its parameters once and owns them from then on.
+     * Sorting and filtering the table owns, used until a caller takes control of them with
+     * `onSortChange`, `onMultiSortChange`, or `onFiltersChange`.
      */
     internal var internalSort: SortState by mutableStateOf(SortState())
     internal var internalMultiSort: List<SortState> by mutableStateOf(emptyList())
     internal var internalFilters: Map<String, String> by mutableStateOf(emptyMap())
 
     /**
-     * Sorting and filtering as currently *displayed*, published by `DataTable` every composition.
-     *
-     * These are what [captureLayout] reads, which is why they are kept apart from the internal
-     * copies above: a snapshot has to describe what the user is looking at whether the table owns
-     * the sort or the caller does.
+     * Sorting and filtering as *displayed*, published every composition. Kept apart from the
+     * internal copies so [captureLayout] describes what the user sees whoever owns them.
      */
     internal var activeSort: SortState by mutableStateOf(SortState())
     internal var activeMultiSort: List<SortState> by mutableStateOf(emptyList())
     internal var activeFilters: Map<String, String> by mutableStateOf(emptyMap())
 
     /**
-     * Whether the table-owned view state has been set, either by seeding it from `DataTable`'s
-     * parameters or by restoring a layout into it.
+     * Whether the table-owned view state has been set, by seeding or by a restored layout.
      *
-     * A restore usually happens *before* the table first composes — an application reading a
-     * preference on startup — so the seed has to stand down once something else has spoken, or it
-     * would wipe the sort and filters that were just put back.
+     * A restore happens *before* the table first composes, so the seed has to stand down once
+     * something else has spoken or it would wipe what was just put back.
      */
     private var internalStateSeeded = false
 
@@ -367,8 +359,8 @@ class DataTableState(
      * than throwing.
      */
     fun moveColumn(key: String, toIndex: Int) {
-        // Whatever order is in force now: the stored one, extended with any column it has not
-        // heard of, or the visual order when nothing has been reordered yet.
+        // The order in force: the stored one extended with anything it has not heard of, or the
+        // visual order when nothing has been reordered yet.
         val base = if (columnOrder.isEmpty()) {
             columnKeys
         } else {
@@ -412,8 +404,7 @@ class DataTableState(
      * columns that no longer exist are ignored.
      */
     fun applyLayout(layout: DataTableLayout) {
-        // Claims the table-owned sort and filters, so composing the table afterwards does not
-        // seed them back from its parameters.
+        // Claims the sort and filters, so composing the table does not seed them back.
         internalStateSeeded = true
         columnWidths.clear()
         columnWidths.putAll(layout.columnWidths)

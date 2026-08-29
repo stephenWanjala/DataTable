@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
  * - Column resizing via drag handles
  * - Grouping with custom group header and summary rows
  * - Pagination with configurable items-per-page
- * - Column visibility toggle
+ * - Column visibility toggle, with an optional built-in column menu
  * - Text overflow / ellipsis per column
  * - Per-column display formatting, leaving values raw for sorting and editing
  * - Custom sort comparators
@@ -88,6 +88,12 @@ import kotlinx.coroutines.launch
  *                        filter row still renders and still reports what the user types.
  * @param noResultsContent Shown in place of the rows when filters match nothing, telling that
  *                         apart from a table that has no data at all.
+ * @param showColumnMenuButton Puts a menu button at the trailing edge of the header listing every
+ *                             column with a checkbox, so a user can show and hide them without
+ *                             any UI of your own. Columns whose header declares `visible = false`
+ *                             are not offered. Needs the default header — it is drawn as part of
+ *                             it, so `hideDefaultHeader` or a custom `headerContent` leaves it
+ *                             out.
  * @param currentPage Active zero-based page. Read only when [onPageChange] is supplied, which
  *                    makes pagination controlled in the same way as sorting.
  * @param manualPagination When true [items] is already the current page and the table does not
@@ -150,6 +156,7 @@ fun <T> DataTable(
     footerContent: (@Composable () -> Unit)? = null,
     noDataContent: (@Composable () -> Unit)? = null,
     noResultsContent: (@Composable () -> Unit)? = null,
+    showColumnMenuButton: Boolean = false,
     // Grouping
     groupBy: ((T) -> String)? = null,
     groupHeaderContent: (@Composable (String, List<T>) -> Unit)? = null,
@@ -178,8 +185,7 @@ fun <T> DataTable(
     val scope = rememberCoroutineScope()
     val listState = state.lazyListState
     val horizontalScrollState = state.horizontalScrollState
-    // The user's own arrangement — what they hid, and the order they put columns in — folded
-    // into the tree once, so everything downstream reads `visible` and list order as declared.
+    // Folded in once, so everything downstream reads `visible` and list order as declared.
     val arrangedHeaders = remember(headers, state.hiddenColumns, state.columnOrder) {
         applyColumnOverrides(headers, state.hiddenColumns, state.columnOrder)
     }
@@ -222,8 +228,8 @@ fun <T> DataTable(
     // managed internally when they do not. The internal values are seeded from the parameters
     // once and then owned by the table — they are not kept in sync with later parameter changes,
     // which is what makes the mode unambiguous either way.
-    // Sorting and filtering live on the state rather than here, so a captured layout can put
-    // them back. Paging does not: which page you are on is not part of how a table is arranged.
+    // Sorting and filtering live on the state so a captured layout can put them back. Paging
+    // does not: which page you are on is not part of how a table is arranged.
     remember(state) { state.seedInternalState(sortBy, multiSortBy, filters) }
     var uncontrolledPage by remember { mutableStateOf(currentPage) }
 
@@ -244,14 +250,12 @@ fun <T> DataTable(
     val selectFilter: (String, String) -> Unit = { key, query ->
         val updated =
             if (query.isEmpty()) activeFilters - key else activeFilters + (key to query)
-        // Filtering shrinks the table under whatever page the user was on, which would otherwise
-        // leave them looking at a page that no longer exists.
+        // A narrowed table can leave the user on a page that no longer exists.
         if (activePage != 0) selectPage(0)
         if (onFiltersChange != null) onFiltersChange(updated) else state.internalFilters = updated
     }
 
-    // Filters resolved against the visible columns, and the rows that survive them. Under
-    // `manualFiltering` the caller has filtered already, but the resolved list is still what
+    // Under `manualFiltering` the caller has filtered already, but the resolved list still
     // tells an empty table apart from a filter that matched nothing.
     val resolvedFilters = remember(flatHeaders, activeFilters) {
         resolveFilters(flatHeaders, activeFilters)
@@ -265,7 +269,7 @@ fun <T> DataTable(
 
     // Keys for every item, used by select-all and by the header's "all selected" state.
     // Kept in a `remember` so the containsAll scan does not run on every recomposition.
-    // Filtered rows are deliberately absent: select-all selects what the user can see.
+    // Filtered rows are absent: select-all selects what the user can see.
     val allKeys = remember(filteredItems, itemKey) {
         filteredItems.mapTo(LinkedHashSet<Any>(filteredItems.size), itemKey)
     }
@@ -427,8 +431,8 @@ fun <T> DataTable(
     SideEffect {
         state.rowKeys = rowKeys
         state.rowScrollIndices = rowScrollIndices
+        // The sort and filters on display, whoever owns them, for `captureLayout`.
         state.columnKeys = columnKeys
-        // What a captured layout describes: the sort and filters on display, whoever owns them.
         state.activeSort = activeSort
         state.activeMultiSort = activeMultiSort
         state.activeFilters = activeFilters
@@ -652,6 +656,22 @@ fun <T> DataTable(
                             adapter = rememberScrollbarAdapter(horizontalScrollState)
                         )
                     }
+
+                    if (showColumnMenuButton) {
+                        ColumnMenuButton(
+                            // The declared tree, not the arranged one: a hidden column has to
+                            // stay listed to be brought back.
+                            headers = headers,
+                            state = state,
+                            colors = colors,
+                            textStyles = textStyles,
+                            // Painted over the header, covering titles that scroll under it.
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .background(colors.header)
+                                .padding(horizontal = 2.dp),
+                        )
+                    }
                 }
             } else if (headerContent != null) {
                 headerContent()
@@ -659,13 +679,12 @@ fun <T> DataTable(
 
             // ---- Filter row ----
             // Its own block rather than part of the header, so it survives `hideDefaultHeader`
-            // and a custom `headerContent` — the fields line up with the columns, not with
-            // whatever is drawn above them.
+            // and a custom `headerContent`.
             if (hasFilterRow) {
                 Box(
-                    // One focus observer over the whole row, rather than one per field: focus
-                    // moving between two fields would otherwise race, and whichever of the two
-                    // reported last would decide whether the table swallows the next keystroke.
+                    // One observer for the whole row: focus moving between two fields would
+                    // otherwise race, and the later report would decide whether the table
+                    // swallows the next keystroke.
                     modifier = Modifier.onFocusChanged { state.filterFocused = it.hasFocus }
                 ) {
                     if (hasFrozenColumns) {
@@ -674,7 +693,6 @@ fun <T> DataTable(
                             scrollableHeaders = scrollableHeaders,
                             horizontalScrollState = horizontalScrollState,
                             dividerColor = colors.divider,
-                            // Sized to content: a filter field is shorter than a data row.
                             height = null,
                             frozenContent = {
                                 DataTableFilterRow(

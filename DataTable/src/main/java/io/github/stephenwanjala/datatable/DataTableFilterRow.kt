@@ -21,15 +21,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 /**
- * Renders the filter row: one filter cell per visible leaf column, under the header.
- *
- * It takes its widths from the same place the body cells do, resize overrides included, so the
- * fields stay lined up with the columns they filter. Columns that are not filterable render an
- * empty cell rather than being skipped — a filter row with gaps in it still has to line up.
+ * Renders the filter row: one cell per visible leaf column, sized from the same widths the body
+ * cells use. A column that is not filterable renders an empty cell rather than being skipped, so
+ * the row stays lined up.
  *
  * @param headers The visible leaf columns of this section, in display order.
- * @param showSelect Whether to leave room for the selection checkbox column.
- * @param showExpand Whether to leave room for the expand chevron column.
  * @param filters Query text per column key. A column missing from the map is unfiltered.
  * @param onFilterChange Reports a column's new query, on every keystroke.
  */
@@ -53,7 +49,7 @@ internal fun <T> DataTableFilterRow(
             .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // The same leading widths the header row reserves, so column one starts in the same place.
+        // The leading widths the header row reserves, so column one starts in the same place.
         if (showSelect && selectionMode != SelectionMode.NONE) {
             Spacer(Modifier.width(20.dp + density.horizontalPadding * 2))
         }
@@ -93,11 +89,8 @@ internal fun <T> DataTableFilterRow(
 }
 
 /**
- * The built-in column filter: a single-line text field with a placeholder and a clear button.
- *
- * Filtering is live — every keystroke is reported — so there is no "apply" affordance to find.
- * ++esc++ clears the field, which is quicker than selecting and deleting, and leaves focus where
- * it is for the next column.
+ * The built-in column filter: a text field with a placeholder and a clear button. Filtering is
+ * live, so there is no "apply" affordance to find; Escape clears the field.
  */
 @Composable
 internal fun DefaultColumnFilterField(
@@ -117,8 +110,7 @@ internal fun DefaultColumnFilterField(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-            // Drawn under the field rather than inside it: `BasicTextField` has no placeholder of
-            // its own, and a decorationBox would have to re-do the layout this Row already does.
+            // Under the field, not inside it: `BasicTextField` has no placeholder of its own.
             if (query.isEmpty() && placeholder.isNotEmpty()) {
                 BasicText(
                     text = placeholder,
@@ -146,14 +138,12 @@ internal fun DefaultColumnFilterField(
             )
         }
 
-        // Only once there is something to clear: an always-present × in every column of a wide
-        // table is a row of noise above the data.
         if (query.isNotEmpty()) {
             SimpleIconButton(
                 onClick = { onQueryChange("") },
                 size = 18.dp,
-                // The field beside it is the tab stop; a clear button that took its own would
-                // double the number of stops needed to cross the filter row.
+                // The field beside it is the tab stop; a second one per column would double the
+                // presses needed to cross the row.
                 focusable = false,
             ) {
                 VectorIcon(

@@ -26,6 +26,12 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+        jvmTest.dependencies {
+            // The gallery is the only place the samples are exercised, so it gets a smoke test:
+            // a sample that renders empty is a bug the library's own tests cannot see.
+            implementation(libs.compose.ui.testJunit4)
+            implementation(compose.desktop.currentOs)
+        }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs){
                 exclude("org.jetbrains.compose.material")
@@ -37,6 +43,15 @@ kotlin {
             api(project(":DataTable"))
 
         }
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    // Compose desktop UI tests render offscreen; no display needed.
+    systemProperty("java.awt.headless", "true")
+    testLogging {
+        events("failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
 }
 

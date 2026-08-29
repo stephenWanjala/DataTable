@@ -50,14 +50,17 @@ internal fun <T> DataTableHeaderRow(
     minColumnWidth: Dp = 40.dp,
     state: DataTableState? = null,
 ) {
-    // Intrinsic height is only needed to let leaves stretch alongside groups. Flat headers skip
-    // it, so the common case measures exactly as it did before nesting existed.
     val hasGroups = headers.any { visibleChildren(it) != null }
+
+    // Lets leaves stretch alongside groups, and bounds what the resize handles fill. Without it
+    // a flat, resizable header measures against the whole table and `ColumnResizeHandle`'s
+    // `fillMaxHeight` stretches it over the rows, leaving the body with nothing.
+    val sizeToContent = hasGroups || resizableColumns
 
     Row(
         modifier = modifier
             .background(backgroundColor)
-            .then(if (hasGroups) Modifier.height(IntrinsicSize.Min) else Modifier)
+            .then(if (sizeToContent) Modifier.height(IntrinsicSize.Min) else Modifier)
             .padding(vertical = density.verticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {

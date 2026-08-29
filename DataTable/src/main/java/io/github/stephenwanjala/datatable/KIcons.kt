@@ -240,3 +240,33 @@ internal val Close: ImageVector
     }
 
 private var _close: ImageVector? = null
+
+
+internal val ViewColumn: ImageVector
+    get() {
+        if (_viewColumn != null) {
+            return _viewColumn!!
+        }
+        _viewColumn = materialIcon(name = "Filled.ViewColumn") {
+            materialPath {
+                moveTo(3.0f, 4.0f)
+                lineTo(8.0f, 4.0f)
+                lineTo(8.0f, 20.0f)
+                lineTo(3.0f, 20.0f)
+                close()
+                moveTo(9.5f, 4.0f)
+                lineTo(14.5f, 4.0f)
+                lineTo(14.5f, 20.0f)
+                lineTo(9.5f, 20.0f)
+                close()
+                moveTo(16.0f, 4.0f)
+                lineTo(21.0f, 4.0f)
+                lineTo(21.0f, 20.0f)
+                lineTo(16.0f, 20.0f)
+                close()
+            }
+        }
+        return _viewColumn!!
+    }
+
+private var _viewColumn: ImageVector? = null

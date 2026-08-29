@@ -33,11 +33,9 @@ import kotlin.test.assertTrue
 /**
  * The filter row.
  *
- * Filtering runs ahead of sorting and paging, so most of these tests are about what the rest of
- * the table sees once a filter has narrowed it: the page count, the footer's total, select-all,
- * and which empty state is shown. The filter fields themselves are found by their set-text
- * action, in column order — the filter row is the only place in the table with text fields,
- * unless a cell editor is open.
+ * Filtering runs ahead of sorting and paging, so most of these are about what the rest of the
+ * table sees once a filter has narrowed it. Fields are found by their set-text action, in column
+ * order — the filter row is the only place in the table with text fields.
  */
 @OptIn(ExperimentalTestApi::class)
 class DataTableFilteringTest {

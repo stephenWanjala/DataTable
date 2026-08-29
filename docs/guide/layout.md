@@ -44,18 +44,27 @@ onto a type of your own — `Dp` is a `Float` in `dp` behind `.value`.
 
 ## Hiding columns
 
-`setColumnHidden` takes a column away and brings it back, which is all a column chooser needs:
+The table has its own menu for this — JavaFX's table menu button, in Compose:
 
 ```kotlin
-DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
-    headers.forEach { header ->
-        val hidden = tableState.isColumnHidden(header.key)
-        DropdownMenuItem(
-            text = { Text((if (hidden) "☐ " else "☑ ") + header.title) },
-            onClick = { tableState.setColumnHidden(header.key, !hidden) },
-        )
-    }
-}
+DataTable(
+    // ...
+    showColumnMenuButton = true,
+)
+```
+
+A button appears at the trailing edge of the header; clicking it lists every column with a
+checkbox. Nothing else to build, and what the user picks is part of the layout the snapshot
+carries.
+
+Columns whose header declares `visible = false` are not offered — see below. The button is drawn
+as part of the default header, so `hideDefaultHeader` or a custom `headerContent` leaves it out.
+
+Driving it yourself is the same one call the menu makes:
+
+```kotlin
+tableState.setColumnHidden("notes", true)
+tableState.isColumnHidden("notes")
 ```
 
 This is a different thing from `DataTableHeader.visible`, and they do not fight:

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -43,6 +44,7 @@ class DataTableColumnWidthTest {
         headers: List<DataTableHeader<Row>>,
         viewport: Int = 1000,
         showSelect: Boolean = false,
+        resizableColumns: Boolean = false,
     ) {
         Box(Modifier.size(viewport.dp, 400.dp)) {
             DataTable(
@@ -50,8 +52,30 @@ class DataTableColumnWidthTest {
                 headers = headers,
                 itemKey = { it.id },
                 showSelect = showSelect,
+                resizableColumns = resizableColumns,
             )
         }
+    }
+
+    @Test
+    fun `a resizable flat header leaves room for the rows`() = runComposeUiTest {
+        setContent {
+            Table(
+                listOf(
+                    DataTableHeader(key = "a", title = "A", value = { it.a }, width = 200.dp),
+                    DataTableHeader(key = "b", title = "B", value = { it.b }, width = 200.dp),
+                ),
+                resizableColumns = true,
+            )
+        }
+
+        // The resize handle fills the header's height. Measured against the table's height
+        // instead, it stretched the header over the rows and the table looked empty.
+        onNodeWithText("AAA").assertIsDisplayed()
+        assertTrue(
+            onNodeWithText("A").fetchSemanticsNode().size.height < 100,
+            "a header row must size to its content, not to the table",
+        )
     }
 
     @Test

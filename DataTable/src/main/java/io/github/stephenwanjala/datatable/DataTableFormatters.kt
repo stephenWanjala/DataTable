@@ -11,12 +11,9 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * The text a column shows for an item: what its [DataTableHeader.format] makes of the extracted
- * value, or the value's `toString()` for a column without one.
- *
- * Cell rendering and clipboard copy both come through here, so what lands on the clipboard is
- * what the cell reads. Editing deliberately does not: an editor opens on `editValue`, or on the
- * raw value, because formatted text is rarely text you can type back.
+ * The text a column shows for an item. Cell rendering and clipboard copy both come through here,
+ * so a copy carries what the cell reads; editing deliberately does not, opening on the raw value
+ * instead.
  */
 internal fun <T> DataTableHeader<T>.displayText(item: T): String {
     val raw = value?.invoke(item)

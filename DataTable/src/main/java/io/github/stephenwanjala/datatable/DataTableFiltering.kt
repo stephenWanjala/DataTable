@@ -43,21 +43,14 @@ class ColumnFilterController internal constructor(
     }
 }
 
-/**
- * Whether this column draws a filter cell in the filter row.
- *
- * Supplying [DataTableHeader.filterContent] is enough on its own: a column with a custom filter
- * control has plainly opted in, and needing `filterable = true` beside it would only be a trap.
- */
+/** Whether this column draws a filter cell. A custom control opts in on its own. */
 internal fun <T> DataTableHeader<T>.hasFilterField(): Boolean =
     filterable || filterContent != null
 
 /**
- * Whether one item passes one column's filter query.
- *
- * Without a [DataTableHeader.filterPredicate] the match is a case-insensitive "contains" against
- * the text the cell shows *and* against the raw value, so a formatted column can be found either
- * way: a salary reading `$92,000` matches both `92,0` and `92000`.
+ * Whether one item passes one column's filter query. The default match is a case-insensitive
+ * contains against the cell's text *and* the raw value, so `$92,000` is found by `92,0` or
+ * `92000`.
  */
 internal fun <T> DataTableHeader<T>.matchesFilter(item: T, query: String): Boolean {
     val predicate = filterPredicate
@@ -71,11 +64,9 @@ internal fun <T> DataTableHeader<T>.matchesFilter(item: T, query: String): Boole
 }
 
 /**
- * The columns being filtered, paired with their queries.
- *
- * Resolved against the *visible* leaf columns, so hiding a column stops its filter applying
- * rather than leaving rows missing for a reason the user can no longer see. Blank queries are
- * dropped: a field the user has emptied filters nothing.
+ * The columns being filtered, paired with their queries. Resolved against the *visible* leaves,
+ * so hiding a column stops its filter applying rather than leaving rows missing for a reason the
+ * user cannot see.
  */
 internal fun <T> resolveFilters(
     headers: List<DataTableHeader<T>>,
@@ -88,10 +79,7 @@ internal fun <T> resolveFilters(
     }
 }
 
-/**
- * Keeps the items matching every active filter. Columns are ANDed: a row has to satisfy all of
- * them, which is what a row of filter fields reads as.
- */
+/** Keeps the items matching every active filter. Columns are ANDed. */
 internal fun <T> applyFilters(
     items: List<T>,
     active: List<Pair<DataTableHeader<T>, String>>,

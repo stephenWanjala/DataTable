@@ -27,11 +27,12 @@ DataTable(
     header composables, drag-to-resize, left-pinned frozen columns, and grouped headers nested to
     any depth.
 
--   **A layout users can keep**
+-   **A column menu, and a layout users can keep**
 
-    Widths, hidden columns, column order, sort, and filters come out of `captureLayout()` as one
-    snapshot — encode it to a string, store it per user, and `applyLayout` puts the grid back as
-    they left it, even after the columns have changed underneath.
+    `showColumnMenuButton` gives the header a menu for showing and hiding columns, the way
+    JavaFX's table menu button does. What the user picks — with widths, order, sort, and filters —
+    comes out of `captureLayout()` as one snapshot to store per user, and `applyLayout` puts the
+    grid back as they left it.
 
 -   **A filter row that pairs with your query**
 
@@ -131,9 +132,9 @@ it:
   validates across columns or rolls back as a unit, and no undo stack.
 - **No export.** CSV, Excel, and PDF are the caller's job — though `onCopy` hands you the
   selected rows and columns as a starting point.
-- **No column reordering by dragging**, and no built-in column chooser. `moveColumn` and
-  `setColumnHidden` are there and are saved with a layout — the header has no drag handle and the
-  menu is yours to build. See [Column Layout](guide/layout.md).
+- **No column reordering by dragging.** `moveColumn` reorders columns and a layout saves the
+  result, but the header has no drag handle. Hiding columns *does* have a built-in menu —
+  `showColumnMenuButton`. See [Column Layout](guide/layout.md).
 - **Filtering is one query per column, ANDed.** The filter row holds a string per column and
   every column has to match. There is no OR across columns, no filter that spans two of them, and
   no Excel-style checklist of the values that occur — a custom `filterContent` is where those get

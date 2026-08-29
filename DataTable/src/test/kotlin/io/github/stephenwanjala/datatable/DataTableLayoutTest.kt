@@ -21,10 +21,9 @@ import kotlin.test.assertTrue
 /**
  * Saving and restoring how a user arranged a table.
  *
- * A layout is keyed entirely by column key, which is what lets it be saved against a user rather
- * than against a query — so the tests that matter most are the ones where the layout and the
- * table have drifted apart: a column that has since been removed, one that did not exist when the
- * layout was saved, and a stored string that was never a layout at all.
+ * The tests that matter most are the ones where the layout and the table have drifted apart: a
+ * column since removed, one that did not exist when the layout was saved, and a stored string
+ * that was never a layout at all.
  */
 @OptIn(ExperimentalTestApi::class)
 class DataTableLayoutTest {
@@ -43,9 +42,9 @@ class DataTableLayoutTest {
     )
 
     /**
-     * Mutates the state from the UI thread and lets the table recompose before anything is
-     * asserted — `columnKeys` and the captured sort are published from the table's own
-     * composition, so reading them straight after a change would read the frame before it.
+     * Mutates the state and lets the table recompose: `columnKeys` and the captured sort are
+     * published from the table's composition, so reading them straight after would be a frame
+     * behind.
      */
     private fun ComposeUiTest.update(block: () -> Unit) {
         runOnUiThread(block)
@@ -92,8 +91,7 @@ class DataTableLayoutTest {
 
     @Test
     fun `keys and queries holding the format's own punctuation survive`() {
-        // Column keys are the caller's strings, and a filter query is whatever a user typed:
-        // spaces, newlines, and the delimiters the format itself uses are all fair game.
+        // A filter query is whatever a user typed, delimiters included.
         val layout = DataTableLayout(
             columnWidths = mapOf("order total = net" to 120.dp),
             hiddenColumns = setOf("a b\tc"),

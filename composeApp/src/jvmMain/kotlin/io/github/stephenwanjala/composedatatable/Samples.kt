@@ -36,10 +36,7 @@ private fun SampleControls(content: @Composable RowScope.() -> Unit) {
     }
 }
 
-/**
- * Shared by every salary column in the gallery. Built once, not per recomposition: a formatter
- * holds its locale and number format.
- */
+/** Built once, not per recomposition: a formatter holds its locale and number format. */
 private val money = DataTableFormatters.currency(locale = Locale.US, decimals = 0)
 
 private val employeeHeaders = listOf(
@@ -50,8 +47,8 @@ private val employeeHeaders = listOf(
     DataTableHeader(key = "role", title = "Role", value = { it.role }, width = 140.dp),
     DataTableHeader(
         key = "salary", title = "Salary", width = 120.dp, align = TextAlign.End,
-        // The value stays a Double, so the column sorts numerically without a comparator and
-        // copies as what it reads. Only `format` knows about currency.
+        // A Double, so the column sorts numerically with no comparator; only `format` knows
+        // about currency.
         value = { it.salary }, format = money,
     ),
 )
@@ -145,8 +142,7 @@ fun LargeDataSetSample() {
             DataTableHeader(key = "hoursWorked", title = "Hours", value = { it.hoursWorked }, width = 80.dp, align = TextAlign.End),
             DataTableHeader(
                 key = "isActive", title = "Active", value = { it.isActive }, width = 80.dp, align = TextAlign.Center,
-                // The cell is an icon, so `format` never draws anything here — but a copy of this
-                // column reads "Active"/"Inactive" instead of "true"/"false".
+                // The cell is an icon, so this only shows up in a copy: "Active", not "true".
                 format = DataTableFormatters.boolean(trueText = "Active", falseText = "Inactive"),
                 cellContent = { item ->
                     Icon(
@@ -420,7 +416,6 @@ fun FilteringSample() {
         listOf(
             DataTableHeader<Employee>(
                 key = "name", title = "Name", value = { it.name }, width = 180.dp,
-                // Nothing but `filterable`: the built-in field and a contains match handle it.
                 filterable = true, filterPlaceholder = "Contains…",
             ),
             DataTableHeader(
@@ -430,8 +425,7 @@ fun FilteringSample() {
             ),
             DataTableHeader(
                 key = "department", title = "Department", value = { it.department }, width = 170.dp,
-                // A handful of known values deserves a picker, not free text. Supplying the
-                // control is opting in — there is no `filterable = true` beside it.
+                // Supplying the control is opting in — no `filterable = true` beside it.
                 filterContent = { controller -> ChoiceFilter(departments, controller) },
                 filterPredicate = { employee, query -> employee.department == query },
             ),
@@ -439,8 +433,7 @@ fun FilteringSample() {
                 key = "salary", title = "Salary", value = { it.salary }, format = money,
                 width = 150.dp, align = TextAlign.End,
                 filterable = true, filterPlaceholder = "Min",
-                // The query is a floor, not a substring — which is the whole reason a column
-                // gets its own predicate.
+                // The query is a floor, not a substring.
                 filterPredicate = { employee, query ->
                     query.toDoubleOrNull()?.let { employee.salary >= it } ?: true
                 },
@@ -449,8 +442,7 @@ fun FilteringSample() {
                 key = "active", title = "Active", value = { it.active }, width = 110.dp,
                 align = TextAlign.Center,
                 format = DataTableFormatters.boolean(),
-                // Matching runs against the formatted text as well as the raw value, so "yes"
-                // finds what the column actually reads.
+                // Matching reads the formatted text too, so "yes" finds what the column shows.
                 filterable = true, filterPlaceholder = "Yes/No",
             ),
         )
@@ -503,10 +495,8 @@ fun FilteringSample() {
 fun LayoutSample() {
     val tableState = rememberDataTableState()
 
-    // Stands in for a preferences store: whatever this holds is all an application has to keep
-    // per user to bring their grid back exactly as they left it.
+    // Stands in for a preferences store.
     var saved by remember { mutableStateOf<String?>(null) }
-    var chooserOpen by remember { mutableStateOf(false) }
 
     val headers = remember {
         employeeHeaders.map { header ->
@@ -518,27 +508,14 @@ fun LayoutSample() {
     Column(Modifier.fillMaxSize()) {
         SampleControls {
             Text(
-                "Resize, sort, filter, hide and reorder — then save, wreck it, and restore.",
+                "Hide columns from the table's own menu at the right of the header. Resize, " +
+                    "sort and filter too — then save, wreck it, and restore.",
                 style = MaterialTheme.typography.bodySmall,
             )
             Spacer(Modifier.weight(1f))
 
-            Box {
-                OutlinedButton(onClick = { chooserOpen = true }) { Text("Columns") }
-                DropdownMenu(expanded = chooserOpen, onDismissRequest = { chooserOpen = false }) {
-                    headers.forEach { header ->
-                        val hidden = tableState.isColumnHidden(header.key)
-                        DropdownMenuItem(
-                            text = { Text((if (hidden) "☐ " else "☑ ") + header.title) },
-                            onClick = { tableState.setColumnHidden(header.key, !hidden) },
-                        )
-                    }
-                    HorizontalDivider()
-                    DropdownMenuItem(
-                        text = { Text("Move Salary first") },
-                        onClick = { tableState.moveColumn("salary", 0) },
-                    )
-                }
+            OutlinedButton(onClick = { tableState.moveColumn("salary", 0) }) {
+                Text("Salary first")
             }
 
             OutlinedButton(onClick = { saved = tableState.captureLayout().encodeToString() }) {
@@ -563,6 +540,7 @@ fun LayoutSample() {
             itemKey = { it.id },
             state = tableState,
             resizableColumns = true,
+            showColumnMenuButton = true,
             density = DataTableDensity.COMFORTABLE,
             colors = DataTableDefaults.colors(rowAlternate = Color(0xFFF7F7F7)),
             modifier = Modifier.weight(1f),
@@ -594,8 +572,7 @@ fun ServerSideSample() {
     var matching by remember { mutableStateOf(EmployeeRepository.total) }
     var queries by remember { mutableStateOf(0) }
 
-    // The filter row reports every keystroke, so the columns it filters are declared here rather
-    // than on the shared `employeeHeaders` every other sample uses.
+    // Declared here rather than on the shared `employeeHeaders` every other sample uses.
     val headers = remember {
         val filtered = mapOf(
             "name" to "Contains…",
@@ -609,9 +586,8 @@ fun ServerSideSample() {
         }
     }
 
-    // Stands in for hitting a database whenever the page, the sort, or the filters change.
-    // Restarting on every keystroke is also the debounce: the effect is cancelled and the delay
-    // begins again, so a burst of typing costs one query rather than one per character.
+    // Stands in for hitting a database. Restarting on each keystroke is also the debounce: the
+    // delay begins again, so a burst of typing costs one query rather than one per character.
     LaunchedEffect(page, pageSize, sort, filters) {
         rows = null
         delay(350.milliseconds)
@@ -925,12 +901,9 @@ fun CellEditingSample() {
             ),
             DataTableHeader(
                 key = "salary", title = "Salary", width = 140.dp, align = TextAlign.End,
-                // Formatting is display-only: the cell reads "$92,000" while the value stays a
-                // Double, so the column sorts numerically and the editor opens on a number.
                 value = { it.salary }, format = money,
                 editable = true,
-                // The raw value would still open the editor onto "92000.0". A salary is entered
-                // in whole units, so trim the decimals the Double carries.
+                // The raw value would open the editor onto "92000.0"; a salary is whole units.
                 editValue = { it.salary.toLong().toString() },
                 validateEdit = { _, text ->
                     val amount = text.toLongOrNull()

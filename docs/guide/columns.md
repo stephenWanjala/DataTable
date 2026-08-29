@@ -180,7 +180,9 @@ DataTableHeader(
 
 ## Visibility
 
-`visible = false` removes a column from rendering without disturbing the rest of the list:
+`visible = false` removes a column from rendering without disturbing the rest of the list. For
+letting the *user* show and hide columns, turn on the table's own menu with
+`showColumnMenuButton` — see [Column Layout](layout.md#hiding-columns).
 
 ```kotlin
 var showNotes by remember { mutableStateOf(true) }
