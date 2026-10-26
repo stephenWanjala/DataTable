@@ -192,6 +192,7 @@ DataTableHeader<Employee>(
     key = "department",
     value = { it.department },
     editable = true,
+    cellContent = DataTableEditors.dropdownCell { it.department },
     editorContent = DataTableEditors.dropdown(listOf("Finance", "IT", "Sales")),
 )
 
@@ -205,9 +206,11 @@ DataTableHeader<Employee>(
 )
 ```
 
-The dropdown opens under the cell with the current value highlighted. ++up++ and ++down++ move
-the highlight, a letter jumps to the next option starting with it, ++enter++ or a click commits,
-and ++escape++ cancels. The checkbox editor flips the value the moment it opens, so ++enter++,
+The dropdown opens under the cell, at least as wide as it, with the current value ticked and
+highlighted. ++up++, ++down++, ++home++, ++end++, and hovering move the highlight; typing jumps to
+the first option starting with the letters typed, and typing quickly builds a longer prefix.
+++enter++ or a click commits, and ++escape++ cancels. `dropdownCell` adds a chevron to the cell so
+the column reads as a picker. The checkbox editor flips the value the moment it opens, so ++enter++,
 ++f2++, a double-click, or, with `editOnClick = true`, a single click toggles in one step. Both
 report `"true"` / `"false"` or the chosen
 option through `onCellEdit` like any other edit.

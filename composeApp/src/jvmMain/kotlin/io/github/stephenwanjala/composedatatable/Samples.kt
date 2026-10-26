@@ -893,6 +893,7 @@ fun CellEditingSample() {
             DataTableHeader(
                 key = "department", title = "Department", value = { it.department }, width = 170.dp,
                 editable = true,
+                cellContent = DataTableEditors.dropdownCell { it.department },
                 editorContent = DataTableEditors.dropdown(departments),
             ),
             DataTableHeader(

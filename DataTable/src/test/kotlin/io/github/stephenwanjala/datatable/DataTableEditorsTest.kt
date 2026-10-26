@@ -118,6 +118,46 @@ class DataTableEditorsTest {
     }
 
     @Test
+    fun `dropdown jumps to the last option on End`() = runComposeUiTest {
+        val harness = table()
+
+        onNodeWithText("Finance").performClick()
+        press(Key.Enter)
+        waitForIdle()
+        press(Key.MoveEnd)
+        press(Key.Enter)
+
+        assertEquals("Sales", harness.edits.single().newText)
+    }
+
+    @Test
+    fun `dropdown jumps to the first option on Home`() = runComposeUiTest {
+        val harness = table()
+
+        onNodeWithText("Sales").performClick()
+        press(Key.Enter)
+        waitForIdle()
+        press(Key.MoveHome)
+        press(Key.Enter)
+
+        assertEquals("Finance", harness.edits.single().newText)
+    }
+
+    @Test
+    fun `dropdown builds a longer prefix from quick typing`() = runComposeUiTest {
+        val harness = table()
+
+        onNodeWithText("Finance").performClick()
+        press(Key.Enter)
+        waitForIdle()
+        press(Key.I)
+        press(Key.T)
+        press(Key.Enter)
+
+        assertEquals("IT", harness.edits.single().newText)
+    }
+
+    @Test
     fun `dropdown cancels on Escape`() = runComposeUiTest {
         val harness = table()
 
