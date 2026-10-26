@@ -49,8 +49,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 
 internal val LocalEditorColors = compositionLocalOf { DataTableColors() }
@@ -176,6 +181,26 @@ private fun Tick(color: Color) {
     }
 }
 
+/**
+ * Places a popup under its anchor, flipping above it only when the space below is too short for
+ * the popup and the space above is not. Horizontally it lines up with the anchor's start edge,
+ * shifted left as far as needed to stay inside the window.
+ */
+internal object BelowAnchorPositionProvider : PopupPositionProvider {
+    override fun calculatePosition(
+        anchorBounds: IntRect,
+        windowSize: IntSize,
+        layoutDirection: LayoutDirection,
+        popupContentSize: IntSize,
+    ): IntOffset {
+        val x = anchorBounds.left.coerceIn(0, (windowSize.width - popupContentSize.width).coerceAtLeast(0))
+        val below = anchorBounds.bottom
+        val above = anchorBounds.top - popupContentSize.height
+        val fitsBelow = below + popupContentSize.height <= windowSize.height
+        return IntOffset(x, if (!fitsBelow && above >= 0) above else below)
+    }
+}
+
 private data class TypedPrefix(val text: String = "", val at: Long = 0L)
 
 @Composable
@@ -222,7 +247,7 @@ private fun DropdownEditor(
         Spacer(Modifier.width(6.dp))
         Chevron(colors.iconTint)
         Popup(
-            alignment = Alignment.BottomStart,
+            popupPositionProvider = BelowAnchorPositionProvider,
             onDismissRequest = controller::cancel,
             properties = PopupProperties(focusable = true),
         ) {
