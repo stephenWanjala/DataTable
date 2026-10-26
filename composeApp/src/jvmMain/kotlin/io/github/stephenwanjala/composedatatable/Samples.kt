@@ -893,24 +893,14 @@ fun CellEditingSample() {
             DataTableHeader(
                 key = "department", title = "Department", value = { it.department }, width = 170.dp,
                 editable = true,
-                // A column whose values come from a fixed set deserves a picker, not free text.
-                editorContent = { employee, controller ->
-                    var expanded by remember { mutableStateOf(true) }
-                    Box {
-                        Text(employee.department, style = MaterialTheme.typography.bodyMedium)
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false; controller.cancel() },
-                        ) {
-                            departments.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(option) },
-                                    onClick = { expanded = false; controller.commit(option) },
-                                )
-                            }
-                        }
-                    }
-                },
+                editorContent = DataTableEditors.dropdown(departments),
+            ),
+            DataTableHeader(
+                key = "active", title = "Active", value = { it.active }, width = 100.dp,
+                editable = true,
+                editOnClick = true,
+                cellContent = DataTableEditors.checkboxCell { it.active },
+                editorContent = DataTableEditors.checkbox(),
             ),
             DataTableHeader(
                 key = "salary", title = "Salary", width = 140.dp, align = TextAlign.End,
@@ -938,28 +928,36 @@ fun CellEditingSample() {
         SampleControls {
             Text(
                 "Click a cell, then ← → ↑ ↓ to move. Enter or F2 edits, or just start typing. " +
-                    "Enter commits and drops a row; Tab commits and moves right; Esc cancels.",
+                    "Enter commits and drops a row; Tab commits and moves right; Esc cancels. " +
+                    "Clicking away keeps what you typed. Department is a dropdown (arrows, or a " +
+                    "letter to jump) and Active toggles on a single click.",
                 style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.weight(1f),
             )
-            Spacer(Modifier.weight(1f))
             Text(
                 "Focused: ${tableState.focusedCell?.columnKey ?: "none"}",
                 style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1,
+                modifier = Modifier.width(150.dp),
             )
             OutlinedButton(onClick = { employees = sampleEmployees.take(12); log = emptyList() }) {
                 Text("Reset")
             }
         }
 
-        tableState.editError?.let { message ->
-            Surface(color = MaterialTheme.colorScheme.errorContainer) {
-                Text(
-                    message,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
-                )
-            }
+        val editError = tableState.editError
+        Surface(
+            color = if (editError != null) MaterialTheme.colorScheme.errorContainer
+            else Color.Transparent,
+            modifier = Modifier.fillMaxWidth().height(32.dp),
+        ) {
+            Text(
+                editError.orEmpty(),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                maxLines = 1,
+            )
         }
 
         DataTable(
@@ -977,6 +975,7 @@ fun CellEditingSample() {
                     else when (edit.columnKey) {
                         "role" -> employee.copy(role = edit.newText)
                         "department" -> employee.copy(department = edit.newText)
+                        "active" -> employee.copy(active = edit.newText.toBoolean())
                         "salary" -> employee.copy(salary = edit.newText.toDouble())
                         else -> employee
                     }

@@ -368,8 +368,37 @@ class DataTableCellEditingTest {
         onNodeWithText("Alice").performClick()
 
         assertFalse(harness.state.isEditing)
-        assertTrue(harness.edits.isEmpty(), "clicking away abandons the edit, it does not commit")
+        assertTrue(harness.edits.isEmpty(), "an untouched editor reports nothing")
         assertEquals(CellPosition(2, "name"), harness.state.focusedCell)
+    }
+
+    @Test
+    fun `clicking away commits what was typed`() = runComposeUiTest {
+        val harness = table()
+
+        onNodeWithText("5").performClick()
+        press(Key.Enter)
+        type("9")
+        onNodeWithText("Alice").performClick()
+
+        assertFalse(harness.state.isEditing)
+        val edit = harness.edits.single()
+        assertEquals("5", edit.oldText)
+        assertEquals("9", edit.newText)
+        assertEquals(CellPosition(2, "name"), harness.state.focusedCell)
+    }
+
+    @Test
+    fun `clicking away discards a value that fails validation`() = runComposeUiTest {
+        val harness = table()
+
+        onNodeWithText("5").performClick()
+        press(Key.Enter)
+        type("abc")
+        onNodeWithText("Alice").performClick()
+
+        assertFalse(harness.state.isEditing)
+        assertTrue(harness.edits.isEmpty())
     }
 
     @Test

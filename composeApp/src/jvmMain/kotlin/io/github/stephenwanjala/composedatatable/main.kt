@@ -98,7 +98,7 @@ private val samples = listOf(
     ),
     Sample(
         title = "Cell Editing",
-        exercises = "Cell focus and grid navigation · editable columns, validation, editValue, and a dropdown editorContent",
+        exercises = "Cell focus and grid navigation · editable columns, validation, editValue, click-away commit, and the ready-made dropdown and checkbox editors",
         icon = Icons.Default.EditNote,
         content = { CellEditingSample() },
     ),

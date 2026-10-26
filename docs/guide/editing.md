@@ -182,6 +182,36 @@ as the built-in editor does — validation cannot be bypassed by supplying your 
 A custom editor is expected to take keyboard focus itself. It commits in place; unlike ++enter++
 and ++tab++ in the built-in field, it does not move the cursor afterwards.
 
+## Ready-made editors
+
+`DataTableEditors` covers the common non-text columns so they need no hand-written
+`editorContent`:
+
+```kotlin
+DataTableHeader<Employee>(
+    key = "department",
+    value = { it.department },
+    editable = true,
+    editorContent = DataTableEditors.dropdown(listOf("Finance", "IT", "Sales")),
+)
+
+DataTableHeader<Employee>(
+    key = "active",
+    value = { it.active },
+    editable = true,
+    editOnClick = true,
+    cellContent = DataTableEditors.checkboxCell { it.active },
+    editorContent = DataTableEditors.checkbox(),
+)
+```
+
+The dropdown opens under the cell with the current value highlighted. ++up++ and ++down++ move
+the highlight, a letter jumps to the next option starting with it, ++enter++ or a click commits,
+and ++escape++ cancels. The checkbox editor flips the value the moment it opens, so ++enter++,
+++f2++, a double-click, or, with `editOnClick = true`, a single click toggles in one step. Both
+report `"true"` / `"false"` or the chosen
+option through `onCellEdit` like any other edit.
+
 ## Programmatic editing
 
 ```kotlin

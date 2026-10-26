@@ -67,6 +67,10 @@ import androidx.compose.ui.unit.dp
  *                      values that occur, a range picker, a tri-state flag. It is handed a
  *                      [ColumnFilterController] to read the current query from and to set the new
  *                      one with, and supplying it opts the column into the filter row on its own.
+ * @param editOnClick Whether a single click on an [editable] cell opens its editor, instead of
+ *                    moving the cell cursor and waiting for Enter, F2, or a double-click. With
+ *                    `DataTableEditors.checkbox` it makes one click toggle the value. Shift-clicks
+ *                    still extend the selection without editing.
  */
 @Immutable
 data class DataTableHeader<T>(
@@ -93,6 +97,7 @@ data class DataTableHeader<T>(
     val filterPlaceholder: String = "",
     val filterPredicate: ((T, String) -> Boolean)? = null,
     val filterContent: (@Composable (ColumnFilterController) -> Unit)? = null,
+    val editOnClick: Boolean = false,
 )
 
 /**

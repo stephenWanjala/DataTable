@@ -30,12 +30,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * A simple checkbox drawn with Canvas, requiring no Material dependency.
+ * A simple checkbox drawn with Canvas, requiring no Material dependency. A null
+ * [onCheckedChange] draws it as a read-only indicator that takes no clicks.
  */
 @Composable
 internal fun SimpleCheckbox(
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
+    onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
     colors: DataTableColors = DataTableColors(),
     focusable: Boolean = true,
@@ -48,7 +49,10 @@ internal fun SimpleCheckbox(
         modifier = modifier
             .size(20.dp)
             .then(if (focusable) Modifier else NotFocusable)
-            .clickable { onCheckedChange(!checked) }
+            .then(
+                if (onCheckedChange != null) Modifier.clickable { onCheckedChange(!checked) }
+                else Modifier
+            )
     ) {
         val cornerRadius = CornerRadius(3.dp.toPx(), 3.dp.toPx())
 

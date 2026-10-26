@@ -338,6 +338,23 @@ class DataTableState(
     }
 
     /**
+     * Closes any open editor the way losing focus does in a JavaFX table: the typed text is
+     * committed, and discarded only when it fails validation or the editor is a custom one that
+     * has not exposed a draft.
+     */
+    internal fun commitEditing() {
+        val commit = editFocusLossCommit
+        if (!isEditing) return
+        if (commit == null || !commit()) endEdit()
+    }
+
+    /**
+     * Commits what the open built-in editor holds, returning whether it was accepted. Registered
+     * by the editor host for as long as the editor is composed.
+     */
+    internal var editFocusLossCommit: (() -> Boolean)? = null
+
+    /**
      * Clears all user-resized column widths, reverting to header-defined or weighted widths.
      */
     fun resetColumnWidths() {

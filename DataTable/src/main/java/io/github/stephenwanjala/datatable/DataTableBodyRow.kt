@@ -285,14 +285,14 @@ internal fun <T> RowScope.DataTableCell(
     // press away from the row's tap detector — row clicks and selection keep working.
     val doubleClickTimeout = LocalViewConfiguration.current.doubleTapTimeoutMillis
     val pressModifier = if (cellNavigation) {
-        Modifier.pointerInput(rowKey, header.key, editOnDoubleClick) {
+        Modifier.pointerInput(rowKey, header.key, editOnDoubleClick, header.editOnClick) {
             awaitPointerEventScope {
                 while (true) {
                     val event = awaitPointerEvent(PointerEventPass.Initial)
                     if (event.type != PointerEventType.Press) continue
                     val change = event.changes.firstOrNull() ?: continue
-                    // A press anywhere but inside the open editor closes it.
-                    if (state!!.editingCell != position) state.cancelEditing()
+                    // A press anywhere but inside the open editor closes it, keeping what was typed.
+                    if (state!!.editingCell != position) state.commitEditing()
                     if (event.keyboardModifiers.isShiftPressed) {
                         // Extending a selection is not a click on a cell: it must not re-anchor,
                         // and two shift-clicks in a row are not a double-click into the editor.
@@ -302,7 +302,8 @@ internal fun <T> RowScope.DataTableCell(
                             position!!, change.uptimeMillis, doubleClickTimeout,
                         )
                         state.focusCell(rowKey, header.key)
-                        if (doubleClicked && editOnDoubleClick && header.editable) {
+                        val opensOnClick = header.editable && header.editOnClick
+                        if (opensOnClick || (doubleClicked && editOnDoubleClick && header.editable)) {
                             state.startEditing(rowKey, header.key)
                         }
                     }
@@ -333,7 +334,12 @@ internal fun <T> RowScope.DataTableCell(
                 onCellEdit = onCellEdit,
             )
 
-            header.cellContent != null -> header.cellContent.invoke(item)
+            header.cellContent != null -> CompositionLocalProvider(
+                LocalEditorColors provides colors,
+                LocalEditorTextStyle provides textStyles.cellEditor,
+            ) {
+                header.cellContent.invoke(item)
+            }
 
             else -> {
                 BasicText(
@@ -404,17 +410,13 @@ private fun <T> CellEditorHost(
     }
 
     val editorContent = header.editorContent
-    if (editorContent != null) {
-        val controller = remember(rowKey, header.key, seed, state.editError) {
-            CellEditController(
-                initialText = seed ?: originalText,
-                error = state.editError,
-                onCommitRequest = { commit(it, EditMove.STAY) },
-                onCancelRequest = { cancel() },
-            )
+    if (editorContent == null) {
+        var draft by remember(rowKey, header.key, seed) { mutableStateOf(seed ?: originalText) }
+        val currentCommit by rememberUpdatedState({ commit(draft, EditMove.STAY) })
+        DisposableEffect(state) {
+            state.editFocusLossCommit = { currentCommit() }
+            onDispose { state.editFocusLossCommit = null }
         }
-        editorContent(item, controller)
-    } else {
         DefaultCellEditor(
             initialText = seed ?: originalText,
             selectAll = seed == null,
@@ -422,6 +424,23 @@ private fun <T> CellEditorHost(
             colors = colors,
             onCommit = ::commit,
             onCancel = ::cancel,
+            onDraftChange = { draft = it },
         )
+    } else {
+        val controller = remember(rowKey, header.key, seed, state.editError) {
+            CellEditController(
+                initialText = seed ?: originalText,
+                currentText = originalText,
+                error = state.editError,
+                onCommitRequest = { commit(it, EditMove.STAY) },
+                onCancelRequest = { cancel() },
+            )
+        }
+        CompositionLocalProvider(
+            LocalEditorColors provides colors,
+            LocalEditorTextStyle provides textStyles.cellEditor,
+        ) {
+            editorContent(item, controller)
+        }
     }
 }
