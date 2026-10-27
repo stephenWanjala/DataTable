@@ -303,7 +303,8 @@ internal fun <T> RowScope.DataTableCell(
                         )
                         state.focusCell(rowKey, header.key)
                         val opensOnClick = header.editable && header.editOnClick
-                        if (opensOnClick || (doubleClicked && editOnDoubleClick && header.editable)) {
+                        val opens = opensOnClick || (doubleClicked && editOnDoubleClick && header.editable)
+                        if (opens && state.editingCell != position) {
                             state.startEditing(rowKey, header.key)
                         }
                     }
@@ -405,7 +406,7 @@ private fun <T> CellEditorHost(
     }
 
     fun cancel() {
-        state.endEdit()
+        state.abandonEdit()
         state.containerFocusRequester.requestFocus()
     }
 

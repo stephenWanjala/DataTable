@@ -69,6 +69,8 @@ class DataTableCellEditingTest {
     private class Harness {
         lateinit var state: DataTableState
         val edits = mutableListOf<CellEdit<Person>>()
+        val starts = mutableListOf<CellPosition>()
+        val cancels = mutableListOf<CellPosition>()
         val rowClicks = mutableListOf<String>()
         val doubleClicks = mutableListOf<String>()
     }
@@ -87,6 +89,8 @@ class DataTableCellEditingTest {
                     itemKey = { it.id },
                     state = harness.state,
                     onCellEdit = { harness.edits += it },
+                    onEditStart = { harness.starts += it },
+                    onEditCancel = { harness.cancels += it },
                     onRowClick = { harness.rowClicks += it.name },
                     onRowDoubleClick =
                         if (onRowDoubleClick) ({ harness.doubleClicks += it.name }) else null,
@@ -446,4 +450,71 @@ class DataTableCellEditingTest {
             // The editor owns the keyboard while it is open.
             assertEquals(CellPosition(1, "quantity"), harness.state.editingCell)
         }
+
+    @Test
+    fun `onEditStart fires once when an editor opens`() = runComposeUiTest {
+        val harness = table()
+
+        onNodeWithText("5").performClick()
+        press(Key.Enter)
+
+        assertEquals(listOf(CellPosition(1, "quantity")), harness.starts)
+        assertTrue(harness.cancels.isEmpty())
+    }
+
+    @Test
+    fun `onEditStart fires for typing over a cell and for startEditing`() = runComposeUiTest {
+        val harness = table()
+
+        onNodeWithText("5").performClick()
+        press(Key.Five)
+        harness.state.cancelEditing()
+        harness.state.startEditing(2, "quantity")
+        waitForIdle()
+
+        assertEquals(
+            listOf(CellPosition(1, "quantity"), CellPosition(2, "quantity")),
+            harness.starts,
+        )
+    }
+
+    @Test
+    fun `onEditCancel fires on Escape and not on a commit`() = runComposeUiTest {
+        val harness = table()
+
+        onNodeWithText("5").performClick()
+        press(Key.Enter)
+        press(Key.Escape)
+        assertEquals(listOf(CellPosition(1, "quantity")), harness.cancels)
+
+        press(Key.Enter)
+        type("9")
+        press(Key.Enter)
+
+        assertEquals(1, harness.cancels.size)
+        assertEquals(1, harness.edits.size)
+    }
+
+    @Test
+    fun `onEditCancel fires when clicking away discards an invalid value`() = runComposeUiTest {
+        val harness = table()
+
+        onNodeWithText("5").performClick()
+        press(Key.Enter)
+        type("abc")
+        onNodeWithText("Alice").performClick()
+
+        assertEquals(listOf(CellPosition(1, "quantity")), harness.cancels)
+    }
+
+    @Test
+    fun `onEditCancel fires for cancelEditing`() = runComposeUiTest {
+        val harness = table()
+
+        onNodeWithText("5").performClick()
+        press(Key.Enter)
+        harness.state.cancelEditing()
+
+        assertEquals(listOf(CellPosition(1, "quantity")), harness.cancels)
+    }
 }

@@ -82,9 +82,7 @@ internal fun Modifier.dataTableKeyboardNavigation(
         if (!isColumnEditable(columnKey)) return false
         val rowKey = rowKeys.getOrNull(if (row < 0) 0 else row) ?: return false
         state.focusCell(rowKey, columnKey)
-        state.editSeedText = seed
-        state.editError = null
-        state.isEditing = true
+        state.beginEditing(seed)
         return true
     }
 

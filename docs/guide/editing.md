@@ -215,6 +215,25 @@ the column reads as a picker. The checkbox editor flips the value the moment it 
 report `"true"` / `"false"` or the chosen
 option through `onCellEdit` like any other edit.
 
+## Edit lifecycle
+
+Besides `onCellEdit`, the table reports when an edit begins and when it is abandoned:
+
+```kotlin
+DataTable(
+    // ...
+    onEditStart = { position -> log("editing ${position.columnKey}") },
+    onEditCancel = { position -> log("cancelled ${position.columnKey}") },
+)
+```
+
+`onEditStart` fires once per edit, however it began: a key, a click, a double-click, typing over
+the cell, or `startEditing`. `onEditCancel` fires when an editor closes without a commit: ++escape++,
+a custom editor's `controller.cancel()`, a click away on a value that fails validation, or
+`cancelEditing()`. A commit always reports through `onCellEdit` instead, and a commit that
+changed nothing reports nothing at all, so a start is followed by exactly one of: a cell edit,
+a cancel, or neither for an unchanged commit.
+
 ## Programmatic editing
 
 ```kotlin

@@ -969,6 +969,8 @@ fun CellEditingSample() {
             density = DataTableDensity.COMPACT,
             resizableColumns = true,
             reorderableColumns = true,
+            onEditStart = { log = (listOf("${it.columnKey}: editing") + log).take(6) },
+            onEditCancel = { log = (listOf("${it.columnKey}: cancelled") + log).take(6) },
             onCellEdit = { edit ->
                 log = (listOf("${edit.columnKey}: ${edit.oldText} → ${edit.newText}") + log).take(6)
                 employees = employees.map { employee ->

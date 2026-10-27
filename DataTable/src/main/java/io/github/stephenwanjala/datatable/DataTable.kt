@@ -135,6 +135,12 @@ import kotlinx.coroutines.launch
  * @param onCellEdit Invoked when a cell edit is committed, with the old and new text. The table
  *                   never mutates [items] — apply the edit to your own model and pass the
  *                   updated list back. Without this, editing is a no-op that still validates.
+ * @param onEditStart Invoked with the cell's position when an editor opens, by key, click,
+ *                    double-click, or `DataTableState.startEditing`. Fires once per edit.
+ * @param onEditCancel Invoked with the cell's position when an editor closes without a commit:
+ *                     Escape, a custom editor's cancel, a click away that fails validation, or
+ *                     `DataTableState.cancelEditing`. A committed edit reports through
+ *                     [onCellEdit] instead, even one that changed nothing.
  * @param onCopy Invoked on Ctrl+C with the rows, columns, and cell text under the selection.
  *               Leave it `null` and the table writes tab-separated text to the system clipboard
  *               itself; supply it to write a different format, or to copy somewhere else.
@@ -205,6 +211,8 @@ fun <T> DataTable(
     // Cell focus and editing
     cellNavigation: Boolean = false,
     onCellEdit: ((CellEdit<T>) -> Unit)? = null,
+    onEditStart: ((CellPosition) -> Unit)? = null,
+    onEditCancel: ((CellPosition) -> Unit)? = null,
     onCopy: ((ClipboardSelection<T>) -> Unit)? = null,
     // Scrollbars
     showScrollbars: Boolean = true,
@@ -212,6 +220,10 @@ fun <T> DataTable(
     val scope = rememberCoroutineScope()
     val listState = state.lazyListState
     val horizontalScrollState = state.horizontalScrollState
+    SideEffect {
+        state.onEditStart = onEditStart
+        state.onEditCancel = onEditCancel
+    }
     // Folded in once, so everything downstream reads `visible` and list order as declared.
     val arrangedHeaders = remember(headers, state.hiddenColumns, state.columnOrder) {
         applyColumnOverrides(headers, state.hiddenColumns, state.columnOrder)
