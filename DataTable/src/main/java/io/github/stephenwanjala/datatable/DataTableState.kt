@@ -274,9 +274,10 @@ class DataTableState(
      * Like [focusRow] this does not scroll; use [revealFocusedCell] to bring the cell into view.
      */
     fun focusCell(rowKey: Any?, columnKey: String?) {
+        val editing = editingCell
         focusedKey = rowKey
         focusedColumnKey = if (rowKey == null) null else columnKey
-        if (focusedCell == null) cancelEditing()
+        if (focusedCell == null) abandonEdit(editing)
         clearRange()
     }
 
@@ -324,18 +325,59 @@ class DataTableState(
      * editor — but the focus move still happens.
      */
     fun startEditing(rowKey: Any, columnKey: String) {
+        abandonEdit()
         focusCell(rowKey, columnKey)
-        editSeedText = null
-        editError = null
-        isEditing = true
+        beginEditing(seed = null)
     }
 
     /**
-     * Closes any open editor, discarding what was typed.
+     * Closes any open editor, discarding what was typed. Reports the abandoned edit to
+     * `DataTable`'s `onEditCancel`.
      */
     fun cancelEditing() {
-        endEdit()
+        abandonEdit()
     }
+
+    /** Opens the editor on the focused cell and reports it to `onEditStart`. */
+    internal fun beginEditing(seed: String?) {
+        val position = focusedCell ?: return
+        editSeedText = seed
+        editError = null
+        if (!isEditing) {
+            isEditing = true
+            onEditStart?.invoke(position)
+        }
+    }
+
+    /**
+     * Ends the open edit without committing it and reports it to `onEditCancel`. [position] is
+     * the cell being edited, for a caller that is about to clear the focus it is read from.
+     */
+    internal fun abandonEdit(position: CellPosition? = editingCell) {
+        if (!isEditing) return
+        endEdit()
+        if (position != null) onEditCancel?.invoke(position)
+    }
+
+    internal var onEditStart: ((CellPosition) -> Unit)? = null
+    internal var onEditCancel: ((CellPosition) -> Unit)? = null
+
+    /**
+     * Closes any open editor the way losing focus does in a JavaFX table: the typed text is
+     * committed, and discarded only when it fails validation or the editor is a custom one that
+     * has not exposed a draft.
+     */
+    internal fun commitEditing() {
+        val commit = editFocusLossCommit
+        if (!isEditing) return
+        if (commit == null || !commit()) abandonEdit()
+    }
+
+    /**
+     * Commits what the open built-in editor holds, returning whether it was accepted. Registered
+     * by the editor host for as long as the editor is composed.
+     */
+    internal var editFocusLossCommit: (() -> Boolean)? = null
 
     /**
      * Clears all user-resized column widths, reverting to header-defined or weighted widths.

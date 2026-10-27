@@ -77,12 +77,15 @@ data class CellEdit<T>(
  *
  * @property initialText The text the editor should start with: the cell's current value, or the
  *                       character the user typed if the edit began by typing over the cell.
+ * @property currentText The text the cell holds now, whatever began the edit. Differs from
+ *                       [initialText] only when the user typed over the cell.
  * @property error Message from [DataTableHeader.validateEdit] rejecting the last attempted
  *                 commit, or `null` when nothing has been rejected. Show it, and stay open.
  */
 @Stable
 class CellEditController internal constructor(
     val initialText: String,
+    val currentText: String,
     val error: String?,
     private val onCommitRequest: (String) -> Unit,
     private val onCancelRequest: () -> Unit,
@@ -132,6 +135,7 @@ internal enum class EditMove {
  *
  * @param selectAll Whether to select the whole value on open. False when [initialText] is a
  *                  character the user just typed.
+ * @param onDraftChange Invoked with the text on every change, so a click elsewhere can commit it.
  * @param onCommit Invoked with the text and where focus should go afterwards. Returns true when
  *                 the value was accepted; a false return means validation rejected it and the
  *                 editor stays open.
@@ -144,6 +148,7 @@ internal fun DefaultCellEditor(
     colors: DataTableColors,
     onCommit: (text: String, move: EditMove) -> Boolean,
     onCancel: () -> Unit,
+    onDraftChange: (String) -> Unit = {},
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -159,7 +164,10 @@ internal fun DefaultCellEditor(
 
     BasicTextField(
         value = value,
-        onValueChange = { value = it },
+        onValueChange = {
+            value = it
+            onDraftChange(it.text)
+        },
         modifier = Modifier
             .fillMaxWidth()
             .background(colors.editingCell)

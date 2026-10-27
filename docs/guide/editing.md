@@ -182,6 +182,58 @@ as the built-in editor does — validation cannot be bypassed by supplying your 
 A custom editor is expected to take keyboard focus itself. It commits in place; unlike ++enter++
 and ++tab++ in the built-in field, it does not move the cursor afterwards.
 
+## Ready-made editors
+
+`DataTableEditors` covers the common non-text columns so they need no hand-written
+`editorContent`:
+
+```kotlin
+DataTableHeader<Employee>(
+    key = "department",
+    value = { it.department },
+    editable = true,
+    cellContent = DataTableEditors.dropdownCell { it.department },
+    editorContent = DataTableEditors.dropdown(listOf("Finance", "IT", "Sales")),
+)
+
+DataTableHeader<Employee>(
+    key = "active",
+    value = { it.active },
+    editable = true,
+    editOnClick = true,
+    cellContent = DataTableEditors.checkboxCell { it.active },
+    editorContent = DataTableEditors.checkbox(),
+)
+```
+
+The dropdown opens under the cell, at least as wide as it, with the current value ticked and
+highlighted. ++up++, ++down++, ++home++, ++end++, and hovering move the highlight; typing jumps to
+the first option starting with the letters typed, and typing quickly builds a longer prefix.
+++enter++ or a click commits, and ++escape++ cancels. `dropdownCell` adds a chevron to the cell so
+the column reads as a picker. The checkbox editor flips the value the moment it opens, so ++enter++,
+++f2++, a double-click, or, with `editOnClick = true`, a single click toggles in one step. Both
+report `"true"` / `"false"` or the chosen
+option through `onCellEdit` like any other edit.
+
+## Edit lifecycle
+
+Besides `onCellEdit`, the table reports when an edit begins and when it is abandoned:
+
+```kotlin
+DataTable(
+    // ...
+    onEditStart = { position -> log("editing ${position.columnKey}") },
+    onEditCancel = { position -> log("cancelled ${position.columnKey}") },
+)
+```
+
+`onEditStart` fires once per edit, however it began: a key, a click, a double-click, typing over
+the cell, or `startEditing`. `onEditCancel` fires when an editor closes without a commit: ++escape++,
+a custom editor's `controller.cancel()`, a click away on a value that fails validation, or
+`cancelEditing()`. A commit always reports through `onCellEdit` instead, and a commit that
+changed nothing reports nothing at all, so a start is followed by exactly one of: a cell edit,
+a cancel, or neither for an unchanged commit.
+
 ## Programmatic editing
 
 ```kotlin
