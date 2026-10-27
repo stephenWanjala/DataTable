@@ -67,7 +67,7 @@ these out.
 
 ```kotlin
 dependencies {
-    implementation("io.github.stephenwanjala:datatable:0.5.0")
+    implementation("io.github.stephenwanjala:datatable:0.6.0")
 }
 ```
 
