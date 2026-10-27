@@ -692,6 +692,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#ready-made-editors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ready-made editors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#edit-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Edit lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#programmatic-editing" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -886,6 +908,28 @@
     <span class="md-ellipsis">
       
         Custom editors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ready-made-editors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ready-made editors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#edit-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Edit lifecycle
       
     </span>
   </a>
@@ -1132,12 +1176,54 @@ as the built-in editor does — validation cannot be bypassed by supplying your 
 <code>controller.error</code> carries a rejection message so the editor can show it.</p>
 <p>A custom editor is expected to take keyboard focus itself. It commits in place; unlike <span class="keys"><kbd class="key-enter">Enter</kbd></span>
 and <span class="keys"><kbd class="key-tab">Tab</kbd></span> in the built-in field, it does not move the cursor afterwards.</p>
+<h2 id="ready-made-editors">Ready-made editors<a class="headerlink" href="#ready-made-editors" title="Permanent link">&para;</a></h2>
+<p><code>DataTableEditors</code> covers the common non-text columns so they need no hand-written
+<code>editorContent</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">DataTableHeader</span><span class="o">&lt;</span><span class="n">Employee</span><span class="o">&gt;</span><span class="p">(</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"department"</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">department</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="n">editable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="n">cellContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataTableEditors</span><span class="p">.</span><span class="na">dropdownCell</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">department</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="n">editorContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataTableEditors</span><span class="p">.</span><span class="na">dropdown</span><span class="p">(</span><span class="n">listOf</span><span class="p">(</span><span class="s">"Finance"</span><span class="p">,</span><span class="w"> </span><span class="s">"IT"</span><span class="p">,</span><span class="w"> </span><span class="s">"Sales"</span><span class="p">)),</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="p">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="n">DataTableHeader</span><span class="o">&lt;</span><span class="n">Employee</span><span class="o">&gt;</span><span class="p">(</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"active"</span><span class="p">,</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">active</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">    </span><span class="n">editable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span><span class="n">editOnClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">    </span><span class="n">cellContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataTableEditors</span><span class="p">.</span><span class="na">checkboxCell</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">active</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">    </span><span class="n">editorContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataTableEditors</span><span class="p">.</span><span class="na">checkbox</span><span class="p">(),</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="p">)</span>
+</code></pre></div>
+<p>The dropdown opens under the cell, at least as wide as it, with the current value ticked and
+highlighted. <span class="keys"><kbd class="key-arrow-up">Up</kbd></span>, <span class="keys"><kbd class="key-arrow-down">Down</kbd></span>, <span class="keys"><kbd class="key-home">Home</kbd></span>, <span class="keys"><kbd class="key-end">End</kbd></span>, and hovering move the highlight; typing jumps to
+the first option starting with the letters typed, and typing quickly builds a longer prefix.
+<span class="keys"><kbd class="key-enter">Enter</kbd></span> or a click commits, and <span class="keys"><kbd class="key-escape">Esc</kbd></span> cancels. <code>dropdownCell</code> adds a chevron to the cell so
+the column reads as a picker. The checkbox editor flips the value the moment it opens, so <span class="keys"><kbd class="key-enter">Enter</kbd></span>,
+<span class="keys"><kbd class="key-f2">F2</kbd></span>, a double-click, or, with <code>editOnClick = true</code>, a single click toggles in one step. Both
+report <code>"true"</code> / <code>"false"</code> or the chosen
+option through <code>onCellEdit</code> like any other edit.</p>
+<h2 id="edit-lifecycle">Edit lifecycle<a class="headerlink" href="#edit-lifecycle" title="Permanent link">&para;</a></h2>
+<p>Besides <code>onCellEdit</code>, the table reports when an edit begins and when it is abandoned:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">DataTable</span><span class="p">(</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="c1">// ...</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="n">onEditStart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">position</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">log</span><span class="p">(</span><span class="s">"editing </span><span class="si">${</span><span class="n">position</span><span class="p">.</span><span class="na">columnKey</span><span class="si">}</span><span class="s">"</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="n">onEditCancel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">position</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">log</span><span class="p">(</span><span class="s">"cancelled </span><span class="si">${</span><span class="n">position</span><span class="p">.</span><span class="na">columnKey</span><span class="si">}</span><span class="s">"</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="p">)</span>
+</code></pre></div>
+<p><code>onEditStart</code> fires once per edit, however it began: a key, a click, a double-click, typing over
+the cell, or <code>startEditing</code>. <code>onEditCancel</code> fires when an editor closes without a commit: <span class="keys"><kbd class="key-escape">Esc</kbd></span>,
+a custom editor's <code>controller.cancel()</code>, a click away on a value that fails validation, or
+<code>cancelEditing()</code>. A commit always reports through <code>onCellEdit</code> instead, and a commit that
+changed nothing reports nothing at all, so a start is followed by exactly one of: a cell edit,
+a cancel, or neither for an unchanged commit.</p>
 <h2 id="programmatic-editing">Programmatic editing<a class="headerlink" href="#programmatic-editing" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">tableState</span><span class="p">.</span><span class="na">startEditing</span><span class="p">(</span><span class="n">rowKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="na">id</span><span class="p">,</span><span class="w"> </span><span class="n">columnKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"role"</span><span class="p">)</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">tableState</span><span class="p">.</span><span class="na">cancelEditing</span><span class="p">()</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">editing</span><span class="p">:</span><span class="w"> </span><span class="n">CellPosition?</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tableState</span><span class="p">.</span><span class="na">editingCell</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">isEditing</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tableState</span><span class="p">.</span><span class="na">isEditing</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">tableState</span><span class="p">.</span><span class="na">startEditing</span><span class="p">(</span><span class="n">rowKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="na">id</span><span class="p">,</span><span class="w"> </span><span class="n">columnKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"role"</span><span class="p">)</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">tableState</span><span class="p">.</span><span class="na">cancelEditing</span><span class="p">()</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">editing</span><span class="p">:</span><span class="w"> </span><span class="n">CellPosition?</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tableState</span><span class="p">.</span><span class="na">editingCell</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">isEditing</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tableState</span><span class="p">.</span><span class="na">isEditing</span>
 </code></pre></div>
 <p><code>startEditing</code> moves cell focus and opens the editor, exactly as <span class="keys"><kbd class="key-f2">F2</kbd></span> does. Use it to drop the
 user straight into the first cell of a row they have just added.</p>
@@ -1189,10 +1275,10 @@ cursor alone, and <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+<
 <code>CellPosition(rowKey, columnKey)</code>. It stays on the same cell across a re-sort, and a cell that
 scrolls off a page simply draws nothing rather than the cursor drifting onto whichever row has
 taken its place.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">cell</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tableState</span><span class="p">.</span><span class="na">focusedCell</span><span class="w">          </span><span class="c1">// CellPosition?, null when only a row is focused</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">tableState</span><span class="p">.</span><span class="na">focusCell</span><span class="p">(</span><span class="n">person</span><span class="p">.</span><span class="na">id</span><span class="p">,</span><span class="w"> </span><span class="s">"role"</span><span class="p">)</span><span class="w">    </span><span class="c1">// move it</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">tableState</span><span class="p">.</span><span class="na">focusCell</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w">           </span><span class="c1">// clear it</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">cell</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tableState</span><span class="p">.</span><span class="na">focusedCell</span><span class="w">          </span><span class="c1">// CellPosition?, null when only a row is focused</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">tableState</span><span class="p">.</span><span class="na">focusCell</span><span class="p">(</span><span class="n">person</span><span class="p">.</span><span class="na">id</span><span class="p">,</span><span class="w"> </span><span class="s">"role"</span><span class="p">)</span><span class="w">    </span><span class="c1">// move it</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">tableState</span><span class="p">.</span><span class="na">focusCell</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w">           </span><span class="c1">// clear it</span>
 </code></pre></div>
 <p>Like <code>focusRow</code>, <code>focusCell</code> does not scroll. <code>state.revealFocusedCell()</code> is a <code>suspend</code> function
 that scrolls both axes to bring it into view.</p>
