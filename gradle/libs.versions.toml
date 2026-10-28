@@ -1,13 +1,13 @@
 [versions]
 androidx-lifecycle = "2.9.5"
-composeMultiplatform = "1.11.1"
+composeMultiplatform = "1.12.2"
 # Material 3 ships on its own version line; 1.9.0 is what the 1.11.1 plugin pairs with.
 composeMaterial3 = "1.9.0"
 dokka = "2.0.0"
-kotlin = "2.4.10"
+kotlin = "2.4.21"
 kotlinx-coroutines = "1.10.2"
 material-icons-extended = "1.6.0"
-nucleus="2.4.6"
+nucleus="2.5.18"
 
 
 

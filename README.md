@@ -126,7 +126,7 @@ cp -r build/dokka docs/api
 ## Requirements
 
 - Kotlin 2.2+
-- Compose Multiplatform 1.11.1 (exposed as an `api` dependency)
+- Compose Multiplatform 1.12.2 (exposed as an `api` dependency)
 - JVM 11+ — the artifact is compiled to Java 11 bytecode
 
 Building this repository needs JDK 21.
