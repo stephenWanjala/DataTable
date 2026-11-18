@@ -1,12 +1,12 @@
 [versions]
-androidx-lifecycle = "2.9.5"
+androidx-lifecycle = "2.11.0"
 composeMultiplatform = "1.12.2"
 # Material 3 ships on its own version line; 1.9.0 is what the 1.11.1 plugin pairs with.
 composeMaterial3 = "1.9.0"
-dokka = "2.0.0"
+dokka = "2.3.0"
 kotlin = "2.4.21"
-kotlinx-coroutines = "1.10.2"
-material-icons-extended = "1.6.0"
+kotlinx-coroutines = "1.11.0"
+material-icons-extended = "1.7.3"
 nucleus="2.5.18"
 
 
@@ -34,6 +34,6 @@ composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMul
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 jetbrainsKotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.34.0"}
+vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.37.0"}
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 nucleusframework = { id = "dev.nucleusframework", version.ref = "nucleus" }
