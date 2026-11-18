@@ -27,6 +27,10 @@ jobs:
       # One OS failing shouldn't throw away the installers the others already built.
       fail-fast: false
       matrix:
+        # macOS minutes bill at 10x Linux, so prereleases skip the dmg. Stable releases and
+        # manual runs still build it.
+        exclude:
+          - os: ${{ (github.event_name == 'release' && github.event.release.prerelease) && 'macos-latest' || 'none' }}
         include:
           - os: ubuntu-latest
             name: Linux (deb, tar.gz)

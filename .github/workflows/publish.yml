@@ -6,7 +6,8 @@ on:
 jobs:
   publish:
     name: Release build and publish
-    runs-on: macOS-latest
+    # Library is JVM-only, so no Mac is needed; Linux minutes cost a tenth of macOS.
+    runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v4
