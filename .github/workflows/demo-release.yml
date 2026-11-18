@@ -27,10 +27,8 @@ jobs:
       # One OS failing shouldn't throw away the installers the others already built.
       fail-fast: false
       matrix:
-        # macOS minutes bill at 10x Linux, so prereleases skip the dmg. Stable releases and
-        # manual runs still build it.
-        exclude:
-          - os: ${{ (github.event_name == 'release' && github.event.release.prerelease) && 'macos-latest' || 'none' }}
+        # No macOS entry: its minutes bill at 10x Linux. Re-add an `os: macos-latest` entry
+        # (artifacts: .../*.dmg) to bring the dmg back.
         include:
           - os: ubuntu-latest
             name: Linux (deb, tar.gz)
@@ -42,10 +40,6 @@ jobs:
             name: Windows (msi)
             artifacts: |
               composeApp/build/compose/binaries/main-release/*/*.msi
-          - os: macos-latest
-            name: macOS (dmg)
-            artifacts: |
-              composeApp/build/compose/binaries/main-release/*/*.dmg
 
     steps:
       - name: Check out code
