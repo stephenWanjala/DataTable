@@ -103,7 +103,7 @@ jobs:
           echo "Publishing $ref as \"$version\"${alias:+ (alias: $alias)}."
 
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ steps.plan.outputs.ref }}
           # mike needs the gh-pages history, and an older ref needs origin/master to borrow the
@@ -124,19 +124,19 @@ jobs:
           python3 .github/scripts/adopt-docs-tooling.py
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: 21
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Generate API reference
         run: ./gradlew :DataTable:dokkaGeneratePublicationHtml --no-configuration-cache
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12'
           cache: pip
